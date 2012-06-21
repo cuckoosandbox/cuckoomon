@@ -23,6 +23,12 @@ static hook_t g_hooks[] = {
     _(ntdll, NtOpenFile),
     _(ntdll, NtReadFile),
     _(ntdll, NtWriteFile),
+
+    // lowest variant of MoveFile()
+    _(kernel32, MoveFileWithProgressW),
+
+    // perhaps go for NtSetInformationFile() later
+    _(kernel32, DeleteFileW),
 };
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)

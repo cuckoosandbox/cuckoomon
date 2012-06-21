@@ -93,3 +93,26 @@ NTSTATUS WINAPI New_NtWriteFile(
   __in_opt  PULONG Key
 );
 
+extern BOOL (WINAPI *Old_MoveFileWithProgressW)(
+  __in      LPWSTR lpExistingFileName,
+  __in_opt  LPWSTR lpNewFileName,
+  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+  __in_opt  LPVOID lpData,
+  __in      DWORD dwFlags
+);
+
+BOOL WINAPI New_MoveFileWithProgressW(
+  __in      LPWSTR lpExistingFileName,
+  __in_opt  LPWSTR lpNewFileName,
+  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+  __in_opt  LPVOID lpData,
+  __in      DWORD dwFlags
+);
+
+extern BOOL (WINAPI *Old_DeleteFileW)(
+  __in  LPWSTR lpFileName
+);
+
+BOOL WINAPI New_DeleteFileW(
+  __in  LPWSTR lpFileName
+);

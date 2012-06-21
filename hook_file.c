@@ -108,3 +108,32 @@ NTSTATUS WINAPI New_NtWriteFile(
     return Old_NtWriteFile(FileHandle, Event, ApcRoutine, ApcContext,
         IoStatusBlock, Buffer, Length, ByteOffset, Key);
 }
+
+BOOL (WINAPI *Old_MoveFileWithProgressW)(
+  __in      LPWSTR lpExistingFileName,
+  __in_opt  LPWSTR lpNewFileName,
+  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+  __in_opt  LPVOID lpData,
+  __in      DWORD dwFlags
+);
+
+BOOL WINAPI New_MoveFileWithProgressW(
+  __in      LPWSTR lpExistingFileName,
+  __in_opt  LPWSTR lpNewFileName,
+  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+  __in_opt  LPVOID lpData,
+  __in      DWORD dwFlags
+) {
+    return Old_MoveFileWithProgressW(lpExistingFileName, lpNewFileName,
+        lpProgressRoutine, lpData, dwFlags);
+}
+
+BOOL (WINAPI *Old_DeleteFileW)(
+  __in  LPWSTR lpFileName
+);
+
+BOOL WINAPI New_DeleteFileW(
+  __in  LPWSTR lpFileName
+) {
+    return Old_DeleteFileW(lpFileName);
+}
