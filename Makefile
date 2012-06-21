@@ -4,5 +4,5 @@ DLL = -shared
 
 default: cuckoomon.dll
 
-cuckoomon.dll: cuckoomon.c hook_file.c
+cuckoomon.dll: cuckoomon.c hook_file.c hook_reg.c
 	$(CC) $(CFLAGS) $(DLL) -o $@ $^

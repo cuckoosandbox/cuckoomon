@@ -19,6 +19,11 @@ typedef struct _hook_t {
     &Old_##funcname}
 
 static hook_t g_hooks[] = {
+
+    //
+    // File Hooks
+    //
+
     _(ntdll, NtCreateFile),
     _(ntdll, NtOpenFile),
     _(ntdll, NtReadFile),
@@ -29,6 +34,18 @@ static hook_t g_hooks[] = {
 
     // perhaps go for NtSetInformationFile() later
     _(kernel32, DeleteFileW),
+
+    //
+    // Registry Hooks
+    //
+
+    // A does not call W, instead, both go native immediately
+    _(advapi32, RegOpenKeyExA),
+    _(advapi32, RegOpenKeyExW),
+
+    // same situation as RegOpenKeyEx*, A does not call W
+    _(advapi32, RegCreateKeyExA),
+    _(advapi32, RegCreateKeyExW),
 };
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)

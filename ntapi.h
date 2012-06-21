@@ -3,6 +3,8 @@ typedef ULONG NTSTATUS;
 #define __out
 #define __in
 #define __in_opt
+#define __reserved
+#define __out_opt
 
 typedef struct _LSA_UNICODE_STRING {
     USHORT Length;

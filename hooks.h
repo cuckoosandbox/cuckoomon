@@ -1,4 +1,8 @@
 
+//
+// File Hooks
+//
+
 extern NTSTATUS (WINAPI *Old_NtCreateFile)(
   __out     PHANDLE FileHandle,
   __in      ACCESS_MASK DesiredAccess,
@@ -115,4 +119,88 @@ extern BOOL (WINAPI *Old_DeleteFileW)(
 
 BOOL WINAPI New_DeleteFileW(
   __in  LPWSTR lpFileName
+);
+
+//
+// Registry Hooks
+//
+
+extern LONG (WINAPI *Old_RegOpenKeyExA)(
+  __in        HKEY hKey,
+  __in_opt    LPCTSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
+);
+
+LONG WINAPI New_RegOpenKeyExA(
+  __in        HKEY hKey,
+  __in_opt    LPCTSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
+);
+
+extern LONG (WINAPI *Old_RegOpenKeyExW)(
+  __in        HKEY hKey,
+  __in_opt    LPWSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
+);
+
+LONG WINAPI New_RegOpenKeyExW(
+  __in        HKEY hKey,
+  __in_opt    LPWSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
+);
+
+extern LONG (WINAPI *Old_RegCreateKeyExA)(
+  __in        HKEY hKey,
+  __in        LPCTSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPTSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
+);
+
+LONG WINAPI New_RegCreateKeyExA(
+  __in        HKEY hKey,
+  __in        LPCTSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPTSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
+);
+
+extern LONG (WINAPI *Old_RegCreateKeyExW)(
+  __in        HKEY hKey,
+  __in        LPWSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPWSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
+);
+
+LONG WINAPI New_RegCreateKeyExW(
+  __in        HKEY hKey,
+  __in        LPWSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPWSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
 );
