@@ -38,14 +38,38 @@ static hook_t g_hooks[] = {
     //
     // Registry Hooks
     //
+    // Note: Most, if not all, of the Registry API go natively from both the
+    // A as well as the W versions. In other words, we have to hook all the
+    // ascii *and* unicode APIs of those functions.
+    //
 
-    // A does not call W, instead, both go native immediately
     _(advapi32, RegOpenKeyExA),
     _(advapi32, RegOpenKeyExW),
 
-    // same situation as RegOpenKeyEx*, A does not call W
     _(advapi32, RegCreateKeyExA),
     _(advapi32, RegCreateKeyExW),
+
+    // Note that RegDeleteKeyEx() is available for 64bit XP/Vista+
+    _(advapi32, RegDeleteKeyA),
+    _(advapi32, RegDeleteKeyW),
+
+    // RegEnumKeyA() calls RegEnumKeyExA(), but RegEnumKeyW() does *not*
+    // call RegEnumKeyExW()
+    _(advapi32, RegEnumKeyW),
+    _(advapi32, RegEnumKeyExA),
+    _(advapi32, RegEnumKeyExW),
+
+    _(advapi32, RegEnumValueA),
+    _(advapi32, RegEnumValueW),
+
+    _(advapi32, RegSetValueExA),
+    _(advapi32, RegSetValueExW),
+
+    _(advapi32, RegQueryValueExA),
+    _(advapi32, RegQueryValueExW),
+
+    _(advapi32, RegDeleteValueA),
+    _(advapi32, RegDeleteValueW),
 };
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
