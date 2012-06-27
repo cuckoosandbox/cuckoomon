@@ -33,3 +33,5 @@ typedef struct _OBJECT_ATTRIBUTES {
 
 // for now..
 typedef void *PIO_APC_ROUTINE;
+
+#define ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))

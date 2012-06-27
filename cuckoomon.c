@@ -2,21 +2,10 @@
 #include <windows.h>
 #include "ntapi.h"
 #include "hooks.h"
-
-typedef struct _hook_t {
-    const char *library;
-    const char *funcname;
-
-    // pointer to the new function
-    void *new_func;
-
-    // "function" which jumps over the trampoline and executes the original
-    // function call
-    void *old_func;
-} hook_t;
+#include "hooking.h"
 
 #define HOOK(library, funcname) {#library, #funcname, &New_##funcname, \
-    &Old_##funcname}
+    (void **) &Old_##funcname}
 
 static hook_t g_hooks[] = {
 
@@ -72,10 +61,17 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, RegDeleteValueW),
 };
 
+void set_hooks()
+{
+    for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
+        hook_api(&g_hooks[i]);
+    }
+}
+
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     if(dwReason == DLL_PROCESS_ATTACH) {
-        // do stuff
+        set_hooks();
     }
     return TRUE;
 }
