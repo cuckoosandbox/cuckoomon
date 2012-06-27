@@ -15,7 +15,7 @@ typedef struct _hook_t {
     void *old_func;
 } hook_t;
 
-#define _(library, funcname) {#library, #funcname, &New_##funcname, \
+#define HOOK(library, funcname) {#library, #funcname, &New_##funcname, \
     &Old_##funcname}
 
 static hook_t g_hooks[] = {
@@ -24,16 +24,16 @@ static hook_t g_hooks[] = {
     // File Hooks
     //
 
-    _(ntdll, NtCreateFile),
-    _(ntdll, NtOpenFile),
-    _(ntdll, NtReadFile),
-    _(ntdll, NtWriteFile),
+    HOOK(ntdll, NtCreateFile),
+    HOOK(ntdll, NtOpenFile),
+    HOOK(ntdll, NtReadFile),
+    HOOK(ntdll, NtWriteFile),
 
     // lowest variant of MoveFile()
-    _(kernel32, MoveFileWithProgressW),
+    HOOK(kernel32, MoveFileWithProgressW),
 
     // perhaps go for NtSetInformationFile() later
-    _(kernel32, DeleteFileW),
+    HOOK(kernel32, DeleteFileW),
 
     //
     // Registry Hooks
@@ -43,33 +43,33 @@ static hook_t g_hooks[] = {
     // ascii *and* unicode APIs of those functions.
     //
 
-    _(advapi32, RegOpenKeyExA),
-    _(advapi32, RegOpenKeyExW),
+    HOOK(advapi32, RegOpenKeyExA),
+    HOOK(advapi32, RegOpenKeyExW),
 
-    _(advapi32, RegCreateKeyExA),
-    _(advapi32, RegCreateKeyExW),
+    HOOK(advapi32, RegCreateKeyExA),
+    HOOK(advapi32, RegCreateKeyExW),
 
     // Note that RegDeleteKeyEx() is available for 64bit XP/Vista+
-    _(advapi32, RegDeleteKeyA),
-    _(advapi32, RegDeleteKeyW),
+    HOOK(advapi32, RegDeleteKeyA),
+    HOOK(advapi32, RegDeleteKeyW),
 
     // RegEnumKeyA() calls RegEnumKeyExA(), but RegEnumKeyW() does *not*
     // call RegEnumKeyExW()
-    _(advapi32, RegEnumKeyW),
-    _(advapi32, RegEnumKeyExA),
-    _(advapi32, RegEnumKeyExW),
+    HOOK(advapi32, RegEnumKeyW),
+    HOOK(advapi32, RegEnumKeyExA),
+    HOOK(advapi32, RegEnumKeyExW),
 
-    _(advapi32, RegEnumValueA),
-    _(advapi32, RegEnumValueW),
+    HOOK(advapi32, RegEnumValueA),
+    HOOK(advapi32, RegEnumValueW),
 
-    _(advapi32, RegSetValueExA),
-    _(advapi32, RegSetValueExW),
+    HOOK(advapi32, RegSetValueExA),
+    HOOK(advapi32, RegSetValueExW),
 
-    _(advapi32, RegQueryValueExA),
-    _(advapi32, RegQueryValueExW),
+    HOOK(advapi32, RegQueryValueExA),
+    HOOK(advapi32, RegQueryValueExW),
 
-    _(advapi32, RegDeleteValueA),
-    _(advapi32, RegDeleteValueW),
+    HOOK(advapi32, RegDeleteValueA),
+    HOOK(advapi32, RegDeleteValueW),
 };
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
