@@ -11,4 +11,6 @@ typedef struct _hook_t {
     void **old_func;
 } hook_t;
 
+int lde(void *addr);
+
 int hook_api(hook_t *h);
