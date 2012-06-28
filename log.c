@@ -95,8 +95,6 @@ void loq(const char *fmt, ...)
             key = *fmt++;
         }
 
-        printf("count: %d, fmt: %c\n", count, key);
-
         // log the key
         const char *key_str = va_arg(args, const char *);
         log_string(key_str, strlen(key_str));
