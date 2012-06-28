@@ -103,6 +103,7 @@ void loq(const char *fmt, ...)
         // log the value
         if(key == 's') {
             const char *s = va_arg(args, const char *);
+            if(s == NULL) s = "";
             log_string(s, strlen(s));
         }
         else if(key == 'S' || key == 'b') {
@@ -112,6 +113,7 @@ void loq(const char *fmt, ...)
         }
         else if(key == 'u') {
             const wchar_t *s = va_arg(args, const wchar_t *);
+            if(s == NULL) s = L"";
             log_wstring(s, lstrlenW(s));
         }
         else if(key == 'U') {
