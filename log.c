@@ -73,7 +73,7 @@ void loq(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int count = 1; char key;
+    int count = 1; char key = 0;
 
     log_bytes("{", 1);
 

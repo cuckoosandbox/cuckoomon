@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <windows.h>
 #include "ntapi.h"
+#include "log.h"
+
+#define LOQ(fmt, ...) loq("sl" # fmt, "function", &__FUNCTION__[4], \
+    "return", ret, ##__VA_ARGS__)
 
 NTSTATUS (WINAPI *Old_NtCreateFile)(
   __out     PHANDLE FileHandle,
@@ -29,9 +33,14 @@ NTSTATUS WINAPI New_NtCreateFile(
   __in      PVOID EaBuffer,
   __in      ULONG EaLength
 ) {
-    return Old_NtCreateFile(FileHandle, DesiredAccess, ObjectAttributes,
-        IoStatusBlock, AllocationSize, FileAttributes, ShareAccess,
-        CreateDisposition, CreateOptions, EaBuffer, EaLength);
+    NTSTATUS ret = Old_NtCreateFile(FileHandle, DesiredAccess,
+        ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes,
+        ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
+    LOQ("lUl", "FileHandle", *FileHandle,
+        "FileName", ObjectAttributes->ObjectName->Length >> 1,
+            ObjectAttributes->ObjectName->Buffer,
+        "CreateDisposition", CreateDisposition);
+    return ret;
 }
 
 NTSTATUS (WINAPI *Old_NtOpenFile)(
@@ -51,8 +60,12 @@ NTSTATUS WINAPI New_NtOpenFile(
   __in   ULONG ShareAccess,
   __in   ULONG OpenOptions
 ) {
-    return Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
+    NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
         IoStatusBlock, ShareAccess, OpenOptions);
+    LOQ("lU", "FileHandle", *FileHandle,
+        "FileName", ObjectAttributes->ObjectName->Length >> 1,
+            ObjectAttributes->ObjectName->Buffer);
+    return ret;
 }
 
 NTSTATUS (WINAPI *Old_NtReadFile)(
@@ -78,8 +91,11 @@ NTSTATUS WINAPI New_NtReadFile(
   __in_opt  PLARGE_INTEGER ByteOffset,
   __in_opt  PULONG Key
 ) {
-    return Old_NtReadFile(FileHandle, Event, ApcRoutine, ApcContext,
+    NTSTATUS ret = Old_NtReadFile(FileHandle, Event, ApcRoutine, ApcContext,
         IoStatusBlock, Buffer, Length, ByteOffset, Key);
+    LOQ("lb", "FileHandle", FileHandle,
+        "Buffer", IoStatusBlock->Information, Buffer);
+    return ret;
 }
 
 NTSTATUS (WINAPI *Old_NtWriteFile)(
@@ -105,8 +121,11 @@ NTSTATUS WINAPI New_NtWriteFile(
   __in_opt  PLARGE_INTEGER ByteOffset,
   __in_opt  PULONG Key
 ) {
-    return Old_NtWriteFile(FileHandle, Event, ApcRoutine, ApcContext,
+    NTSTATUS ret = Old_NtWriteFile(FileHandle, Event, ApcRoutine, ApcContext,
         IoStatusBlock, Buffer, Length, ByteOffset, Key);
+    LOQ("lb", "FileHandle", FileHandle,
+        "Buffer", IoStatusBlock->Information, Buffer);
+    return ret;
 }
 
 BOOL (WINAPI *Old_MoveFileWithProgressW)(
@@ -124,8 +143,11 @@ BOOL WINAPI New_MoveFileWithProgressW(
   __in_opt  LPVOID lpData,
   __in      DWORD dwFlags
 ) {
-    return Old_MoveFileWithProgressW(lpExistingFileName, lpNewFileName,
+    BOOL ret = Old_MoveFileWithProgressW(lpExistingFileName, lpNewFileName,
         lpProgressRoutine, lpData, dwFlags);
+    LOQ("uu", "ExistingFileName", lpExistingFileName,
+        "NewFileName", lpNewFileName);
+    return ret;
 }
 
 BOOL (WINAPI *Old_DeleteFileW)(
@@ -135,5 +157,7 @@ BOOL (WINAPI *Old_DeleteFileW)(
 BOOL WINAPI New_DeleteFileW(
   __in  LPWSTR lpFileName
 ) {
-    return Old_DeleteFileW(lpFileName);
+    BOOL ret = Old_DeleteFileW(lpFileName);
+    LOQ("u", "FileName", lpFileName);
+    return ret;
 }
