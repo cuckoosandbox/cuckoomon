@@ -470,3 +470,33 @@ HWND WINAPI New_FindWindowExW(
   __in_opt  LPWSTR lpszClass,
   __in_opt  LPWSTR lpszWindow
 );
+
+//
+// Sync Hooks
+//
+
+extern NTSTATUS (WINAPI *Old_NtCreateMutant)(
+    __out       PHANDLE MutantHandle,
+    __in        ACCESS_MASK DesiredAccess,
+    __in_opt    POBJECT_ATTRIBUTES ObjectAttributes,
+    __in        BOOLEAN InitialOwner
+);
+
+NTSTATUS WINAPI New_NtCreateMutant(
+    __out       PHANDLE MutantHandle,
+    __in        ACCESS_MASK DesiredAccess,
+    __in_opt    POBJECT_ATTRIBUTES ObjectAttributes,
+    __in        BOOLEAN InitialOwner
+);
+
+extern NTSTATUS (WINAPI *Old_NtOpenMutant)(
+    __out       PHANDLE MutantHandle,
+    __in        ACCESS_MASK DesiredAccess,
+    __in        POBJECT_ATTRIBUTES ObjectAttributes
+);
+
+NTSTATUS WINAPI New_NtOpenMutant(
+    __out       PHANDLE MutantHandle,
+    __in        ACCESS_MASK DesiredAccess,
+    __in        POBJECT_ATTRIBUTES ObjectAttributes
+);
