@@ -22,8 +22,12 @@ int main()
             "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, NULL, 0,
             KEY_ALL_ACCESS, NULL, &hKey, NULL) == ERROR_SUCCESS) {
         RegSetValueEx(hKey, "TestApiHooks", 0, REG_SZ, (BYTE *) "Hoi", 3);
-        Sleep(5000);
         RegDeleteValue(hKey, "TestApiHooks");
         RegCloseKey(hKey);
     }
+
+    system("echo hai");
+
+    CreateMutex(NULL, FALSE, "MutexNam3");
+    OpenMutex(MUTEX_ALL_ACCESS, FALSE, "OpenMutexName");
 }
