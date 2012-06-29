@@ -1,5 +1,5 @@
 
-TESTS = test-log.exe test-lde.exe
+TESTS = test-log.exe test-lde.exe test-hooking.exe
 
 all: $(TESTS)
 

@@ -13,4 +13,6 @@ typedef struct _hook_t {
 
 int lde(void *addr);
 
+int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate);
+
 int hook_api(hook_t *h);
