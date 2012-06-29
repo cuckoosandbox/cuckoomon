@@ -73,15 +73,15 @@ void loq(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int count = 1; char key = 0;
+    int count = 1, first = 1; char key = 0;
 
     log_bytes("{", 1);
 
-    while (--count || *fmt) {
+    while (--count || *fmt != 0) {
         // first time
-        if(count != 0) {
-            log_bytes(", ", 2);
-        }
+        if(first != 0) first = 0;
+        // comma-seperator
+        else log_bytes(", ", 2);
 
         // we have to find the next format specifier
         if(count == 0) {
