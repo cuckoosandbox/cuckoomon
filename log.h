@@ -27,3 +27,6 @@
 //
 
 void loq(const char *fmt, ...);
+
+#define LOQ(fmt, ...) loq("sl" fmt, "function", &__FUNCTION__[4], \
+    "return", ret, ##__VA_ARGS__)

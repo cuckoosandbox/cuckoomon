@@ -61,7 +61,7 @@ static void log_wstring(const wchar_t *str, int len)
 {
     log_bytes("\"", 1);
     while (len--) {
-        if(*str == '"') {
+        if(*str == '"' || *str == '\\') {
             log_bytes("\\", 1);
         }
         log_wchar(*str++);

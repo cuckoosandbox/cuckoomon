@@ -3,9 +3,6 @@
 #include "ntapi.h"
 #include "log.h"
 
-#define LOQ(fmt, ...) loq("sl" fmt, "function", &__FUNCTION__[4], \
-    "return", ret, ##__VA_ARGS__)
-
 NTSTATUS (WINAPI *Old_NtCreateFile)(
   __out     PHANDLE FileHandle,
   __in      ACCESS_MASK DesiredAccess,
