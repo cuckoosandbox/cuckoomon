@@ -59,6 +59,15 @@ static hook_t g_hooks[] = {
 
     HOOK(advapi32, RegDeleteValueA),
     HOOK(advapi32, RegDeleteValueW),
+
+    //
+    // Window Hooks
+    //
+
+    HOOK(user32, FindWindowA),
+    HOOK(user32, FindWindowW),
+    HOOK(user32, FindWindowExA),
+    HOOK(user32, FindWindowExW),
 };
 
 void set_hooks()
