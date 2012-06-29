@@ -186,7 +186,10 @@ int hook_api(hook_t *h, int type)
     if(h->library != NULL && h->funcname != NULL) {
         addr = GetProcAddress(GetModuleHandle(h->library), h->funcname);
     }
-    if(addr == NULL) return 0;
+    if(addr == NULL) {
+        printf("Error obtaining address of %s!%s\n", h->library, h->funcname);
+        return 0;
+    }
 
     int ret = 0;
 
