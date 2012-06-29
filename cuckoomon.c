@@ -4,7 +4,7 @@
 #include "hooks.h"
 #include "hooking.h"
 
-#define HOOK(library, funcname) {#library, #funcname, &New_##funcname, \
+#define HOOK(library, funcname) {#library, #funcname, NULL, &New_##funcname, \
     (void **) &Old_##funcname}
 
 static hook_t g_hooks[] = {
@@ -63,8 +63,14 @@ static hook_t g_hooks[] = {
 
 void set_hooks()
 {
+    // the hooks contain the gates as well, so they have to be RWX
+    DWORD old_protect;
+    VirtualProtect(g_hooks, sizeof(g_hooks), PAGE_EXECUTE_READWRITE,
+        &old_protect);
+
+    // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
-        hook_api(&g_hooks[i]);
+        hook_api(&g_hooks[i], HOOK_DIRECT_JMP);
     }
 }
 

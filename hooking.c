@@ -3,6 +3,7 @@
 #include "hooking.h"
 #include "distorm.h"
 #include "mnemonics.h"
+#include "ntapi.h"
 
 _DecodeResult (*lp_distorm_decompose)(_CodeInfo* ci, _DInst result[],
     unsigned int maxInstructions, unsigned int* usedInstructionsCount);
@@ -84,8 +85,6 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
                 (unsigned long) addr;
             addr += 4;
 
-            printf("jmp-addr: 0x%08x\n", jmp_addr);
-
             // gate is already filled with the opcode itself (the jump
             // instruction), now we will actually jump to the location by
             // calculating the relative offset which points to the real
@@ -161,31 +160,64 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 }
 
 // direct 0xe9 jmp
-static int hook_api_jmp_direct(hook_t *h)
+static int hook_api_jmp_direct(hook_t *h, unsigned char *addr)
 {
-    FARPROC addr = GetProcAddress(GetModuleHandle(h->library), h->funcname);
-    if(addr == NULL) return 0;
+    // unconditional jump opcode
+    *addr = 0xe9;
 
-    DWORD old_protect;
-    if(VirtualProtect(addr, 5, PAGE_EXECUTE_READWRITE, &old_protect)) {
-        unsigned char *p = (unsigned char *) addr;
-
-        // TODO make a backup of the first few instructions
-        // ...
-
-        // jmp opcode
-        *p = 0xe9;
-
-        // store the relative address from this opcode to our hook function
-        *(unsigned long *)(p + 1) = (unsigned char *) h->new_func - p - 5;
-        return 1;
-    }
-    return 0;
+    // store the relative address from this opcode to our hook function
+    *(unsigned long *)(addr + 1) = (unsigned char *) h->new_func - addr - 5;
+    return 1;
 }
 
-int hook_api(hook_t *h)
+int hook_api(hook_t *h, int type)
 {
-    // default hooking type at the moment
-    return hook_api_jmp_direct(h);
+    // table with all possible hooking types
+    static struct {
+        int(*hook)(hook_t *h, unsigned char *addr);
+        int len;
+    } hook_types[] = {
+        /* HOOK_DIRECT_JMP */ {&hook_api_jmp_direct, 5},
+    };
+
+    // resolve the address to hook
+    FARPROC addr = (FARPROC) h->addr;
+
+    if(h->library != NULL && h->funcname != NULL) {
+        addr = GetProcAddress(GetModuleHandle(h->library), h->funcname);
+    }
+    if(addr == NULL) return 0;
+
+    int ret = 0;
+
+    // check if this is a valid hook type
+    if(type >= 0 && type < ARRAYSIZE(hook_types)) {
+
+        DWORD old_protect;
+
+        // make the address writable
+        if(VirtualProtect(addr, hook_types[type].len, PAGE_EXECUTE_READWRITE,
+                &old_protect)) {
+
+            // create the callgate
+            if(hook_create_callgate((unsigned char *) addr,
+                    hook_types[type].len, h->gate)) {
+
+                // insert the hook
+                ret = hook_types[type].hook(h, (unsigned char *) addr);
+
+                // if successful, assign the gate address to *old_func
+                if(ret != 0) {
+                    *h->old_func = h->gate;
+                }
+            }
+
+            // restore the old protection
+            VirtualProtect(addr, hook_types[type].len, old_protect,
+                &old_protect);
+        }
+    }
+
+    return ret;
 }
 
