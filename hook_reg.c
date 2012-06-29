@@ -3,7 +3,7 @@
 #include "ntapi.h"
 #include "log.h"
 
-#define LOQ(fmt, ...) loq("sl" # fmt, "function", &__FUNCTION__[4], \
+#define LOQ(fmt, ...) loq("sl" fmt, "function", &__FUNCTION__[4], \
     "return", ret, ##__VA_ARGS__)
 
 LONG (WINAPI *Old_RegOpenKeyExA)(
