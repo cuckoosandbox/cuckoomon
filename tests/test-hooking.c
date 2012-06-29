@@ -29,10 +29,11 @@ unsigned char gate_solutions[COUNT][SIZE] = {
 
 int main()
 {
-    // we allocate two memory pages, because globals have different addresses
-    // based on compiler/settings
-    unsigned char *functions = (unsigned char *) VirtualAlloc(
-        (void *) 0x20000, 0x3000, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    // we allocate one memory pages, because globals have different addresses
+    // based on compiler/settings (addresses are still relative to each other
+    // so the base address is not important)
+    unsigned char *functions = (unsigned char *) VirtualAlloc(NULL, 0x3000,
+        MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     unsigned char *gates = functions + 0x1000;
     hook_t *hook = (hook_t *)(functions + 0x2000);
 
