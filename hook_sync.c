@@ -18,7 +18,7 @@ NTSTATUS WINAPI New_NtCreateMutant(
 ) {
     NTSTATUS ret = Old_NtCreateMutant(MutantHandle, DesiredAccess,
         ObjectAttributes, InitialOwner);
-    LOQ("lOl", "Handle", *MutantHandle, "MutexName", ObjectAttributes,
+    LOQ("POl", "Handle", MutantHandle, "MutexName", ObjectAttributes,
         "InitialOwner", InitialOwner);
     return ret;
 }
@@ -36,6 +36,6 @@ NTSTATUS WINAPI New_NtOpenMutant(
 ) {
     NTSTATUS ret = Old_NtOpenMutant(MutantHandle, DesiredAccess,
         ObjectAttributes);
-    LOQ("lO", "Handle", *MutantHandle, "MutexName", ObjectAttributes);
+    LOQ("PO", "Handle", MutantHandle, "MutexName", ObjectAttributes);
     return ret;
 }

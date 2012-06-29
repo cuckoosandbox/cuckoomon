@@ -122,6 +122,11 @@ void loq(const char *fmt, ...)
             const wchar_t *s = va_arg(args, const wchar_t *);
             log_wstring(s, len);
         }
+        else if(key == 'B') {
+            int *len = va_arg(args, int);
+            const char *s = va_arg(args, const char *);
+            log_string(s, len != NULL ? *len : 0);
+        }
         else if(key == 'i') {
             char buf[16];
             int value = va_arg(args, int);
@@ -132,6 +137,12 @@ void loq(const char *fmt, ...)
             char buf[20];
             long value = va_arg(args, long);
             sprintf(buf, "%ld", value);
+            log_bytes(buf, strlen(buf));
+        }
+        else if(key == 'L' || key == 'P') {
+            char buf[20];
+            void **ptr = va_arg(args, void **);
+            sprintf(buf, "%ld", ptr != NULL ? *ptr : NULL);
             log_bytes(buf, strlen(buf));
         }
         else if(key == 'O') {

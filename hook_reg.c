@@ -20,7 +20,7 @@ LONG WINAPI New_RegOpenKeyExA(
 ) {
     LONG ret = Old_RegOpenKeyExA(hKey, lpSubKey, ulOptions, samDesired,
         phkResult);
-    LOQ("lsl", "Registry", hKey, "SubKey", lpSubKey, "Handle", *phkResult);
+    LOQ("psP", "Registry", hKey, "SubKey", lpSubKey, "Handle", phkResult);
     return ret;
 }
 
@@ -41,7 +41,7 @@ LONG WINAPI New_RegOpenKeyExW(
 ) {
     LONG ret = Old_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired,
         phkResult);
-    LOQ("lul", "Registry", hKey, "SubKey", lpSubKey, "Handle", *phkResult);
+    LOQ("puP", "Registry", hKey, "SubKey", lpSubKey, "Handle", phkResult);
     return ret;
 }
 
@@ -71,8 +71,8 @@ LONG WINAPI New_RegCreateKeyExA(
     LONG ret = Old_RegCreateKeyExA(hKey, lpSubKey, Reserved, lpClass,
         dwOptions, samDesired, lpSecurityAttributes, phkResult,
         lpdwDisposition);
-    LOQ("lssll", "Registry", hKey, "SubKey", lpSubKey, "Class", lpClass,
-        "Access", samDesired, "Handle", *phkResult);
+    LOQ("psslP", "Registry", hKey, "SubKey", lpSubKey, "Class", lpClass,
+        "Access", samDesired, "Handle", phkResult);
     return ret;
 }
 
@@ -102,8 +102,8 @@ LONG WINAPI New_RegCreateKeyExW(
     LONG ret = Old_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass,
         dwOptions, samDesired, lpSecurityAttributes, phkResult,
         lpdwDisposition);
-    LOQ("luull", "Registry", hKey, "SubKey", lpSubKey, "Class", lpClass,
-        "Access", samDesired, "Handle", *phkResult);
+    LOQ("puulP", "Registry", hKey, "SubKey", lpSubKey, "Class", lpClass,
+        "Access", samDesired, "Handle", phkResult);
     return ret;
 }
 
@@ -117,7 +117,7 @@ LONG WINAPI New_RegDeleteKeyA(
   __in  LPCTSTR lpSubKey
 ) {
     LONG ret = Old_RegDeleteKeyA(hKey, lpSubKey);
-    LOQ("ls", "Handle", hKey, "SubKey", lpSubKey);
+    LOQ("ps", "Handle", hKey, "SubKey", lpSubKey);
     return ret;
 }
 
@@ -131,7 +131,7 @@ LONG WINAPI New_RegDeleteKeyW(
   __in  LPWSTR lpSubKey
 ) {
     LONG ret = Old_RegDeleteKeyW(hKey, lpSubKey);
-    LOQ("lu", "Handle", hKey, "SubKey", lpSubKey);
+    LOQ("pu", "Handle", hKey, "SubKey", lpSubKey);
     return ret;
 }
 
@@ -149,7 +149,7 @@ LONG WINAPI New_RegEnumKeyW(
   __in   DWORD cchName
 ) {
     LONG ret = Old_RegEnumKeyW(hKey, dwIndex, lpName, cchName);
-    LOQ("llu", "Handle", hKey, "Index", dwIndex, "Name", lpName);
+    LOQ("plu", "Handle", hKey, "Index", dwIndex, "Name", lpName);
     return ret;
 }
 
@@ -176,7 +176,7 @@ LONG WINAPI New_RegEnumKeyExA(
 ) {
     LONG ret = Old_RegEnumKeyExA(hKey, dwIndex, lpName, lpcName, lpReserved,
         lpClass, lpcClass, lpftLastWriteTime);
-    LOQ("llss", "Handle", hKey, "Index", dwIndex, "Name", lpName,
+    LOQ("plss", "Handle", hKey, "Index", dwIndex, "Name", lpName,
         "Class", lpClass);
     return ret;
 }
@@ -204,7 +204,7 @@ LONG WINAPI New_RegEnumKeyExW(
 ) {
     LONG ret = Old_RegEnumKeyExW(hKey, dwIndex, lpName, lpcName, lpReserved,
         lpClass, lpcClass, lpftLastWriteTime);
-    LOQ("lluu", "Handle", hKey, "Index", dwIndex, "Name", lpName,
+    LOQ("pluu", "Handle", hKey, "Index", dwIndex, "Name", lpName,
         "Class", lpClass);
     return ret;
 }
@@ -232,8 +232,8 @@ LONG WINAPI New_RegEnumValueA(
 ) {
     LONG ret = Old_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName,
         lpReserved, lpType, lpData, lpcbData);
-    LOQ("llsb", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
-        "Data", lpcbData ? *lpcbData : 0, lpData);
+    LOQ("plsB", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
+        "Data", lpcbData, lpData);
     return ret;
 }
 
@@ -260,8 +260,8 @@ LONG WINAPI New_RegEnumValueW(
 ) {
     LONG ret = Old_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName,
         lpReserved, lpType, lpData, lpcbData);
-    LOQ("llub", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
-        "Data", lpcbData ? *lpcbData : 0, lpData);
+    LOQ("pluB", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
+        "Data", lpcbData, lpData);
     return ret;
 }
 
@@ -284,7 +284,7 @@ LONG WINAPI New_RegSetValueExA(
 ) {
     LONG ret = Old_RegSetValueExA(hKey, lpValueName, Reserved, dwType, lpData,
         cbData);
-    LOQ("lslb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
+    LOQ("pslb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
         "Buffer", cbData, lpData);
     return ret;
 }
@@ -308,7 +308,7 @@ LONG WINAPI New_RegSetValueExW(
 ) {
     LONG ret = Old_RegSetValueExW(hKey, lpValueName, Reserved, dwType, lpData,
         cbData);
-    LOQ("lulb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
+    LOQ("pulb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
         "Buffer", cbData, lpData);
     return ret;
 }
@@ -332,9 +332,8 @@ LONG WINAPI New_RegQueryValueExA(
 ) {
     LONG ret = Old_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType,
         lpData, lpcbData);
-    LOQ("lslb", "Handle", hKey, "ValueName", lpValueName,
-        "Type", lpType ? *lpType : 0,
-        "Buffer", lpcbData ? *lpcbData : 0, lpData);
+    LOQ("psLB", "Handle", hKey, "ValueName", lpValueName,
+        "Type", lpType, "Buffer", lpcbData, lpData);
     return ret;
 }
 
@@ -357,9 +356,8 @@ LONG WINAPI New_RegQueryValueExW(
 ) {
     LONG ret = Old_RegQueryValueExW(hKey, lpValueName, lpReserved, lpType,
         lpData, lpcbData);
-    LOQ("lulb", "Handle", hKey, "ValueName", lpValueName,
-        "Type", lpType ? *lpType : 0,
-        "Buffer", lpcbData ? *lpcbData : 0, lpData);
+    LOQ("luLB", "Handle", hKey, "ValueName", lpValueName,
+        "Type", lpType, "Buffer", lpcbData, lpData);
     return ret;
 }
 
@@ -373,7 +371,7 @@ LONG WINAPI New_RegDeleteValueA(
   __in_opt  LPCTSTR lpValueName
 ) {
     LONG ret = Old_RegDeleteValueA(hKey, lpValueName);
-    LOQ("ls", "Handle", hKey, "ValueName", lpValueName);
+    LOQ("ps", "Handle", hKey, "ValueName", lpValueName);
     return ret;
 }
 
@@ -387,6 +385,6 @@ LONG WINAPI New_RegDeleteValueW(
   __in_opt  LPWSTR lpValueName
 ) {
     LONG ret = Old_RegDeleteValueW(hKey, lpValueName);
-    LOQ("lu", "Handle", hKey, "ValueName", lpValueName);
+    LOQ("pu", "Handle", hKey, "ValueName", lpValueName);
     return ret;
 }

@@ -10,9 +10,12 @@
 // u  -> (wchar_t *) -> zero-terminated unicode string
 // U  -> (int, wchar_t *) -> unicode string with length
 // b  -> (int, void *) -> memory with a given size (alias for S)
+// B  -> (int *, void *) -> memory with a given size (value at integer)
 // i  -> (int) -> integer
 // l  -> (long) -> long integer
+// L  -> (long *) -> pointer to a long integer
 // p  -> (void *) -> pointer (alias for l)
+// P  -> (void **) -> pointer to a handle (alias for L)
 // O  -> (OBJECT_ATTRIBUTES *) -> wrapper around a unicode string
 //
 // Each of these format specifiers are prefixed with a zero-terminated key
