@@ -25,7 +25,7 @@ static void log_string(const char *str, int len)
 {
     log_bytes("\"", 1);
     while (len--) {
-        if(*str == '"') {
+        if(*str == '"' || *str == '\\') {
             log_bytes("\\", 1);
         }
         log_bytes(str++, 1);
