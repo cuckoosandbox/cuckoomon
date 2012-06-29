@@ -46,7 +46,15 @@ HWND WINAPI New_FindWindowExA(
 ) {
     HWND ret = Old_FindWindowExA(hwndParent, hwndChildAfter, lpszClass,
         lpszWindow);
-    LOQ("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
+
+    // lpszClass can be one of the predefined window controls.. which lay in
+    // the 0..ffff range
+    if(((DWORD_PTR) lpszClass & 0xffff) == (DWORD_PTR) lpszClass) {
+        LOQ("ls", "ClassName", lpszClass, "WindowName", lpszWindow);
+    }
+    else {
+        LOQ("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
+    }
     return ret;
 }
 
@@ -65,6 +73,13 @@ HWND WINAPI New_FindWindowExW(
 ) {
     HWND ret = Old_FindWindowExW(hwndParent, hwndChildAfter, lpszClass,
         lpszWindow);
-    LOQ("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
+    // lpszClass can be one of the predefined window controls.. which lay in
+    // the 0..ffff range
+    if(((DWORD_PTR) lpszClass & 0xffff) == (DWORD_PTR) lpszClass) {
+        LOQ("lu", "ClassName", lpszClass, "WindowName", lpszWindow);
+    }
+    else {
+        LOQ("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
+    }
     return ret;
 }
