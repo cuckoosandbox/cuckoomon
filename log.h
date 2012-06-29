@@ -13,6 +13,7 @@
 // i  -> (int) -> integer
 // l  -> (long) -> long integer
 // p  -> (void *) -> pointer (alias for l)
+// O  -> (OBJECT_ATTRIBUTES *) -> wrapper around a unicode string
 //
 // Each of these format specifiers are prefixed with a zero-terminated key
 // value, e.g.

@@ -33,9 +33,7 @@ NTSTATUS WINAPI New_NtCreateFile(
     NTSTATUS ret = Old_NtCreateFile(FileHandle, DesiredAccess,
         ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
-    LOQ("lUl", "FileHandle", *FileHandle,
-        "FileName", ObjectAttributes->ObjectName->Length >> 1,
-            ObjectAttributes->ObjectName->Buffer,
+    LOQ("lOl", "FileHandle", *FileHandle, "FileName", ObjectAttributes,
         "CreateDisposition", CreateDisposition);
     return ret;
 }
@@ -59,9 +57,7 @@ NTSTATUS WINAPI New_NtOpenFile(
 ) {
     NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
         IoStatusBlock, ShareAccess, OpenOptions);
-    LOQ("lU", "FileHandle", *FileHandle,
-        "FileName", ObjectAttributes->ObjectName->Length >> 1,
-            ObjectAttributes->ObjectName->Buffer);
+    LOQ("lO", "FileHandle", *FileHandle, "FileName", ObjectAttributes);
     return ret;
 }
 

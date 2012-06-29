@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <windows.h>
+#include "ntapi.h"
 
 //
 // Log API
@@ -132,6 +133,16 @@ void loq(const char *fmt, ...)
             long value = va_arg(args, long);
             sprintf(buf, "%ld", value);
             log_bytes(buf, strlen(buf));
+        }
+        else if(key == 'O') {
+            OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
+            if(obj == NULL || obj->ObjectName == NULL) {
+                log_string("", 0);
+            }
+            else {
+                log_wstring(obj->ObjectName->Buffer,
+                    obj->ObjectName->Length >> 1);
+            }
         }
     }
 

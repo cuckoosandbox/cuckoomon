@@ -27,9 +27,7 @@ NTSTATUS WINAPI New_NtCreateProcess(
     NTSTATUS ret = Old_NtCreateProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ParentProcess, InheritObjectTable, SectionHandle,
         DebugPort, ExceptionPort);
-    LOQ("lU", "ProcessHandle", *ProcessHandle,
-        "FileName", ObjectAttributes->ObjectName->Length >> 1,
-            ObjectAttributes->ObjectName->Buffer);
+    LOQ("lO", "ProcessHandle", *ProcessHandle, "FileName", ObjectAttributes);
     return ret;
 }
 
@@ -59,8 +57,6 @@ NTSTATUS WINAPI New_NtCreateProcessEx(
     NTSTATUS ret = Old_NtCreateProcessEx(ProcessHandle, DesiredAccess,
         ObjectAttributes, ParentProcess, Flags, SectionHandle, DebugPort,
         ExceptionPort, InJob);
-    LOQ("lU", "ProcessHandle", *ProcessHandle,
-        "FileName", ObjectAttributes->ObjectName->Length >> 1,
-            ObjectAttributes->ObjectName->Buffer);
+    LOQ("lO", "ProcessHandle", *ProcessHandle, "FileName", ObjectAttributes);
     return ret;
 }
