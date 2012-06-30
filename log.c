@@ -123,7 +123,7 @@ void loq(const char *fmt, ...)
             log_wstring(s, len);
         }
         else if(key == 'B') {
-            int *len = va_arg(args, int);
+            int *len = va_arg(args, int *);
             const char *s = va_arg(args, const char *);
             log_string(s, len != NULL ? *len : 0);
         }
