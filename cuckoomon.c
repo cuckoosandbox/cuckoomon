@@ -120,6 +120,21 @@ static hook_t g_hooks[] = {
     //
 
     HOOK(urlmon, URLDownloadToFileW),
+
+    //
+    // Service Hooks
+    //
+
+    HOOK(advapi32, OpenSCManagerA),
+    HOOK(advapi32, OpenSCManagerW),
+    HOOK(advapi32, CreateServiceA),
+    HOOK(advapi32, CreateServiceW),
+    HOOK(advapi32, OpenServiceA),
+    HOOK(advapi32, OpenServiceW),
+    HOOK(advapi32, StartServiceA),
+    HOOK(advapi32, StartServiceW),
+    HOOK(advapi32, ControlService),
+    HOOK(advapi32, DeleteService),
 };
 
 void set_hooks()

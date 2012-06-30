@@ -434,3 +434,85 @@ extern HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     DWORD dwReserved,
     LPVOID lpfnCB
 );
+
+//
+// Service Hooks
+//
+
+extern HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerA,
+  __in_opt  LPCTSTR lpMachineName,
+  __in_opt  LPCTSTR lpDatabaseName,
+  __in      DWORD dwDesiredAccess
+);
+
+extern HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerW,
+  __in_opt  LPWSTR lpMachineName,
+  __in_opt  LPWSTR lpDatabaseName,
+  __in      DWORD dwDesiredAccess
+);
+
+extern HOOKDEF(SC_HANDLE, WINAPI, CreateServiceA,
+  __in       SC_HANDLE hSCManager,
+  __in       LPCTSTR lpServiceName,
+  __in_opt   LPCTSTR lpDisplayName,
+  __in       DWORD dwDesiredAccess,
+  __in       DWORD dwServiceType,
+  __in       DWORD dwStartType,
+  __in       DWORD dwErrorControl,
+  __in_opt   LPCTSTR lpBinaryPathName,
+  __in_opt   LPCTSTR lpLoadOrderGroup,
+  __out_opt  LPDWORD lpdwTagId,
+  __in_opt   LPCTSTR lpDependencies,
+  __in_opt   LPCTSTR lpServiceStartName,
+  __in_opt   LPCTSTR lpPassword
+);
+
+extern HOOKDEF(SC_HANDLE, WINAPI, CreateServiceW,
+  __in       SC_HANDLE hSCManager,
+  __in       LPWSTR lpServiceName,
+  __in_opt   LPWSTR lpDisplayName,
+  __in       DWORD dwDesiredAccess,
+  __in       DWORD dwServiceType,
+  __in       DWORD dwStartType,
+  __in       DWORD dwErrorControl,
+  __in_opt   LPWSTR lpBinaryPathName,
+  __in_opt   LPWSTR lpLoadOrderGroup,
+  __out_opt  LPDWORD lpdwTagId,
+  __in_opt   LPWSTR lpDependencies,
+  __in_opt   LPWSTR lpServiceStartName,
+  __in_opt   LPWSTR lpPassword
+);
+
+HOOKDEF(SC_HANDLE, WINAPI, OpenServiceA,
+  __in  SC_HANDLE hSCManager,
+  __in  LPCTSTR lpServiceName,
+  __in  DWORD dwDesiredAccess
+);
+
+HOOKDEF(SC_HANDLE, WINAPI, OpenServiceW,
+  __in  SC_HANDLE hSCManager,
+  __in  LPWSTR lpServiceName,
+  __in  DWORD dwDesiredAccess
+);
+
+HOOKDEF(BOOL, WINAPI, StartServiceA,
+  __in      SC_HANDLE hService,
+  __in      DWORD dwNumServiceArgs,
+  __in_opt  LPCTSTR *lpServiceArgVectors
+);
+
+HOOKDEF(BOOL, WINAPI, StartServiceW,
+  __in      SC_HANDLE hService,
+  __in      DWORD dwNumServiceArgs,
+  __in_opt  LPWSTR *lpServiceArgVectors
+);
+
+HOOKDEF(BOOL, WINAPI, ControlService,
+  __in   SC_HANDLE hService,
+  __in   DWORD dwControl,
+  __out  LPSERVICE_STATUS lpServiceStatus
+);
+
+HOOKDEF(BOOL, WINAPI, DeleteService,
+  __in  SC_HANDLE hService
+);
