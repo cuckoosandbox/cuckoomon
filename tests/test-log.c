@@ -12,4 +12,8 @@ int main()
     // utf8 encoding examples from wikipedia, should result in the following:
     // "\x24\xc2\xa2\xe2\x82\xac"
     loq("u", "a", L"\u0024\u00a2\u20ac");
+
+    int argc = 4;
+    char *argv[] = {"a", "b", "c", "d"};
+    loq("a", "a", argc, argv);
 }

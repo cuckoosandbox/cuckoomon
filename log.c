@@ -164,6 +164,32 @@ void loq(const char *fmt, ...)
                     obj->ObjectName->Length >> 1);
             }
         }
+        else if(key == 'a') {
+            int argc = va_arg(args, int);
+            const char **argv = va_arg(args, const char **);
+            log_bytes("[", 1);
+            while (argc--) {
+                log_string(*argv, strlen(*argv));
+                argv++;
+                if(argc != 0) {
+                    log_bytes(", ", 2);
+                }
+            }
+            log_bytes("]", 1);
+        }
+        else if(key == 'A') {
+            int argc = va_arg(args, int);
+            const wchar_t **argv = va_arg(args, const wchar_t **);
+            log_bytes("[", 1);
+            while (argc--) {
+                log_wstring(*argv, lstrlenW(*argv));
+                argv++;
+                if(argc != 0) {
+                    log_bytes(", ", 2);
+                }
+            }
+            log_bytes("]", 1);
+        }
     }
 
     log_bytes("}", 1);

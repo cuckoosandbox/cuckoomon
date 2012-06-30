@@ -18,6 +18,8 @@
 // P  -> (void **) -> pointer to a handle (alias for L)
 // o  -> (UNICODE_STRING *) -> unicode string
 // O  -> (OBJECT_ATTRIBUTES *) -> wrapper around a unicode string
+// a  -> (int, char **) -> array of string
+// A  -> (int, wchar_t **) -> array of unicode strings
 //
 // Each of these format specifiers are prefixed with a zero-terminated key
 // value, e.g.
