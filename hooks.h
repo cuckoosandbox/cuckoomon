@@ -314,3 +314,28 @@ extern HOOKDEF(VOID, WINAPI, ExitProcess,
 extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
   __inout  SHELLEXECUTEINFOW *pExecInfo
 );
+
+extern HOOKDEF(HANDLE, WINAPI, OpenThread,
+  __in  DWORD dwDesiredAccess,
+  __in  BOOL bInheritHandle,
+  __in  DWORD dwThreadId
+);
+
+extern HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
+  __in   HANDLE hProcess,
+  __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
+  __in   SIZE_T dwStackSize,
+  __in   LPTHREAD_START_ROUTINE lpStartAddress,
+  __in   LPVOID lpParameter,
+  __in   DWORD dwCreationFlags,
+  __out  LPDWORD lpThreadId
+);
+
+extern HOOKDEF(BOOL, WINAPI, TerminateThread,
+  __inout  HANDLE hThread,
+  __in     DWORD dwExitCode
+);
+
+extern HOOKDEF(VOID, WINAPI, ExitThread,
+  __in  DWORD dwExitCode
+);
