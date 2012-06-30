@@ -32,4 +32,7 @@ int main()
 
     CreateMutex(NULL, FALSE, "MutexNam3");
     OpenMutex(MUTEX_ALL_ACCESS, FALSE, "OpenMutexName");
+
+    // just some random dll
+    LoadLibrary("urlmon.dll");
 }
