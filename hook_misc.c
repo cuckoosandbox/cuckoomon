@@ -93,7 +93,34 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
     __in    BOOLEAN Alertable,
     __in    PLARGE_INTEGER DelayInterval
 ) {
-    NTSTATUS ret = Old_NtDelayExecution(Alertable, DelayInterval);
+    int ret = 0;
     LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
+    return Old_NtDelayExecution(Alertable, DelayInterval);
+}
+
+HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
+  __in  UINT uFlags,
+  __in  DWORD dwReason
+) {
+    int ret = 0;
+    LOQ("ll", "Flags", uFlags, "Reason", dwReason);
+    return Old_ExitWindowsEx(uFlags, dwReason);
+}
+
+HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
+    void
+) {
+    BOOL ret = Old_IsDebuggerPresent();
+    LOQ("");
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
+  __in_opt  LPWSTR lpSystemName,
+  __in      LPWSTR lpName,
+  __out     PLUID lpLuid
+) {
+    BOOL ret = Old_LookupPrivilegeValueW(lpSystemName, lpName, lpLuid);
+    LOQ("uu", "SystemName", lpSystemName, "PrivilegeName", lpName);
     return ret;
 }

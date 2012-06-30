@@ -118,6 +118,9 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, LdrGetProcedureAddress),
     HOOK(kernel32, DeviceIoControl),
     HOOK(ntdll, NtDelayExecution),
+    HOOK(user32, ExitWindowsEx),
+    HOOK(kernel32, IsDebuggerPresent),
+    HOOK(advapi32, LookupPrivilegeValueW),
 
     //
     // Network Hooks

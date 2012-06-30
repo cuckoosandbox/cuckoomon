@@ -453,6 +453,21 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
     __in    PLARGE_INTEGER DelayInterval
 );
 
+extern HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
+  __in  UINT uFlags,
+  __in  DWORD dwReason
+);
+
+extern HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
+    void
+);
+
+extern HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
+  __in_opt  LPWSTR lpSystemName,
+  __in      LPWSTR lpName,
+  __out     PLUID lpLuid
+);
+
 //
 // Network Hooks
 //

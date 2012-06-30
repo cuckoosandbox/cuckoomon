@@ -35,4 +35,9 @@ int main()
 
     // just some random dll
     LoadLibrary("urlmon.dll");
+
+    FARPROC sleep = GetProcAddress(GetModuleHandle("kernel32"), "Sleep");
+    sleep(1000);
+
+    printf("debugger: %d\n", IsDebuggerPresent());
 }
