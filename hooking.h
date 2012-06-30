@@ -24,3 +24,7 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate);
 int hook_api(hook_t *h, int type);
 
 #define HOOK_DIRECT_JMP 0
+
+#define HOOKDEF(return_value, calling_convention, apiname, ...) \
+    return_value (calling_convention *Old_##apiname)(__VA_ARGS__); \
+    return_value calling_convention New_##apiname(__VA_ARGS__)

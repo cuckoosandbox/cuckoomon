@@ -1,14 +1,10 @@
 #include <stdio.h>
 #include <windows.h>
+#include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
 
-HWND (WINAPI *Old_FindWindowA)(
-  __in_opt  LPCTSTR lpClassName,
-  __in_opt  LPCTSTR lpWindowName
-);
-
-HWND WINAPI New_FindWindowA(
+HOOKDEF(HWND, WINAPI, FindWindowA,
   __in_opt  LPCTSTR lpClassName,
   __in_opt  LPCTSTR lpWindowName
 ) {
@@ -17,12 +13,7 @@ HWND WINAPI New_FindWindowA(
     return ret;
 }
 
-HWND (WINAPI *Old_FindWindowW)(
-  __in_opt  LPWSTR lpClassName,
-  __in_opt  LPWSTR lpWindowName
-);
-
-HWND WINAPI New_FindWindowW(
+HOOKDEF(HWND, WINAPI, FindWindowW,
   __in_opt  LPWSTR lpClassName,
   __in_opt  LPWSTR lpWindowName
 ) {
@@ -31,14 +22,7 @@ HWND WINAPI New_FindWindowW(
     return ret;
 }
 
-HWND (WINAPI *Old_FindWindowExA)(
-  __in_opt  HWND hwndParent,
-  __in_opt  HWND hwndChildAfter,
-  __in_opt  LPCTSTR lpszClass,
-  __in_opt  LPCTSTR lpszWindow
-);
-
-HWND WINAPI New_FindWindowExA(
+HOOKDEF(HWND, WINAPI, FindWindowExA,
   __in_opt  HWND hwndParent,
   __in_opt  HWND hwndChildAfter,
   __in_opt  LPCTSTR lpszClass,
@@ -58,14 +42,7 @@ HWND WINAPI New_FindWindowExA(
     return ret;
 }
 
-HWND (WINAPI *Old_FindWindowExW)(
-  __in_opt  HWND hwndParent,
-  __in_opt  HWND hwndChildAfter,
-  __in_opt  LPWSTR lpszClass,
-  __in_opt  LPWSTR lpszWindow
-);
-
-HWND WINAPI New_FindWindowExW(
+HOOKDEF(HWND, WINAPI, FindWindowExW,
   __in_opt  HWND hwndParent,
   __in_opt  HWND hwndChildAfter,
   __in_opt  LPWSTR lpszClass,

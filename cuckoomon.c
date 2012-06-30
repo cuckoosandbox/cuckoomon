@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <windows.h>
 #include "ntapi.h"
-#include "hooks.h"
 #include "hooking.h"
+#include "hooks.h"
 
 #define HOOK(library, funcname) {#library, #funcname, NULL, &New_##funcname, \
     (void **) &Old_##funcname}

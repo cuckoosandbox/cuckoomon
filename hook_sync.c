@@ -1,16 +1,10 @@
 #include <stdio.h>
 #include <windows.h>
+#include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
 
-NTSTATUS (WINAPI *Old_NtCreateMutant)(
-    __out       PHANDLE MutantHandle,
-    __in        ACCESS_MASK DesiredAccess,
-    __in_opt    POBJECT_ATTRIBUTES ObjectAttributes,
-    __in        BOOLEAN InitialOwner
-);
-
-NTSTATUS WINAPI New_NtCreateMutant(
+HOOKDEF(NTSTATUS, WINAPI, NtCreateMutant,
     __out       PHANDLE MutantHandle,
     __in        ACCESS_MASK DesiredAccess,
     __in_opt    POBJECT_ATTRIBUTES ObjectAttributes,
@@ -23,13 +17,7 @@ NTSTATUS WINAPI New_NtCreateMutant(
     return ret;
 }
 
-NTSTATUS (WINAPI *Old_NtOpenMutant)(
-    __out       PHANDLE MutantHandle,
-    __in        ACCESS_MASK DesiredAccess,
-    __in        POBJECT_ATTRIBUTES ObjectAttributes
-);
-
-NTSTATUS WINAPI New_NtOpenMutant(
+HOOKDEF(NTSTATUS, WINAPI, NtOpenMutant,
     __out       PHANDLE MutantHandle,
     __in        ACCESS_MASK DesiredAccess,
     __in        POBJECT_ATTRIBUTES ObjectAttributes
