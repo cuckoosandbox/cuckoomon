@@ -339,3 +339,21 @@ extern HOOKDEF(BOOL, WINAPI, TerminateThread,
 extern HOOKDEF(VOID, WINAPI, ExitThread,
   __in  DWORD dwExitCode
 );
+
+extern HOOKDEF(BOOL, WINAPI, GetThreadContext,
+  __in     HANDLE hThread,
+  __inout  LPCONTEXT lpContext
+);
+
+extern HOOKDEF(BOOL, WINAPI, SetThreadContext,
+  __in  HANDLE hThread,
+  __in  const CONTEXT *lpContext
+);
+
+extern HOOKDEF(DWORD, WINAPI, SuspendThread,
+  __in  HANDLE hThread
+);
+
+extern HOOKDEF(DWORD, WINAPI, ResumeThread,
+  __in  HANDLE hThread
+);

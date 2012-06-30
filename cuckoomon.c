@@ -98,6 +98,10 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, CreateRemoteThread),
     HOOK(kernel32, TerminateThread),
     HOOK(kernel32, ExitThread),
+    HOOK(kernel32, GetThreadContext),
+    HOOK(kernel32, SetThreadContext),
+    HOOK(kernel32, SuspendThread),
+    HOOK(kernel32, ResumeThread),
 };
 
 void set_hooks()

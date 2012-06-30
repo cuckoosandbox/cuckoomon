@@ -48,3 +48,37 @@ HOOKDEF(VOID, WINAPI, ExitThread,
     LOQ("l", "ExitCode", dwExitCode);
     Old_ExitThread(dwExitCode);
 }
+
+HOOKDEF(BOOL, WINAPI, GetThreadContext,
+  __in     HANDLE hThread,
+  __inout  LPCONTEXT lpContext
+) {
+    BOOL ret = Old_GetThreadContext(hThread, lpContext);
+    LOQ("p", "ThreadHandle", hThread);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, SetThreadContext,
+  __in  HANDLE hThread,
+  __in  const CONTEXT *lpContext
+) {
+    BOOL ret = Old_SetThreadContext(hThread, lpContext);
+    LOQ("p", "ThreadHandle", hThread);
+    return ret;
+}
+
+HOOKDEF(DWORD, WINAPI, SuspendThread,
+  __in  HANDLE hThread
+) {
+    DWORD ret = Old_SuspendThread(hThread);
+    LOQ("p", "ThreadHandle", hThread);
+    return ret;
+}
+
+HOOKDEF(DWORD, WINAPI, ResumeThread,
+  __in  HANDLE hThread
+) {
+    DWORD ret = Old_ResumeThread(hThread);
+    LOQ("p", "ThreadHandle", hThread);
+    return ret;
+}
