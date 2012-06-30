@@ -114,6 +114,10 @@ static hook_t g_hooks[] = {
     HOOK(user32, SetWindowsHookExA),
     HOOK(user32, SetWindowsHookExW),
     HOOK(ntdll, LdrLoadDll),
+    HOOK(ntdll, LdrGetDllHandle),
+    HOOK(ntdll, LdrGetProcedureAddress),
+    HOOK(kernel32, DeviceIoControl),
+    HOOK(ntdll, NtDelayExecution),
 
     //
     // Network Hooks

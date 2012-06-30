@@ -40,3 +40,60 @@ HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
         "FileName", ModuleFileName, "BaseAddress", ModuleHandle);
     return ret;
 }
+
+HOOKDEF(NTSTATUS, WINAPI, LdrGetDllHandle,
+    __in_opt    PWORD pwPath,
+    __in_opt    PVOID Unused,
+    __in        PUNICODE_STRING ModuleFileName,
+    __out       PHANDLE pHModule
+) {
+    NTSTATUS ret = Old_LdrGetDllHandle(pwPath, Unused, ModuleFileName,
+        pHModule);
+    LOQ("uoP", "Path", pwPath, "FileName", ModuleFileName,
+        "ModuleHandle", pHModule);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
+    __in        HMODULE ModuleHandle,
+    __in_opt    PANSI_STRING FunctionName,
+    __in_opt    WORD Ordinal,
+    __out       PVOID *FunctionAddress
+) {
+    NTSTATUS ret = Old_LdrGetProcedureAddress(ModuleHandle, FunctionName,
+        Ordinal, FunctionAddress);
+    LOQ("pSl", "ModuleHandle", ModuleHandle,
+        "FunctionName", FunctionName != NULL ? FunctionName->Length : 0,
+            FunctionName != NULL ? FunctionName->Buffer : NULL,
+        "Ordinal", Ordinal);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, DeviceIoControl,
+  __in         HANDLE hDevice,
+  __in         DWORD dwIoControlCode,
+  __in_opt     LPVOID lpInBuffer,
+  __in         DWORD nInBufferSize,
+  __out_opt    LPVOID lpOutBuffer,
+  __in         DWORD nOutBufferSize,
+  __out_opt    LPDWORD lpBytesReturned,
+  __inout_opt  LPOVERLAPPED lpOverlapped
+) {
+    BOOL ret = Old_DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer,
+        nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned,
+        lpOverlapped);
+    LOQ("plbb", "DeviceHandle", hDevice, "IoControlCode", dwIoControlCode,
+        "InBuffer", nInBufferSize, lpInBuffer,
+        "OutBuffer", lpBytesReturned ? *lpBytesReturned : nOutBufferSize,
+            lpOutBuffer);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
+    __in    BOOLEAN Alertable,
+    __in    PLARGE_INTEGER DelayInterval
+) {
+    NTSTATUS ret = Old_NtDelayExecution(Alertable, DelayInterval);
+    LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
+    return ret;
+}

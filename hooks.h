@@ -423,6 +423,36 @@ extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __out       PHANDLE ModuleHandle
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, LdrGetDllHandle,
+    __in_opt    PWORD pwPath,
+    __in_opt    PVOID Unused,
+    __in        PUNICODE_STRING ModuleFileName,
+    __out       PHANDLE pHModule
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
+    __in        HMODULE ModuleHandle,
+    __in_opt    PANSI_STRING FunctionName,
+    __in_opt    WORD Ordinal,
+    __out       PVOID *FunctionAddress
+);
+
+extern HOOKDEF(BOOL, WINAPI, DeviceIoControl,
+  __in         HANDLE hDevice,
+  __in         DWORD dwIoControlCode,
+  __in_opt     LPVOID lpInBuffer,
+  __in         DWORD nInBufferSize,
+  __out_opt    LPVOID lpOutBuffer,
+  __in         DWORD nOutBufferSize,
+  __out_opt    LPDWORD lpBytesReturned,
+  __inout_opt  LPOVERLAPPED lpOverlapped
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
+    __in    BOOLEAN Alertable,
+    __in    PLARGE_INTEGER DelayInterval
+);
+
 //
 // Network Hooks
 //

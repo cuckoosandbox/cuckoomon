@@ -8,6 +8,12 @@ typedef ULONG NTSTATUS;
 #define __inout
 #define __inout_opt
 
+typedef struct _STRING {
+    USHORT Length;
+    USHORT MaximumLength;
+    PCHAR  Buffer;
+} ANSI_STRING, *PANSI_STRING;
+
 typedef struct _LSA_UNICODE_STRING {
     USHORT Length;
     USHORT MaximumLength;
