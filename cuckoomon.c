@@ -129,6 +129,8 @@ void set_hooks()
     VirtualProtect(g_hooks, sizeof(g_hooks), PAGE_EXECUTE_READWRITE,
         &old_protect);
 
+    hook_disable();
+
     // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
         hook_t *h = &g_hooks[i];
@@ -160,6 +162,8 @@ void set_hooks()
 
         hook_api(&g_hooks[i], HOOK_DIRECT_JMP);
     }
+
+    hook_enable();
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
