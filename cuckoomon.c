@@ -82,6 +82,7 @@ static hook_t g_hooks[] = {
 
     HOOK(ntdll, NtCreateProcess),
     HOOK(ntdll, NtCreateProcessEx),
+    HOOK(kernel32, CreateProcessInternalW),
 };
 
 void set_hooks()
@@ -93,6 +94,33 @@ void set_hooks()
 
     // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
+        hook_t *h = &g_hooks[i];
+
+        // we have to manually locate the address of CreateProcessInternalW,
+        // because it's not exported in the export address table. we can find
+        // the address in the CreateProcessW function, as it's the only
+        // address being called in that function, so we will just do a
+        // cross-reference there
+
+        if(!strcmp(h->library, "kernel32") && !strcmp(h->library,
+                "CreateProcessInternalW")) {
+
+            unsigned char *addr = (unsigned char *) GetProcAddress(
+                GetModuleHandle("kernel32"), "CreateProcessW");
+
+            // max 20 instructions before we reach the call instruction
+            for (int i = 0; i < 20; i++) {
+                if(*addr == 0xe8) {
+                    // we have found the address of CreateProcessInternalW
+                    h->addr = addr + *(unsigned long *)(addr + 1) + 5;
+                    break;
+                }
+
+                // iterate to the next instruction
+                addr += lde(addr);
+            }
+        }
+
         hook_api(&g_hooks[i], HOOK_DIRECT_JMP);
     }
 }

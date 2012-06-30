@@ -28,6 +28,8 @@ int main()
 
     system("echo hai");
 
+    WinExec("echo hi there", SW_SHOW);
+
     CreateMutex(NULL, FALSE, "MutexNam3");
     OpenMutex(MUTEX_ALL_ACCESS, FALSE, "OpenMutexName");
 }
