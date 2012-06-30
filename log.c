@@ -145,6 +145,15 @@ void loq(const char *fmt, ...)
             sprintf(buf, "%ld", ptr != NULL ? *ptr : NULL);
             log_bytes(buf, strlen(buf));
         }
+        else if(key == 'o') {
+            UNICODE_STRING *str = va_arg(args, UNICODE_STRING *);
+            if(str == NULL) {
+                log_string("", 0);
+            }
+            else {
+                log_wstring(str->Buffer, str->Length >> 1);
+            }
+        }
         else if(key == 'O') {
             OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
             if(obj == NULL || obj->ObjectName == NULL) {

@@ -16,6 +16,7 @@
 // L  -> (long *) -> pointer to a long integer
 // p  -> (void *) -> pointer (alias for l)
 // P  -> (void **) -> pointer to a handle (alias for L)
+// o  -> (UNICODE_STRING *) -> unicode string
 // O  -> (OBJECT_ATTRIBUTES *) -> wrapper around a unicode string
 //
 // Each of these format specifiers are prefixed with a zero-terminated key
