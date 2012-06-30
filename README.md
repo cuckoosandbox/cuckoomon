@@ -6,6 +6,5 @@ The new Cuckoobox Monitor, written from scratch.
 Authors
 =======
 
-Claudio Guarnieri
-
-Jurriaan Bremer
+- Claudio Guarnieri
+- Jurriaan Bremer
