@@ -183,7 +183,7 @@ int hook_api(hook_t *h, int type)
     // resolve the address to hook
     FARPROC addr = (FARPROC) h->addr;
 
-    if(h->library != NULL && h->funcname != NULL) {
+    if(addr == NULL && h->library != NULL && h->funcname != NULL) {
         addr = GetProcAddress(GetModuleHandle(h->library), h->funcname);
     }
     if(addr == NULL) {

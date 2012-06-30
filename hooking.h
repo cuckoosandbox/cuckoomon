@@ -4,7 +4,7 @@ typedef struct _hook_t {
     const char *funcname;
 
     // instead of a library/funcname combination, an address can be given
-    // as well
+    // as well (this address has more priority than library/funcname)
     void *addr;
 
     // pointer to the new function
