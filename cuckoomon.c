@@ -106,6 +106,14 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, SetThreadContext),
     HOOK(kernel32, SuspendThread),
     HOOK(kernel32, ResumeThread),
+
+    //
+    // Misc Hooks
+    //
+
+    HOOK(user32, SetWindowsHookExA),
+    HOOK(user32, SetWindowsHookExW),
+    HOOK(ntdll, LdrLoadDll),
 };
 
 void set_hooks()

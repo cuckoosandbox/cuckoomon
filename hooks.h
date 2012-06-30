@@ -397,3 +397,28 @@ extern HOOKDEF(DWORD, WINAPI, SuspendThread,
 extern HOOKDEF(DWORD, WINAPI, ResumeThread,
   __in  HANDLE hThread
 );
+
+//
+// Misc Hooks
+//
+
+extern HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
+    __in  int idHook,
+    __in  HOOKPROC lpfn,
+    __in  HINSTANCE hMod,
+    __in  DWORD dwThreadId
+);
+
+extern HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
+    __in  int idHook,
+    __in  HOOKPROC lpfn,
+    __in  HINSTANCE hMod,
+    __in  DWORD dwThreadId
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
+    __in_opt    PWCHAR PathToFile,
+    __in_opt    ULONG Flags,
+    __in        PUNICODE_STRING ModuleFileName,
+    __out       PHANDLE ModuleHandle
+);
