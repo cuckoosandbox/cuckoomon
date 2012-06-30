@@ -65,3 +65,39 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ThreadHandle", lpProcessInformation->hThread);
     return ret;
 }
+
+HOOKDEF(HANDLE, WINAPI, OpenProcess,
+  __in  DWORD dwDesiredAccess,
+  __in  BOOL bInheritHandle,
+  __in  DWORD dwProcessId
+) {
+    HANDLE ret = Old_OpenProcess(dwDesiredAccess, bInheritHandle,
+        dwProcessId);
+    LOQ("ll", "DesiredAccess", dwDesiredAccess, "ProcessId", dwProcessId);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, TerminateProcess,
+  __in  HANDLE hProcess,
+  __in  UINT uExitCode
+) {
+    BOOL ret = Old_TerminateProcess(hProcess, uExitCode);
+    LOQ("pl", "ProcessHandle", hProcess, "ExitCode", uExitCode);
+    return ret;
+}
+
+HOOKDEF(VOID, WINAPI, ExitProcess,
+  __in  UINT uExitCode
+) {
+    int ret = 0;
+    LOQ("l", "ExitCode", uExitCode);
+    Old_ExitProcess(uExitCode);
+}
+
+HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
+  __inout  SHELLEXECUTEINFOW *pExecInfo
+) {
+    BOOL ret = Old_ShellExecuteExW(pExecInfo);
+    LOQ("2ul", pExecInfo->lpFile, pExecInfo->lpParameters, pExecInfo->nShow);
+    return ret;
+}

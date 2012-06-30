@@ -83,6 +83,12 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtCreateProcess),
     HOOK(ntdll, NtCreateProcessEx),
     HOOK(kernel32, CreateProcessInternalW),
+    HOOK(kernel32, OpenProcess),
+    HOOK(kernel32, TerminateProcess),
+    HOOK(kernel32, ExitProcess),
+
+    // all variants of ShellExecute end up in ShellExecuteExW
+    HOOK(shell32, ShellExecuteExW),
 };
 
 void set_hooks()

@@ -295,3 +295,22 @@ extern HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     __out       LPPROCESS_INFORMATION lpProcessInformation,
     __in_opt    LPVOID lpUnknown2
 );
+
+extern HOOKDEF(HANDLE, WINAPI, OpenProcess,
+  __in  DWORD dwDesiredAccess,
+  __in  BOOL bInheritHandle,
+  __in  DWORD dwProcessId
+);
+
+extern HOOKDEF(BOOL, WINAPI, TerminateProcess,
+  __in  HANDLE hProcess,
+  __in  UINT uExitCode
+);
+
+extern HOOKDEF(VOID, WINAPI, ExitProcess,
+  __in  UINT uExitCode
+);
+
+extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
+  __inout  SHELLEXECUTEINFOW *pExecInfo
+);
