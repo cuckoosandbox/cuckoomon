@@ -114,6 +114,12 @@ static hook_t g_hooks[] = {
     HOOK(user32, SetWindowsHookExA),
     HOOK(user32, SetWindowsHookExW),
     HOOK(ntdll, LdrLoadDll),
+
+    //
+    // Network Hooks
+    //
+
+    HOOK(urlmon, URLDownloadToFileW),
 };
 
 void set_hooks()

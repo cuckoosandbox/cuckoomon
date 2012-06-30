@@ -422,3 +422,15 @@ extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 );
+
+//
+// Network Hooks
+//
+
+extern HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
+    LPUNKNOWN pCaller,
+    LPWSTR szURL,
+    LPWSTR szFileName,
+    DWORD dwReserved,
+    LPVOID lpfnCB
+);

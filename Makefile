@@ -3,7 +3,7 @@ CFLAGS = -Wall -std=c99 -s -O2
 DLL = -shared
 
 HOOKS = hook_file.c hook_reg.c hook_window.c hook_sync.c hook_process.c \
-	hook_thread.c hook_misc.c
+	hook_thread.c hook_misc.c hook_network.c
 
 default: cuckoomon.dll
 
