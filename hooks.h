@@ -480,6 +480,62 @@ extern HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     LPVOID lpfnCB
 );
 
+extern HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlA,
+  __in  HINTERNET hInternet,
+  __in  LPCTSTR lpszUrl,
+  __in  LPCTSTR lpszHeaders,
+  __in  DWORD dwHeadersLength,
+  __in  DWORD dwFlags,
+  __in  DWORD_PTR dwContext
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlW,
+  __in  HINTERNET hInternet,
+  __in  LPWSTR lpszUrl,
+  __in  LPWSTR lpszHeaders,
+  __in  DWORD dwHeadersLength,
+  __in  DWORD dwFlags,
+  __in  DWORD_PTR dwContext
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestA,
+  __in  HINTERNET hConnect,
+  __in  LPCTSTR lpszVerb,
+  __in  LPCTSTR lpszObjectName,
+  __in  LPCTSTR lpszVersion,
+  __in  LPCTSTR lpszReferer,
+  __in  LPCTSTR *lplpszAcceptTypes,
+  __in  DWORD dwFlags,
+  __in  DWORD_PTR dwContext
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestW,
+  __in  HINTERNET hConnect,
+  __in  LPWSTR lpszVerb,
+  __in  LPWSTR lpszObjectName,
+  __in  LPWSTR lpszVersion,
+  __in  LPWSTR lpszReferer,
+  __in  LPWSTR *lplpszAcceptTypes,
+  __in  DWORD dwFlags,
+  __in  DWORD_PTR dwContext
+);
+
+extern HOOKDEF(BOOL, WINAPI, HttpSendRequestA,
+  __in  HINTERNET hRequest,
+  __in  LPCTSTR lpszHeaders,
+  __in  DWORD dwHeadersLength,
+  __in  LPVOID lpOptional,
+  __in  DWORD dwOptionalLength
+);
+
+extern HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
+  __in  HINTERNET hRequest,
+  __in  LPWSTR lpszHeaders,
+  __in  DWORD dwHeadersLength,
+  __in  LPVOID lpOptional,
+  __in  DWORD dwOptionalLength
+);
+
 //
 // Service Hooks
 //

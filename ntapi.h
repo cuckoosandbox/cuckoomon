@@ -41,3 +41,5 @@ typedef struct _OBJECT_ATTRIBUTES {
 typedef void *PIO_APC_ROUTINE;
 
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
+
+typedef int HINTERNET;

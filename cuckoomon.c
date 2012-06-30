@@ -127,6 +127,12 @@ static hook_t g_hooks[] = {
     //
 
     HOOK(urlmon, URLDownloadToFileW),
+    HOOK(wininet, InternetOpenUrlA),
+    HOOK(wininet, InternetOpenUrlW),
+    HOOK(wininet, HttpOpenRequestA),
+    HOOK(wininet, HttpOpenRequestW),
+    HOOK(wininet, HttpSendRequestA),
+    HOOK(wininet, HttpSendRequestW),
 
     //
     // Service Hooks
