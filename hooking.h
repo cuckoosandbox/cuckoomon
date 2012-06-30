@@ -31,6 +31,7 @@ void hook_enable();
 void hook_disable();
 
 #define HOOK_DIRECT_JMP 0
+#define HOOK_NOP_DIRECT_JMP 1
 
 #define HOOKDEF(return_value, calling_convention, apiname, ...) \
     return_value (calling_convention *Old_##apiname)(__VA_ARGS__); \

@@ -234,6 +234,15 @@ static int hook_api_jmp_direct(hook_t *h, unsigned char *from,
     return 1;
 }
 
+// useful for "detections" such as if(*api_addr == 0xe9)
+static int hook_api_nop_jmp_direct(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // first instruction is a nop, followed by a regular direct jmp
+    *from++ = 0x90;
+    return hook_api_jmp_direct(h, from, to);
+}
+
 int hook_api(hook_t *h, int type)
 {
     // table with all possible hooking types
@@ -242,6 +251,7 @@ int hook_api(hook_t *h, int type)
         int len;
     } hook_types[] = {
         /* HOOK_DIRECT_JMP */ {&hook_api_jmp_direct, 5},
+        /* HOOK_NOP_DIRECT_JMP */ {&hook_api_nop_jmp_direct, 6},
     };
 
     // resolve the address to hook
