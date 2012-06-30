@@ -89,6 +89,10 @@ static hook_t g_hooks[] = {
 
     // all variants of ShellExecute end up in ShellExecuteExW
     HOOK(shell32, ShellExecuteExW),
+    HOOK(kernel32, ReadProcessMemory),
+    HOOK(kernel32, WriteProcessMemory),
+    HOOK(kernel32, VirtualAllocEx),
+    HOOK(kernel32, VirtualProtectEx),
 
     //
     // Thread Hooks

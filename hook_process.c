@@ -101,3 +101,61 @@ HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
     LOQ("2ul", pExecInfo->lpFile, pExecInfo->lpParameters, pExecInfo->nShow);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
+    __in   HANDLE hProcess,
+    __in   LPCVOID lpBaseAddress,
+    __out  LPVOID lpBuffer,
+    __in   SIZE_T nSize,
+    __out  SIZE_T *lpNumberOfBytesRead
+) {
+    BOOL ret = Old_ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer,
+        nSize, lpNumberOfBytesRead);
+    LOQ("2pB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
+        "Buffer", lpNumberOfBytesRead, lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
+    __in   HANDLE hProcess,
+    __in   LPVOID lpBaseAddress,
+    __in   LPCVOID lpBuffer,
+    __in   SIZE_T nSize,
+    __out  SIZE_T *lpNumberOfBytesWritten
+) {
+    BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
+        nSize, lpNumberOfBytesWritten);
+    LOQ("2pB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
+        "Buffer", lpNumberOfBytesWritten, lpBuffer);
+    return ret;
+}
+
+HOOKDEF(LPVOID, WINAPI, VirtualAllocEx,
+    __in      HANDLE hProcess,
+    __in_opt  LPVOID lpAddress,
+    __in      SIZE_T dwSize,
+    __in      DWORD flAllocationType,
+    __in      DWORD flProtect
+) {
+    LPVOID ret = Old_VirtualAllocEx(hProcess, lpAddress, dwSize,
+        flAllocationType, flProtect);
+    LOQ("pplll", "ProcessHandle", hProcess, "Address", lpAddress,
+        "Size", dwSize, "AllocationType", flAllocationType,
+        "Protection", flProtect);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
+    __in   HANDLE hProcess,
+    __in   LPVOID lpAddress,
+    __in   SIZE_T dwSize,
+    __in   DWORD flNewProtect,
+    __out  PDWORD lpflOldProtect
+) {
+    BOOL ret = Old_VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect,
+        lpflOldProtect);
+    LOQ("2p2l", "ProcessHandle", hProcess, "Address", lpAddress,
+        "Size", dwSize, "Protection", flNewProtect);
+    return ret;
+}
+

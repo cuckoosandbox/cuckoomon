@@ -258,6 +258,10 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtOpenMutant,
     __in        POBJECT_ATTRIBUTES ObjectAttributes
 );
 
+//
+// Process Hooks
+//
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
     __in        ACCESS_MASK DesiredAccess,
@@ -314,6 +318,42 @@ extern HOOKDEF(VOID, WINAPI, ExitProcess,
 extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
   __inout  SHELLEXECUTEINFOW *pExecInfo
 );
+
+extern HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
+    __in   HANDLE hProcess,
+    __in   LPCVOID lpBaseAddress,
+    __out  LPVOID lpBuffer,
+    __in   SIZE_T nSize,
+    __out  SIZE_T *lpNumberOfBytesRead
+);
+
+extern HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
+    __in   HANDLE hProcess,
+    __in   LPVOID lpBaseAddress,
+    __in   LPCVOID lpBuffer,
+    __in   SIZE_T nSize,
+    __out  SIZE_T *lpNumberOfBytesWritten
+);
+
+extern HOOKDEF(LPVOID, WINAPI, VirtualAllocEx,
+    __in      HANDLE hProcess,
+    __in_opt  LPVOID lpAddress,
+    __in      SIZE_T dwSize,
+    __in      DWORD flAllocationType,
+    __in      DWORD flProtect
+);
+
+extern HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
+    __in   HANDLE hProcess,
+    __in   LPVOID lpAddress,
+    __in   SIZE_T dwSize,
+    __in   DWORD flNewProtect,
+    __out  PDWORD lpflOldProtect
+);
+
+//
+// Thread Hooks
+//
 
 extern HOOKDEF(HANDLE, WINAPI, OpenThread,
   __in  DWORD dwDesiredAccess,
