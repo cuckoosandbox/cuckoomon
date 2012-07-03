@@ -22,31 +22,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "distorm.h"
 #include "mnemonics.h"
 #include "ntapi.h"
-
-_DecodeResult (*lp_distorm_decompose)(_CodeInfo* ci, _DInst result[],
-    unsigned int maxInstructions, unsigned int* usedInstructionsCount);
-
-static void hook_init()
-{
-    static int first = 0;
-    if(first) return;
-    first = 1;
-
-    *(FARPROC *) &lp_distorm_decompose = GetProcAddress(
-        LoadLibrary("distorm3.dll"), "distorm_decompose64");
-}
+#include "distorm.h"
 
 // length disassembler engine
 int lde(void *addr)
 {
-    hook_init();
-
     // the length of an instruction is 16 bytes max, but there can also be
     // 16 instructions of length one, so.. we support "decomposing" 16
     // instructions at once, max
     unsigned int used_instruction_count; _DInst instructions[16];
     _CodeInfo code_info = {0, 0, addr, 16, Decode32Bits};
-    _DecodeResult ret = lp_distorm_decompose(&code_info, instructions, 16,
+    _DecodeResult ret = distorm_decompose(&code_info, instructions, 16,
         &used_instruction_count);
 
     return ret == DECRES_SUCCESS ? instructions[0].size : 0;

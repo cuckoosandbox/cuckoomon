@@ -1,11 +1,17 @@
 CC = gcc
 CFLAGS = -Wall -std=c99 -s -O2
 DLL = -shared
+DIRS = -Idistorm3.2-package/include
 
 HOOKS = hook_file.c hook_reg.c hook_window.c hook_sync.c hook_process.c \
 	hook_thread.c hook_misc.c hook_network.c hook_services.c
 
-default: cuckoomon.dll
+DISTORM3 = $(patsubst %.c, %.o, $(shell find 'distorm3.2-package/src/*.c'))
 
-cuckoomon.dll: cuckoomon.c hooking.c log.c pipe.c $(HOOKS)
-	$(CC) $(CFLAGS) $(DLL) -o $@ $^
+default: $(DISTORM3) cuckoomon.dll
+
+distorm3.2-package/src/%.o: %.c
+	$(CC) $(CFLAGS) -c $@ $^
+
+cuckoomon.dll: cuckoomon.c hooking.c log.c pipe.c $(HOOKS) $(DISTORM3)
+	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^
