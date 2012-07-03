@@ -7,5 +7,5 @@ HOOKS = hook_file.c hook_reg.c hook_window.c hook_sync.c hook_process.c \
 
 default: cuckoomon.dll
 
-cuckoomon.dll: cuckoomon.c hooking.c log.c $(HOOKS)
+cuckoomon.dll: cuckoomon.c hooking.c log.c pipe.c $(HOOKS)
 	$(CC) $(CFLAGS) $(DLL) -o $@ $^

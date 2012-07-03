@@ -169,6 +169,13 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, StartServiceW),
     HOOK(advapi32, ControlService),
     HOOK(advapi32, DeleteService),
+
+    //
+    // Special Hooks
+    //
+
+    HOOK2(ntdll, NtResumeThread, TRUE),
+    HOOK2(ntdll, LdrLoadDll, TRUE),
 };
 
 void set_hooks()

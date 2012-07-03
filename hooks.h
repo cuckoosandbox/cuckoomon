@@ -634,3 +634,19 @@ HOOKDEF(BOOL, WINAPI, ControlService,
 HOOKDEF(BOOL, WINAPI, DeleteService,
   __in  SC_HANDLE hService
 );
+
+//
+// Special Hooks
+//
+
+HOOKDEF2(NTSTATUS, WINAPI, NtResumeThread,
+    __in        HANDLE ThreadHandle,
+    __out_opt   PULONG SuspendCount
+);
+
+HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
+    __in_opt    PWCHAR PathToFile,
+    __in_opt    ULONG Flags,
+    __in        PUNICODE_STRING ModuleFileName,
+    __out       PHANDLE ModuleHandle
+);
