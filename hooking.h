@@ -59,10 +59,14 @@ void hook_disable();
     return_value (calling_convention *Old2_##apiname)(__VA_ARGS__); \
     return_value calling_convention New2_##apiname(__VA_ARGS__)
 
+// each thread has a special 260-wchar counting unicode_string buffer in its
+// thread information block, this is likely to be overwritten in certain
+// functions, therefore we have this macro which copies it to the stack.
+// (so we can use the unicode_string after executing the original function)
 #define COPY_UNICODE_STRING(local_name, param_name) \
     UNICODE_STRING local_name = {0}; wchar_t local_name##_buf[260]; \
     local_name.Buffer = local_name##_buf; \
-    if(param_name != NULL) { \
+    if(param_name != NULL && param_name->MaximumLength < 520) { \
         local_name.Length = param_name->Length; \
         local_name.MaximumLength = param_name->MaximumLength; \
         memcpy(local_name.Buffer, param_name->Buffer, \
