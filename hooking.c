@@ -252,7 +252,7 @@ int hook_api(hook_t *h, int type)
     unsigned char *addr = h->addr;
 
     if(addr == NULL && h->library != NULL && h->funcname != NULL) {
-        addr = (unsigned char *) GetProcAddress(GetModuleHandle(h->library),
+        addr = (unsigned char *) GetProcAddress(GetModuleHandleW(h->library),
             h->funcname);
     }
     if(addr == NULL) {

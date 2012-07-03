@@ -22,10 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "hooks.h"
 
-#define HOOK(library, funcname) {#library, #funcname, NULL, &New_##funcname, \
-    (void **) &Old_##funcname}
+#define HOOK(library, funcname) {L###library, #funcname, NULL, \
+    &New_##funcname, (void **) &Old_##funcname}
 
-#define HOOK2(library, funcname, recursion) {#library, #funcname, NULL, \
+#define HOOK2(library, funcname, recursion) {L###library, #funcname, NULL, \
     &New2_##funcname, (void **) &Old2_##funcname, recursion}
 
 static hook_t g_hooks[] = {
@@ -177,6 +177,25 @@ static hook_t g_hooks[] = {
     HOOK2(ntdll, NtResumeThread, TRUE),
     HOOK2(ntdll, LdrLoadDll, TRUE),
 };
+
+int wcsnicmp(const wchar_t *a, const wchar_t *b, int len)
+{
+    while (len-- != 0) {
+        if(*a++ != *b++) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void set_hooks_dll(const wchar_t *library, int len)
+{
+    for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
+        if(!wcsnicmp(g_hooks[i].library, library, len)) {
+            hook_api(&g_hooks[i], HOOK_DIRECT_JMP);
+        }
+    }
+}
 
 void set_hooks()
 {

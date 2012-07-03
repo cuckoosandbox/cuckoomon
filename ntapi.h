@@ -17,6 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 typedef ULONG NTSTATUS;
+
+#define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
+
 #define __out
 #define __in
 #define __in_opt

@@ -13,5 +13,5 @@ default: $(DISTORM3) cuckoomon.dll
 distorm3.2-package/src/%.o: %.c
 	$(CC) $(CFLAGS) -c $@ $^
 
-cuckoomon.dll: cuckoomon.c hooking.c log.c pipe.c $(HOOKS) $(DISTORM3)
+cuckoomon.dll: cuckoomon.c hooking.c log.c special.c $(HOOKS) $(DISTORM3)
 	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^

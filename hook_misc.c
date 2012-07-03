@@ -52,10 +52,12 @@ HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 ) {
+    COPY_UNICODE_STRING(library, ModuleFileName);
+
     NTSTATUS ret = Old_LdrLoadDll(PathToFile, Flags, ModuleFileName,
         ModuleHandle);
     LOQ("uloP", "FilePath", PathToFile, "Flags", Flags,
-        "FileName", ModuleFileName, "BaseAddress", ModuleHandle);
+        "FileName", &library, "BaseAddress", ModuleHandle);
     return ret;
 }
 

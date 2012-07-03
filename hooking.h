@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 typedef struct _hook_t {
-    const char *library;
+    const wchar_t *library;
     const char *funcname;
 
     // instead of a library/funcname combination, an address can be given
@@ -58,3 +58,13 @@ void hook_disable();
 #define HOOKDEF2(return_value, calling_convention, apiname, ...) \
     return_value (calling_convention *Old2_##apiname)(__VA_ARGS__); \
     return_value calling_convention New2_##apiname(__VA_ARGS__)
+
+#define COPY_UNICODE_STRING(local_name, param_name) \
+    UNICODE_STRING local_name = {0}; wchar_t local_name##_buf[260]; \
+    local_name.Buffer = local_name##_buf; \
+    if(param_name != NULL) { \
+        local_name.Length = param_name->Length; \
+        local_name.MaximumLength = param_name->MaximumLength; \
+        memcpy(local_name.Buffer, param_name->Buffer, \
+            local_name.MaximumLength); \
+    }
