@@ -25,6 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define HOOK(library, funcname) {#library, #funcname, NULL, &New_##funcname, \
     (void **) &Old_##funcname}
 
+#define HOOK2(library, funcname, recursion) {#library, #funcname, NULL, \
+    &New2_##funcname, (void **) &Old2_##funcname, recursion}
+
 static hook_t g_hooks[] = {
 
     //

@@ -187,35 +187,26 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 // information retrieved in the NtCreateProcessEx() function as well,
 // therefore, because one is called by the other, we can tell the hooking
 // engine "once inside a hook, don't hook further API calls" by setting the
-// max_depth. In the example above, a max_depth of zero will do (whereas a
-// max_depth of one will actually execute the hook of NtCreateProcessEx() as
-// well)
-// TODO currently only a max_depth of -1 and 0 is supported.
+// allow_hook_recursion flag to false. The example above is what happens when
+// the hook recursion is not allowed.
 void hook_create_pre_gate(hook_t *h)
 {
     // we store the depth count in fs:[0x44] and a temporary return address in
     // fs:[0x48] (we have to store it somewhere, so TIB is the best place..)
 
-    if(h->max_depth != -1 && h->max_depth != 0) {
-        printf("max depth other than 0 or -1 not supported!\n");
-        exit(0);
-    }
-
     unsigned char sc[] = {
-        // cmp dword fs:[0x44], max_depth (compare the current depth against
-        // the max_depth, the max_depth is only a byte, but it's
-        // sign-extended, so..)
+        // cmp dword fs:[0x44], 0 (check if we are already inside a hook)
         0x64, 0x83, 0x3d, 0x44, 0x00, 0x00, 0x00, 0x00,
-        // jle $+5 (jump over the following 32bit relative offset jump if
-        // the current depth count is lower than or equal to max_depth)
+        // jle $+5 (jump over the following 32bit relative offset jump if we
+        // are note already inside a hook)
         0x7e, 0x05,
         // jmp h->gate (we do not hook this call, jump to the gate)
         0xe9, 0x00, 0x00, 0x00, 0x00,
-        // inc dword fs:[0x44] (increase the current depth count)
+        // inc dword fs:[0x44] (increase the hook count)
         0x64, 0xff, 0x05, 0x44, 0x00, 0x00, 0x00,
         // we temporarily store the current return address in fs:[0x48]
         // because we have to alter it, in order to return to this pre-gate
-        // so we can decrement the current depth
+        // so we can decrement the hook count
         // push dword [esp] (obtain the current return address)
         0xff, 0x34, 0xe4,
         // pop dword fs:[0x48] (store the return address in the TIB)
@@ -225,13 +216,12 @@ void hook_create_pre_gate(hook_t *h)
         // jmp h->new_func (we hook this call, jump to the new function)
         0xe9, 0x00, 0x00, 0x00, 0x00,
         // this is where the new_return_address is located..
-        // dec dword fs:[0x44] (decrease the current depth count)
+        // dec dword fs:[0x44] (decrease the hook count)
         0x64, 0xff, 0x0d, 0x44, 0x00, 0x00, 0x00,
         // jmp dword fs:[0x48] (jmp to the real return address)
         0x64, 0xff, 0x25, 0x48, 0x00, 0x00, 0x00,
     };
 
-    *(unsigned char *)(sc + 7) = (unsigned char) h->max_depth;
     *(unsigned long *)(sc + 11) = h->gate - h->pre_gate - 10 - 5;
     *(unsigned long *)(sc + 35) = (unsigned long) h->pre_gate + 44;
     *(unsigned long *)(sc + 40) =
@@ -295,14 +285,20 @@ int hook_api(hook_t *h, int type)
         if(VirtualProtect(addr, hook_types[type].len, PAGE_EXECUTE_READWRITE,
                 &old_protect)) {
 
-            // create the callgate
             if(hook_create_callgate(addr, hook_types[type].len, h->gate)) {
 
-                // create the pre-gate
-                hook_create_pre_gate(h);
+                // if allow hook recursion is *not* set, then we have to
+                // create a pre-gate
+                if(h->allow_hook_recursion == 0) {
+                    hook_create_pre_gate(h);
 
-                // insert the hook (jump from the api to the pre-gate
-                ret = hook_types[type].hook(h, addr, h->pre_gate);
+                    // insert the hook (jump from the api to the pre-gate)
+                    ret = hook_types[type].hook(h, addr, h->pre_gate);
+                }
+                else {
+                    // insert the hook (jump from the api to the new function)
+                    ret = hook_types[type].hook(h, addr, h->new_func);
+                }
 
                 // if successful, assign the gate address to *old_func
                 if(ret != 0) {

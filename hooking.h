@@ -31,8 +31,9 @@ typedef struct _hook_t {
     // function call
     void **old_func;
 
-    // max hooking depth (see comments @ hook_create_pre_gate)
-    int max_depth;
+    // allow hook recursion on this hook?
+    // (see comments @ hook_create_pre_gate)
+    int allow_hook_recursion;
 
     unsigned char gate[64];
     unsigned char pre_gate[64];
@@ -53,3 +54,7 @@ void hook_disable();
 #define HOOKDEF(return_value, calling_convention, apiname, ...) \
     return_value (calling_convention *Old_##apiname)(__VA_ARGS__); \
     return_value calling_convention New_##apiname(__VA_ARGS__)
+
+#define HOOKDEF2(return_value, calling_convention, apiname, ...) \
+    return_value (calling_convention *Old2_##apiname)(__VA_ARGS__); \
+    return_value calling_convention New2_##apiname(__VA_ARGS__)
