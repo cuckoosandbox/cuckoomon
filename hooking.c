@@ -144,7 +144,7 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
         }
         // return instruction, indicates end of basic block as well, so we
         // have to check if we already have enough space for our hook..
-        else if(*addr == 0xc3 && len > 0) {
+        else if((*addr == 0xc3 || *addr == 0xc2) && len > 0) {
             return 0;
         }
         else {
