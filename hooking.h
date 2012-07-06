@@ -35,6 +35,9 @@ typedef struct _hook_t {
     // (see comments @ hook_create_pre_gate)
     int allow_hook_recursion;
 
+    // this hook has been performed
+    int is_hooked;
+
     unsigned char gate[64];
     unsigned char pre_gate[64];
 } hook_t;

@@ -248,6 +248,11 @@ int hook_api(hook_t *h, int type)
         /* HOOK_NOP_DIRECT_JMP */ {&hook_api_nop_jmp_direct, 6},
     };
 
+    // is this address already hooked?
+    if(h->is_hooked != 0) {
+        return 1;
+    }
+
     // resolve the address to hook
     unsigned char *addr = h->addr;
 
@@ -256,7 +261,7 @@ int hook_api(hook_t *h, int type)
             h->funcname);
     }
     if(addr == NULL) {
-        printf("Error obtaining address of %s!%s\n", h->library, h->funcname);
+        printf("Error obtaining address of %S!%s\n", h->library, h->funcname);
         return 0;
     }
 
@@ -289,6 +294,9 @@ int hook_api(hook_t *h, int type)
                 // if successful, assign the gate address to *old_func
                 if(ret != 0) {
                     *h->old_func = h->gate;
+
+                    // successful hook is successful
+                    h->is_hooked = 1;
                 }
             }
 
