@@ -6,7 +6,7 @@ int main()
     // there we go
     LoadLibrary("../cuckoomon.dll");
 
-    fclose(fopen("test-hello", "w"));
+    fclose(fopen("test-hello", "r"));
     FILE *fp = fopen("test-hello", "wb");
     fwrite("whatsup", 1, 6, fp);
     fclose(fp);
