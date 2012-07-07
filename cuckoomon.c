@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "hooking.h"
 #include "hooks.h"
+#include "log.h"
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
@@ -217,6 +218,7 @@ void set_hooks()
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     if(dwReason == DLL_PROCESS_ATTACH) {
+        log_init();
         set_hooks();
     }
     return TRUE;

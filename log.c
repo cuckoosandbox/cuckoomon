@@ -22,6 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include "ntapi.h"
 
+static CRITICAL_SECTION g_mutex;
+static DWORD g_pid;
+static char g_module_name[256];
+
 //
 // Log API
 //
@@ -95,6 +99,7 @@ void loq(const char *fmt, ...)
     int count = 1, first = 1; char key = 0;
 
     log_bytes("{", 1);
+    EnterCriticalSection(&g_mutex);
 
     while (--count || *fmt != 0) {
         // first time
@@ -212,4 +217,18 @@ void loq(const char *fmt, ...)
 
     log_bytes("}", 1);
     va_end(args);
+
+    LeaveCriticalSection(&g_mutex);
+}
+
+void log_init()
+{
+    InitializeCriticalSection(&g_mutex);
+    GetModuleFileName(NULL, g_module_name, sizeof(g_module_name));
+    g_pid = GetCurrentProcessId();
+}
+
+void log_free()
+{
+    DeleteCriticalSection(&g_mutex);
 }
