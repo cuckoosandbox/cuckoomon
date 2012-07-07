@@ -222,7 +222,7 @@ void set_hooks()
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     if(dwReason == DLL_PROCESS_ATTACH) {
-        log_init();
+        log_init("logz.txt");
         set_hooks();
     }
     return TRUE;

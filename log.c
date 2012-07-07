@@ -26,6 +26,7 @@ static CRITICAL_SECTION g_mutex;
 static DWORD g_pid, g_ppid;
 static wchar_t g_module_name_buf[256];
 static const wchar_t *g_module_name;
+static FILE *g_fp;
 
 //
 // Log API
@@ -36,16 +37,16 @@ static void log_bytes(const void *bytes, int len)
     const unsigned char *b = (const unsigned char *) bytes;
     while (len--) {
         if(*b >= ' ' && *b < 0x7f) {
-            fwrite(b, 1, 1, stderr);
+            fwrite(b, 1, 1, g_fp);
         }
         else if(*b == '\r' || *b == '\n' || *b == '\t') {
             char ch = 'r';
             if(*b == '\n') ch = 'n';
             if(*b == '\t') ch = 't';
-            fprintf(stderr, "\\%c", ch);
+            fprintf(g_fp, "\\%c", ch);
         }
         else {
-            fprintf(stderr, "\\x%02x", *b);
+            fprintf(g_fp, "\\x%02x", *b);
         }
         b++;
     }
@@ -107,7 +108,7 @@ static void log_printf(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
+    vfprintf(g_fp, fmt, args);
     va_end(args);
 }
 
@@ -247,7 +248,7 @@ void loq(const char *fmt, ...)
         log_bytes("\"", 1);
     }
 
-    fprintf(stderr, "\n");
+    fprintf(g_fp, "\n");
     va_end(args);
 
     LeaveCriticalSection(&g_mutex);
@@ -271,7 +272,7 @@ ULONG_PTR GetParentProcessId() // By Napalm @ NetCore2K (rohitab.com)
     return 0;
 }
 
-void log_init()
+void log_init(const char *fname)
 {
     InitializeCriticalSection(&g_mutex);
     GetModuleFileNameW(NULL, g_module_name_buf, sizeof(g_module_name_buf));
@@ -283,9 +284,14 @@ void log_init()
     }
     g_pid = GetCurrentProcessId();
     g_ppid = GetParentProcessId();
+
+    g_fp = fname != NULL ? fopen(fname, "w") : stderr;
 }
 
 void log_free()
 {
     DeleteCriticalSection(&g_mutex);
+    if(g_fp != stderr) {
+        fclose(g_fp);
+    }
 }
