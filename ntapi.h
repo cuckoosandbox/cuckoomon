@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-typedef ULONG NTSTATUS;
+typedef LONG NTSTATUS;
 
 #define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
 
@@ -62,4 +62,4 @@ typedef void *PIO_APC_ROUTINE;
 
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
 
-typedef int HINTERNET;
+typedef void *HINTERNET;
