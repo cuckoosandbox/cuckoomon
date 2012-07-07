@@ -5,7 +5,7 @@ DIRS = -Idistorm3.2-package/include
 
 HOOKS = $(patsubst %.c, %.o, $(shell find 'hook_*.c'))
 DISTORM3 = $(patsubst %.c, %.o, $(shell find 'distorm3.2-package/src/*.c'))
-CUCKOO = hooking.o log.o special.o
+CUCKOO = hooking.o log.o special.o pipe.o
 
 default: cuckoomon.dll
 

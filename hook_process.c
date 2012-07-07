@@ -21,9 +21,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "process";
+
+typedef struct _PROCESS_BASIC_INFORMATION {
+    PVOID Reserved1;
+    void *PebBaseAddress;
+    PVOID Reserved2[2];
+    ULONG_PTR UniqueProcessId;
+    PVOID Reserved3;
+} PROCESS_BASIC_INFORMATION;
+
+static DWORD GetPidFromHandle(HANDLE hProcess)
+{
+    PROCESS_BASIC_INFORMATION pbi = {}; ULONG ulSize;
+    LONG (WINAPI *NtQueryInformationProcess)(HANDLE ProcessHandle,
+        ULONG ProcessInformationClass, PVOID ProcessInformation,
+        ULONG ProcessInformationLength, PULONG ReturnLength);
+
+    *(FARPROC *) &NtQueryInformationProcess = GetProcAddress(
+        LoadLibrary("ntdll"), "NtQueryInformationProcess");
+
+    if(NtQueryInformationProcess != NULL && NtQueryInformationProcess(
+            hProcess, 0, &pbi, sizeof(pbi), &ulSize) >= 0 &&
+            ulSize == sizeof(pbi)) {
+        return pbi.UniqueProcessId;
+    }
+    return 0;
+}
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
@@ -39,6 +66,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
         ObjectAttributes, ParentProcess, InheritObjectTable, SectionHandle,
         DebugPort, ExceptionPort);
     LOQ("PO", "ProcessHandle", ProcessHandle, "FileName", ObjectAttributes);
+    if(NT_SUCCESS(ret)) {
+        pipe_write("PID:%d", GetPidFromHandle(*ProcessHandle));
+    }
     return ret;
 }
 
@@ -57,6 +87,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
         ObjectAttributes, ParentProcess, Flags, SectionHandle, DebugPort,
         ExceptionPort, InJob);
     LOQ("PO", "ProcessHandle", ProcessHandle, "FileName", ObjectAttributes);
+    if(NT_SUCCESS(ret)) {
+        pipe_write("PID:%d", GetPidFromHandle(*ProcessHandle));
+    }
     return ret;
 }
 
@@ -86,6 +119,9 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ThreadId", lpProcessInformation->dwThreadId,
         "ProcessHandle", lpProcessInformation->hProcess,
         "ThreadHandle", lpProcessInformation->hThread);
+    if(ret != FALSE) {
+        pipe_write("PID:%d", lpProcessInformation->dwProcessId);
+    }
     return ret;
 }
 

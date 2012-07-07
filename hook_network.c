@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
 
 static IS_SUCCESS_HINTERNET();
 static const char *module_name = "network";
@@ -37,6 +38,9 @@ HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     HRESULT ret = Old_URLDownloadToFileW(pCaller, szURL, szFileName,
         dwReserved, lpfnCB);
     LOQ("uu", "URL", szURL, "FileName", szFileName);
+    if(ret == S_OK) {
+        pipe_write("FILE:%S", szFileName);
+    }
     return ret;
 }
 

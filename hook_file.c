@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "filesystem";
@@ -43,6 +44,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
     LOQ("POl", "FileHandle", FileHandle, "FileName", ObjectAttributes,
         "CreateDisposition", CreateDisposition);
+    if(NT_SUCCESS(ret)) {
+        pipe_write("FILE:%.*S", ObjectAttributes->ObjectName->Length >> 1,
+            ObjectAttributes->ObjectName->Buffer);
+    }
     return ret;
 }
 
