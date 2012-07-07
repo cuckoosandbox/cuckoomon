@@ -131,7 +131,7 @@ void loq(const char *fmt, ...)
     long return_value = va_arg(args, long);
 
     // first parameter in args indicates the hooking type
-    log_printf("\"%d\",\"%S\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%08x\"", g_pid,
+    log_printf("\"%d\",\"%S\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%p\"", g_pid,
         g_module_name, 0, module_name, function_name,
         is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
 
@@ -180,13 +180,13 @@ void loq(const char *fmt, ...)
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
             (void)len;
-            log_printf("0x%08x", s);
+            log_printf("0x%p", s);
         }
         else if(key == 'B') {
             int *len = va_arg(args, int *);
             const char *s = va_arg(args, const char *);
             (void)len;
-            log_printf("0x%08x", s);
+            log_printf("0x%p", s);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
@@ -194,11 +194,12 @@ void loq(const char *fmt, ...)
         }
         else if(key == 'l' || key == 'p') {
             long value = va_arg(args, long);
-            log_printf("%ld", value);
+            log_printf(key == 'l' ? "%ld" : "0x%p", value);
         }
         else if(key == 'L' || key == 'P') {
             void **ptr = va_arg(args, void **);
-            log_printf("%ld", ptr != NULL ? *ptr : NULL);
+            log_printf(key == 'L' ? "%ld" : "0x%p",
+                ptr != NULL ? *ptr : NULL);
         }
         else if(key == 'o') {
             UNICODE_STRING *str = va_arg(args, UNICODE_STRING *);
