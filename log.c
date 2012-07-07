@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static CRITICAL_SECTION g_mutex;
 static DWORD g_pid;
-static char g_module_name[256];
+static wchar_t g_module_name_buf[256];
+static const wchar_t *g_module_name;
 
 //
 // Log API
@@ -37,6 +38,12 @@ static void log_bytes(const void *bytes, int len)
         if(*b >= ' ' && *b < 0x7f) {
             fwrite(b, 1, 1, stderr);
         }
+        else if(*b == '\r' || *b == '\n' || *b == '\t') {
+            char ch = 'r';
+            if(*b == '\n') ch = 'n';
+            if(*b == '\t') ch = 't';
+            fprintf(stderr, "\\%c", ch);
+        }
         else {
             fprintf(stderr, "\\x%02x", *b);
         }
@@ -44,16 +51,18 @@ static void log_bytes(const void *bytes, int len)
     }
 }
 
-static void log_string(const char *str, int len)
+static void log_string(const char *str, int len, int quotes)
 {
-    log_bytes("\"", 1);
+    if(len == -1) len = strlen(str);
+
+    if(quotes) log_bytes("\"", 1);
     while (len--) {
         if(*str == '"' || *str == '\\') {
             log_bytes("\\", 1);
         }
         log_bytes(str++, 1);
     }
-    log_bytes("\"", 1);
+    if(quotes) log_bytes("\"", 1);
 }
 
 // utf8 encodes an utf16 wchar_t
@@ -80,32 +89,54 @@ static void log_wchar(unsigned short c)
     }
 }
 
-static void log_wstring(const wchar_t *str, int len)
+static void log_wstring(const wchar_t *str, int len, int quotes)
 {
-    log_bytes("\"", 1);
+    if(len == -1) len = lstrlenW(str);
+
+    if(quotes) log_bytes("\"", 1);
     while (len--) {
         if(*str == '"' || *str == '\\') {
             log_bytes("\\", 1);
         }
         log_wchar(*str++);
     }
-    log_bytes("\"", 1);
+    if(quotes) log_bytes("\"", 1);
+}
+
+static void log_printf(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
 }
 
 void loq(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    int count = 1, first = 1; char key = 0;
+    int count = 1; char key = 0;
 
-    log_bytes("{", 1);
     EnterCriticalSection(&g_mutex);
 
+    SYSTEMTIME st;
+    GetSystemTime(&st);
+
+    log_printf("\"%d-%02d-%02d %02d:%02d:%02d,%03d\",", st.wYear, st.wMonth,
+        st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+    const char *module_name = va_arg(args, const char *);
+    const char *function_name = va_arg(args, const char *);
+    int is_success = va_arg(args, int);
+    long return_value = va_arg(args, long);
+
+    // first parameter in args indicates the hooking type
+    log_printf("\"%d\",\"%S\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%08x\"", g_pid,
+        g_module_name, 0, module_name, function_name,
+        is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
+
     while (--count || *fmt != 0) {
-        // first time
-        if(first != 0) first = 0;
-        // comma-seperator
-        else log_bytes(", ", 2);
+        log_bytes(",", 1);
 
         // we have to find the next format specifier
         if(count == 0) {
@@ -121,70 +152,71 @@ void loq(const char *fmt, ...)
 
         // log the key
         const char *key_str = va_arg(args, const char *);
-        log_string(key_str, strlen(key_str));
-        log_bytes(": ", 2);
+        log_printf("\"%s->", key_str);
 
         // log the value
         if(key == 's') {
             const char *s = va_arg(args, const char *);
             if(s == NULL) s = "";
-            log_string(s, strlen(s));
+            log_string(s, -1, 0);
         }
-        else if(key == 'S' || key == 'b') {
+        else if(key == 'S') {
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
-            log_string(s, len);
+            log_string(s, len, 0);
         }
         else if(key == 'u') {
             const wchar_t *s = va_arg(args, const wchar_t *);
             if(s == NULL) s = L"";
-            log_wstring(s, lstrlenW(s));
+            log_wstring(s, -1, 0);
         }
         else if(key == 'U') {
             int len = va_arg(args, int);
             const wchar_t *s = va_arg(args, const wchar_t *);
-            log_wstring(s, len);
+            (void)len;
+            log_wstring(s, len, 0);
+        }
+        else if(key == 'b') {
+            int len = va_arg(args, int);
+            const char *s = va_arg(args, const char *);
+            (void)len;
+            log_printf("0x%08x", s);
         }
         else if(key == 'B') {
             int *len = va_arg(args, int *);
             const char *s = va_arg(args, const char *);
-            log_string(s, len != NULL ? *len : 0);
+            (void)len;
+            log_printf("0x%08x", s);
         }
         else if(key == 'i') {
-            char buf[16];
             int value = va_arg(args, int);
-            sprintf(buf, "%d", value);
-            log_bytes(buf, strlen(buf));
+            log_printf("%d", value);
         }
         else if(key == 'l' || key == 'p') {
-            char buf[20];
             long value = va_arg(args, long);
-            sprintf(buf, "%ld", value);
-            log_bytes(buf, strlen(buf));
+            log_printf("%ld", value);
         }
         else if(key == 'L' || key == 'P') {
-            char buf[20];
             void **ptr = va_arg(args, void **);
-            sprintf(buf, "%ld", ptr != NULL ? *ptr : NULL);
-            log_bytes(buf, strlen(buf));
+            log_printf("%ld", ptr != NULL ? *ptr : NULL);
         }
         else if(key == 'o') {
             UNICODE_STRING *str = va_arg(args, UNICODE_STRING *);
             if(str == NULL) {
-                log_string("", 0);
+                log_string("", 0, 0);
             }
             else {
-                log_wstring(str->Buffer, str->Length >> 1);
+                log_wstring(str->Buffer, str->Length >> 1, 0);
             }
         }
         else if(key == 'O') {
             OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
             if(obj == NULL || obj->ObjectName == NULL) {
-                log_string("", 0);
+                log_string("", 0, 0);
             }
             else {
                 log_wstring(obj->ObjectName->Buffer,
-                    obj->ObjectName->Length >> 1);
+                    obj->ObjectName->Length >> 1, 0);
             }
         }
         else if(key == 'a') {
@@ -192,8 +224,7 @@ void loq(const char *fmt, ...)
             const char **argv = va_arg(args, const char **);
             log_bytes("[", 1);
             while (argc--) {
-                log_string(*argv, strlen(*argv));
-                argv++;
+                log_string(*argv++, -1, 0);
                 if(argc != 0) {
                     log_bytes(", ", 2);
                 }
@@ -205,17 +236,17 @@ void loq(const char *fmt, ...)
             const wchar_t **argv = va_arg(args, const wchar_t **);
             log_bytes("[", 1);
             while (argc--) {
-                log_wstring(*argv, lstrlenW(*argv));
-                argv++;
+                log_wstring(*argv++, -1, 0);
                 if(argc != 0) {
                     log_bytes(", ", 2);
                 }
             }
             log_bytes("]", 1);
         }
+        log_bytes("\"", 1);
     }
 
-    log_bytes("}", 1);
+    fprintf(stderr, "\n");
     va_end(args);
 
     LeaveCriticalSection(&g_mutex);
@@ -224,7 +255,13 @@ void loq(const char *fmt, ...)
 void log_init()
 {
     InitializeCriticalSection(&g_mutex);
-    GetModuleFileName(NULL, g_module_name, sizeof(g_module_name));
+    GetModuleFileNameW(NULL, g_module_name_buf, sizeof(g_module_name_buf));
+    // extract only the filename of the process, not the entire path
+    for (const wchar_t *p = g_module_name = g_module_name_buf; *p != 0; p++) {
+        if(*p == '\\' || *p == '/') {
+            g_module_name = p + 1;
+        }
+    }
     g_pid = GetCurrentProcessId();
 }
 

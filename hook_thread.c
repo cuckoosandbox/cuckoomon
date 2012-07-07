@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static IS_SUCCESS_HANDLE();
+static const char *module_name = "threading";
+
 HOOKDEF(HANDLE, WINAPI, OpenThread,
   __in  DWORD dwDesiredAccess,
   __in  BOOL bInheritHandle,
@@ -54,6 +57,8 @@ HOOKDEF(BOOL, WINAPI, TerminateThread,
   __inout  HANDLE hThread,
   __in     DWORD dwExitCode
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_TerminateThread(hThread, dwExitCode);
     LOQ("pl", "ThreadHandle", hThread, "ExitCode", dwExitCode);
     return ret;
@@ -62,6 +67,8 @@ HOOKDEF(BOOL, WINAPI, TerminateThread,
 HOOKDEF(VOID, WINAPI, ExitThread,
   __in  DWORD dwExitCode
 ) {
+    IS_SUCCESS_VOID();
+
     int ret = 0;
     LOQ("l", "ExitCode", dwExitCode);
     Old_ExitThread(dwExitCode);
@@ -71,6 +78,8 @@ HOOKDEF(BOOL, WINAPI, GetThreadContext,
   __in     HANDLE hThread,
   __inout  LPCONTEXT lpContext
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_GetThreadContext(hThread, lpContext);
     LOQ("p", "ThreadHandle", hThread);
     return ret;
@@ -80,6 +89,8 @@ HOOKDEF(BOOL, WINAPI, SetThreadContext,
   __in  HANDLE hThread,
   __in  const CONTEXT *lpContext
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_SetThreadContext(hThread, lpContext);
     LOQ("p", "ThreadHandle", hThread);
     return ret;
@@ -88,6 +99,8 @@ HOOKDEF(BOOL, WINAPI, SetThreadContext,
 HOOKDEF(DWORD, WINAPI, SuspendThread,
   __in  HANDLE hThread
 ) {
+    IS_SUCCESS_DWORDTHREAD();
+
     DWORD ret = Old_SuspendThread(hThread);
     LOQ("p", "ThreadHandle", hThread);
     return ret;
@@ -96,6 +109,8 @@ HOOKDEF(DWORD, WINAPI, SuspendThread,
 HOOKDEF(DWORD, WINAPI, ResumeThread,
   __in  HANDLE hThread
 ) {
+    IS_SUCCESS_DWORDTHREAD();
+
     DWORD ret = Old_ResumeThread(hThread);
     LOQ("p", "ThreadHandle", hThread);
     return ret;

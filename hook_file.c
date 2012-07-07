@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static IS_SUCCESS_NTSTATUS();
+static const char *module_name = "filesystem";
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
   __out     PHANDLE FileHandle,
   __in      ACCESS_MASK DesiredAccess,
@@ -100,6 +103,8 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
   __in_opt  LPVOID lpData,
   __in      DWORD dwFlags
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_MoveFileWithProgressW(lpExistingFileName, lpNewFileName,
         lpProgressRoutine, lpData, dwFlags);
     LOQ("uu", "ExistingFileName", lpExistingFileName,
@@ -110,6 +115,8 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
 HOOKDEF(BOOL, WINAPI, DeleteFileW,
   __in  LPWSTR lpFileName
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_DeleteFileW(lpFileName);
     LOQ("u", "FileName", lpFileName);
     return ret;

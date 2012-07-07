@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static IS_SUCCESS_NTSTATUS();
+static const char *module_name = "process";
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
     __in        ACCESS_MASK DesiredAccess,
@@ -71,6 +74,8 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     __out       LPPROCESS_INFORMATION lpProcessInformation,
     __in_opt    LPVOID lpUnknown2
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_CreateProcessInternalW(lpUnknown1, lpApplicationName,
         lpCommandLine, lpProcessAttributes, lpThreadAttributes,
         bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory,
@@ -89,6 +94,8 @@ HOOKDEF(HANDLE, WINAPI, OpenProcess,
   __in  BOOL bInheritHandle,
   __in  DWORD dwProcessId
 ) {
+    IS_SUCCESS_HANDLE();
+
     HANDLE ret = Old_OpenProcess(dwDesiredAccess, bInheritHandle,
         dwProcessId);
     LOQ("ll", "DesiredAccess", dwDesiredAccess, "ProcessId", dwProcessId);
@@ -99,6 +106,8 @@ HOOKDEF(BOOL, WINAPI, TerminateProcess,
   __in  HANDLE hProcess,
   __in  UINT uExitCode
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_TerminateProcess(hProcess, uExitCode);
     LOQ("pl", "ProcessHandle", hProcess, "ExitCode", uExitCode);
     return ret;
@@ -107,6 +116,8 @@ HOOKDEF(BOOL, WINAPI, TerminateProcess,
 HOOKDEF(VOID, WINAPI, ExitProcess,
   __in  UINT uExitCode
 ) {
+    IS_SUCCESS_VOID();
+
     int ret = 0;
     LOQ("l", "ExitCode", uExitCode);
     Old_ExitProcess(uExitCode);
@@ -115,6 +126,8 @@ HOOKDEF(VOID, WINAPI, ExitProcess,
 HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
   __inout  SHELLEXECUTEINFOW *pExecInfo
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_ShellExecuteExW(pExecInfo);
     LOQ("2ul", pExecInfo->lpFile, pExecInfo->lpParameters, pExecInfo->nShow);
     return ret;
@@ -127,6 +140,8 @@ HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
     __in   SIZE_T nSize,
     __out  SIZE_T *lpNumberOfBytesRead
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesRead);
     LOQ("2pB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
@@ -141,6 +156,8 @@ HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
     __in   SIZE_T nSize,
     __out  SIZE_T *lpNumberOfBytesWritten
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesWritten);
     LOQ("2pB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
@@ -155,6 +172,8 @@ HOOKDEF(LPVOID, WINAPI, VirtualAllocEx,
     __in      DWORD flAllocationType,
     __in      DWORD flProtect
 ) {
+    IS_SUCCESS_HANDLE();
+
     LPVOID ret = Old_VirtualAllocEx(hProcess, lpAddress, dwSize,
         flAllocationType, flProtect);
     LOQ("pplll", "ProcessHandle", hProcess, "Address", lpAddress,
@@ -170,6 +189,8 @@ HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
     __in   DWORD flNewProtect,
     __out  PDWORD lpflOldProtect
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect,
         lpflOldProtect);
     LOQ("2p2l", "ProcessHandle", hProcess, "Address", lpAddress,

@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static IS_SUCCESS_HINTERNET();
+static const char *module_name = "network";
+
 HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     LPUNKNOWN pCaller,
     LPWSTR szURL,
@@ -29,6 +32,8 @@ HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     DWORD dwReserved,
     LPVOID lpfnCB
 ) {
+    IS_SUCCESS_HRESULT();
+
     HRESULT ret = Old_URLDownloadToFileW(pCaller, szURL, szFileName,
         dwReserved, lpfnCB);
     LOQ("uu", "URL", szURL, "FileName", szFileName);
@@ -107,6 +112,8 @@ HOOKDEF(BOOL, WINAPI, HttpSendRequestA,
   __in  LPVOID lpOptional,
   __in  DWORD dwOptionalLength
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_HttpSendRequestA(hRequest, lpszHeaders, dwHeadersLength,
         lpOptional, dwOptionalLength);
     if(dwHeadersLength == (DWORD) -1) dwHeadersLength = strlen(lpszHeaders);
@@ -123,6 +130,8 @@ HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
   __in  LPVOID lpOptional,
   __in  DWORD dwOptionalLength
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_HttpSendRequestW(hRequest, lpszHeaders, dwHeadersLength,
         lpOptional, dwOptionalLength);
     LOQ("pUb", "RequestHandle", hRequest,

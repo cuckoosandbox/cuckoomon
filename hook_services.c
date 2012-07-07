@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static IS_SUCCESS_SCHANDLE();
+static const char *module_name = "services";
+
 HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerA,
   __in_opt  LPCTSTR lpMachineName,
   __in_opt  LPCTSTR lpDatabaseName,
@@ -133,6 +136,8 @@ HOOKDEF(BOOL, WINAPI, StartServiceA,
   __in      DWORD dwNumServiceArgs,
   __in_opt  LPCTSTR *lpServiceArgVectors
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_StartServiceA(hService, dwNumServiceArgs,
         lpServiceArgVectors);
     LOQ("pa", "ServiceHandle", hService, "Arguments", dwNumServiceArgs,
@@ -145,6 +150,8 @@ HOOKDEF(BOOL, WINAPI, StartServiceW,
   __in      DWORD dwNumServiceArgs,
   __in_opt  LPWSTR *lpServiceArgVectors
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_StartServiceW(hService, dwNumServiceArgs,
         lpServiceArgVectors);
     LOQ("pA", "ServiceHandle", hService, "Arguments", dwNumServiceArgs,
@@ -157,6 +164,8 @@ HOOKDEF(BOOL, WINAPI, ControlService,
   __in   DWORD dwControl,
   __out  LPSERVICE_STATUS lpServiceStatus
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_ControlService(hService, dwControl, lpServiceStatus);
     LOQ("pl", "ServiceHandle", hService, "ControlCode", dwControl);
     return ret;
@@ -165,8 +174,9 @@ HOOKDEF(BOOL, WINAPI, ControlService,
 HOOKDEF(BOOL, WINAPI, DeleteService,
   __in  SC_HANDLE hService
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_DeleteService(hService);
     LOQ("p", "ServiceHandle", hService);
     return ret;
 }
-

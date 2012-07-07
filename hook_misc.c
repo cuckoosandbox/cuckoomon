@@ -22,12 +22,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static IS_SUCCESS_NTSTATUS();
+static const char *module_name = "system";
+
 HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
     __in  int idHook,
     __in  HOOKPROC lpfn,
     __in  HINSTANCE hMod,
     __in  DWORD dwThreadId
 ) {
+    IS_SUCCESS_HHOOK();
+    const char *module_name = "hooking";
+
     HHOOK ret = Old_SetWindowsHookExA(idHook, lpfn, hMod, dwThreadId);
     LOQ("lppl", "HookIdentifier", idHook, "ProcedureAddress", lpfn,
         "ModuleAddress", hMod, "ThreadId", dwThreadId);
@@ -40,6 +46,9 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
     __in  HINSTANCE hMod,
     __in  DWORD dwThreadId
 ) {
+    IS_SUCCESS_HHOOK();
+    const char *module_name = "hooking";
+
     HHOOK ret = Old_SetWindowsHookExW(idHook, lpfn, hMod, dwThreadId);
     LOQ("lppl", "HookIdentifier", idHook, "ProcedureAddress", lpfn,
         "ModuleAddress", hMod, "ThreadId", dwThreadId);
@@ -99,6 +108,9 @@ HOOKDEF(BOOL, WINAPI, DeviceIoControl,
   __out_opt    LPDWORD lpBytesReturned,
   __inout_opt  LPOVERLAPPED lpOverlapped
 ) {
+    IS_SUCCESS_BOOL();
+    const char *module_name = "device";
+
     BOOL ret = Old_DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer,
         nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned,
         lpOverlapped);
@@ -122,6 +134,8 @@ HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
   __in  UINT uFlags,
   __in  DWORD dwReason
 ) {
+    IS_SUCCESS_BOOL();
+
     int ret = 0;
     LOQ("ll", "Flags", uFlags, "Reason", dwReason);
     return Old_ExitWindowsEx(uFlags, dwReason);
@@ -130,6 +144,8 @@ HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
 HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
     void
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_IsDebuggerPresent();
     LOQ("");
     return ret;
@@ -140,6 +156,8 @@ HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
   __in      LPWSTR lpName,
   __out     PLUID lpLuid
 ) {
+    IS_SUCCESS_BOOL();
+
     BOOL ret = Old_LookupPrivilegeValueW(lpSystemName, lpName, lpLuid);
     LOQ("uu", "SystemName", lpSystemName, "PrivilegeName", lpName);
     return ret;
