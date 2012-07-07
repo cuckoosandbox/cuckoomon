@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 
 static CRITICAL_SECTION g_mutex;
-static DWORD g_pid;
+static DWORD g_pid, g_ppid;
 static wchar_t g_module_name_buf[256];
 static const wchar_t *g_module_name;
 
@@ -132,7 +132,7 @@ void loq(const char *fmt, ...)
 
     // first parameter in args indicates the hooking type
     log_printf("\"%d\",\"%S\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%p\"", g_pid,
-        g_module_name, 0, module_name, function_name,
+        g_module_name, g_ppid, module_name, function_name,
         is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
 
     while (--count || *fmt != 0) {
@@ -253,6 +253,24 @@ void loq(const char *fmt, ...)
     LeaveCriticalSection(&g_mutex);
 }
 
+ULONG_PTR GetParentProcessId() // By Napalm @ NetCore2K (rohitab.com)
+{
+    ULONG_PTR pbi[6]; ULONG ulSize = 0;
+    LONG (WINAPI *NtQueryInformationProcess)(HANDLE ProcessHandle,
+        ULONG ProcessInformationClass, PVOID ProcessInformation,
+        ULONG ProcessInformationLength, PULONG ReturnLength);
+
+    *(FARPROC *) &NtQueryInformationProcess = GetProcAddress(
+        LoadLibrary("ntdll"), "NtQueryInformationProcess");
+
+    if(NtQueryInformationProcess != NULL && NtQueryInformationProcess(
+            GetCurrentProcess(), 0, &pbi, sizeof(pbi), &ulSize) >= 0 &&
+            ulSize == sizeof(pbi)) {
+        return pbi[5];
+    }
+    return 0;
+}
+
 void log_init()
 {
     InitializeCriticalSection(&g_mutex);
@@ -264,6 +282,7 @@ void log_init()
         }
     }
     g_pid = GetCurrentProcessId();
+    g_ppid = GetParentProcessId();
 }
 
 void log_free()
