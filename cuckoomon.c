@@ -82,6 +82,8 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, RegDeleteValueA),
     HOOK(advapi32, RegDeleteValueW),
 
+    HOOK(advapi32, RegCloseKey),
+
     //
     // Window Hooks
     //
@@ -115,6 +117,7 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, WriteProcessMemory),
     HOOK(kernel32, VirtualAllocEx),
     HOOK(kernel32, VirtualProtectEx),
+    HOOK(kernel32, VirtualFreeEx),
 
     //
     // Thread Hooks
@@ -143,6 +146,7 @@ static hook_t g_hooks[] = {
     HOOK(user32, ExitWindowsEx),
     HOOK(kernel32, IsDebuggerPresent),
     HOOK(advapi32, LookupPrivilegeValueW),
+    HOOK(ntdll, NtClose),
 
     //
     // Network Hooks

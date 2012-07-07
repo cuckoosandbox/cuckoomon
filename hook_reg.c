@@ -263,3 +263,11 @@ HOOKDEF(LONG, WINAPI, RegDeleteValueW,
     LOQ("pu", "Handle", hKey, "ValueName", lpValueName);
     return ret;
 }
+
+HOOKDEF(LONG, WINAPI, RegCloseKey,
+    __in    HKEY hKey
+) {
+    LONG ret = Old_RegCloseKey(hKey);
+    LOQ("p", "Handle", hKey);
+    return ret;
+}

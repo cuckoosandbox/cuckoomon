@@ -162,3 +162,11 @@ HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
     LOQ("uu", "SystemName", lpSystemName, "PrivilegeName", lpName);
     return ret;
 }
+
+HOOKDEF(NTSTATUS, WINAPI, NtClose,
+    __in    HANDLE Handle
+) {
+    NTSTATUS ret = Old_NtClose(Handle);
+    LOQ("p", "Handle", Handle);
+    return ret;
+}

@@ -230,6 +230,10 @@ extern HOOKDEF(LONG, WINAPI, RegDeleteValueW,
   __in_opt  LPWSTR lpValueName
 );
 
+extern HOOKDEF(LONG, WINAPI, RegCloseKey,
+    __in    HKEY hKey
+);
+
 //
 // Window Hooks
 //
@@ -368,6 +372,13 @@ extern HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
     __out  PDWORD lpflOldProtect
 );
 
+extern HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
+    __in  HANDLE hProcess,
+    __in  LPVOID lpAddress,
+    __in  SIZE_T dwSize,
+    __in  DWORD dwFreeType
+);
+
 //
 // Thread Hooks
 //
@@ -483,6 +494,10 @@ extern HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
   __in_opt  LPWSTR lpSystemName,
   __in      LPWSTR lpName,
   __out     PLUID lpLuid
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtClose,
+    __in    HANDLE Handle
 );
 
 //

@@ -198,3 +198,16 @@ HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
     return ret;
 }
 
+HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
+    __in  HANDLE hProcess,
+    __in  LPVOID lpAddress,
+    __in  SIZE_T dwSize,
+    __in  DWORD dwFreeType
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_VirtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType);
+    LOQ("ppll", "ProcessHandle", hProcess, "Address", lpAddress,
+        "Size", dwSize, "FreeType", dwFreeType);
+    return ret;
+}
