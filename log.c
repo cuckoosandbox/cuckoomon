@@ -272,7 +272,7 @@ ULONG_PTR GetParentProcessId() // By Napalm @ NetCore2K (rohitab.com)
     return 0;
 }
 
-void log_init(const char *fname)
+void log_init()
 {
     InitializeCriticalSection(&g_mutex);
     GetModuleFileNameW(NULL, g_module_name_buf, sizeof(g_module_name_buf));
@@ -285,6 +285,8 @@ void log_init(const char *fname)
     g_pid = GetCurrentProcessId();
     g_ppid = GetParentProcessId();
 
+    char fname[256];
+    sprintf(fname, "C:\\cuckoo\\%d.csv", GetCurrentProcessId());
     g_fp = fname != NULL ? fopen(fname, "w") : stderr;
 }
 

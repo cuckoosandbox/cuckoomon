@@ -52,7 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void loq(const char *fmt, ...);
 
-void log_init(const char *fname);
+void log_init();
 void log_free();
 
 #define LOQ(fmt, ...) loq(fmt, module_name, &__FUNCTION__[4], \
