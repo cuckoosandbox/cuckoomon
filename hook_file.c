@@ -122,6 +122,27 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
 ) {
     IS_SUCCESS_BOOL();
 
+    if(lpFileName != NULL) {
+        // first obtain the filename
+        const wchar_t *pwszFileName = lpFileName;
+        for (const wchar_t *p = pwszFileName = lpFileName; *p != 0; p++) {
+            if(*p == '/' || *p == '\\') {
+                pwszFileName = p + 1;
+            }
+        }
+
+        // generate an unique path
+        wchar_t fname[MAX_PATH];
+        do {
+            snwprintf(fname, sizeof(fname),
+                L"C:\\cuckoo\\files\\%d-%d-%s_", GetCurrentProcessId(),
+                rand(), pwszFileName);
+        } while (GetFileAttributesW(fname) != INVALID_FILE_ATTRIBUTES);
+
+        // copy the file
+        CopyFileW(lpFileName, fname, TRUE);
+    }
+
     BOOL ret = Old_DeleteFileW(lpFileName);
     LOQ("u", "FileName", lpFileName);
     return ret;
