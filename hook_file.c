@@ -44,7 +44,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
     LOQ("POl", "FileHandle", FileHandle, "FileName", ObjectAttributes,
         "CreateDisposition", CreateDisposition);
-    if(NT_SUCCESS(ret)) {
+    if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
         pipe_write("FILE:%.*S", ObjectAttributes->ObjectName->Length >> 1,
             ObjectAttributes->ObjectName->Buffer);
     }
