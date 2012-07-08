@@ -92,8 +92,8 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
 
     BOOL ret = Old_CreateProcessInternalW(lpUnknown1, lpApplicationName,
         lpCommandLine, lpProcessAttributes, lpThreadAttributes,
-        bInheritHandles, dwCreationFlags, lpEnvironment, lpCurrentDirectory,
-        lpStartupInfo, lpProcessInformation, lpUnknown2);
+        bInheritHandles, dwCreationFlags | CREATE_SUSPENDED, lpEnvironment,
+        lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
     LOQ("uu3l2p", "ApplicationName", lpApplicationName,
         "CommandLine", lpCommandLine, "CreationFlags", dwCreationFlags,
         "ProcessId", lpProcessInformation->dwProcessId,
@@ -102,6 +102,12 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ThreadHandle", lpProcessInformation->hThread);
     if(ret != FALSE) {
         notify_pipe(lpProcessInformation->dwProcessId);
+
+        // if the CREATE_SUSPENDED flag was not set, then we have to resume
+        // the main thread ourself
+        if((dwCreationFlags & CREATE_SUSPENDED) == 0) {
+            ResumeThread(lpProcessInformation->hThread);
+        }
     }
     return ret;
 }
