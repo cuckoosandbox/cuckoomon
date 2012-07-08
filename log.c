@@ -252,6 +252,9 @@ void loq(const char *fmt, ...)
     fprintf(g_fp, "\n");
     va_end(args);
 
+    // make sure this entry is written to the log file
+    fflush(g_fp);
+
     LeaveCriticalSection(&g_mutex);
 }
 
@@ -270,7 +273,7 @@ void log_init()
 
     char fname[256];
     sprintf(fname, "C:\\cuckoo\\logs\\%d.csv", GetCurrentProcessId());
-    g_fp = fname != NULL ? fopen(fname, "w") : stderr;
+    g_fp = fopen(fname, "w");
 }
 
 void log_free()
