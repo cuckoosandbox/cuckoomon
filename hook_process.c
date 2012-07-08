@@ -27,6 +27,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "process";
 
+static void notify_pipe(DWORD process_id)
+{
+    char buf[32] = {}; int len = sizeof(buf);
+    pipe_write_read(buf, &len, "PID:%d", process_id);
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
     __in        ACCESS_MASK DesiredAccess,
@@ -42,7 +48,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
         DebugPort, ExceptionPort);
     LOQ("PO", "ProcessHandle", ProcessHandle, "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe_write("PID:%d", GetPidFromProcessHandle(*ProcessHandle));
+        notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
     }
     return ret;
 }
@@ -63,7 +69,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
         ExceptionPort, InJob);
     LOQ("PO", "ProcessHandle", ProcessHandle, "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe_write("PID:%d", GetPidFromProcessHandle(*ProcessHandle));
+        notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
     }
     return ret;
 }
@@ -95,7 +101,7 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ProcessHandle", lpProcessInformation->hProcess,
         "ThreadHandle", lpProcessInformation->hThread);
     if(ret != FALSE) {
-        pipe_write("PID:%d", lpProcessInformation->dwProcessId);
+        notify_pipe(lpProcessInformation->dwProcessId);
     }
     return ret;
 }

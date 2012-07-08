@@ -269,7 +269,7 @@ void log_init()
     g_ppid = GetParentProcessId();
 
     char fname[256];
-    sprintf(fname, "C:\\cuckoo\\%d.csv", GetCurrentProcessId());
+    sprintf(fname, "C:\\cuckoo\\logs\\%d.csv", GetCurrentProcessId());
     g_fp = fname != NULL ? fopen(fname, "w") : stderr;
 }
 
