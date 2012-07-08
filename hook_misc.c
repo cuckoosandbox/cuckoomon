@@ -78,8 +78,7 @@ HOOKDEF(NTSTATUS, WINAPI, LdrGetDllHandle,
 ) {
     NTSTATUS ret = Old_LdrGetDllHandle(pwPath, Unused, ModuleFileName,
         pHModule);
-    LOQ("uoP", "Path", pwPath, "FileName", ModuleFileName,
-        "ModuleHandle", pHModule);
+    LOQ("oP", "FileName", ModuleFileName, "ModuleHandle", pHModule);
     return ret;
 }
 
