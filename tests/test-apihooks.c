@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <windows.h>
 
+DWORD WINAPI dummy(LPVOID lpValue)
+{
+    printf("dummy here!\n");
+    return 0;
+}
+
 int main()
 {
     // there we go
@@ -40,4 +46,9 @@ int main()
     sleep(1000);
 
     printf("debugger: %d\n", IsDebuggerPresent());
+
+    HANDLE thread_handle = CreateRemoteThread(GetCurrentProcess(), NULL, 0,
+        &dummy, NULL, 0, NULL);
+    WaitForSingleObject(thread_handle, INFINITE);
+    CloseHandle(thread_handle);
 }
