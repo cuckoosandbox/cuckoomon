@@ -21,9 +21,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
+#include "misc.h"
 
 static IS_SUCCESS_HANDLE();
 static const char *module_name = "threading";
+
+static void notify_pipe(DWORD process_id)
+{
+    char buf[32] = {}; int len = sizeof(buf);
+    pipe_write_read(buf, &len, "PID:%d", process_id);
+}
 
 HOOKDEF(HANDLE, WINAPI, OpenThread,
   __in  DWORD dwDesiredAccess,
@@ -44,6 +52,7 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
   __in   DWORD dwCreationFlags,
   __out  LPDWORD lpThreadId
 ) {
+    notify_pipe(GetPidFromProcessHandle(hProcess));
     HANDLE ret = Old_CreateRemoteThread(hProcess, lpThreadAttributes,
         dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,
         lpThreadId);
