@@ -42,8 +42,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
     NTSTATUS ret = Old_NtCreateFile(FileHandle, DesiredAccess,
         ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
-    LOQ("POl", "FileHandle", FileHandle, "FileName", ObjectAttributes,
-        "CreateDisposition", CreateDisposition);
+    LOQ("PlOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition);
     if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
         pipe_write("FILE:%.*S", ObjectAttributes->ObjectName->Length >> 1,
             ObjectAttributes->ObjectName->Buffer);
@@ -61,7 +61,12 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
 ) {
     NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
         IoStatusBlock, ShareAccess, OpenOptions);
-    LOQ("PO", "FileHandle", FileHandle, "FileName", ObjectAttributes);
+    LOQ("PlO", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes);
+    if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
+        pipe_write("FILE:%.*S", ObjectAttributes->ObjectName->Length >> 1,
+            ObjectAttributes->ObjectName->Buffer);
+    }
     return ret;
 }
 
