@@ -50,6 +50,35 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 {
     const unsigned char *base = gate;
 
+    // after the original function has returned, we have to make a backup of
+    // the Last Error Code, so what we do is the following (we use the same
+    // method below in the pre-gate.) We store the current return address in
+    // fs:[0x50], we overwrite it with a return address in our gate. When we
+    // reach the gate, then we make a backup of the Last Error Code and jmp
+    // to the real return address.
+
+    unsigned char pre_backup[] = {
+        // cmp dword fs:[0x44], 1 (check if we are already inside a hook, the
+        // next few instructions only apply to the first hook)
+        0x64, 0x83, 0x3d, 0x44, 0x00, 0x00, 0x00, 0x01,
+        // jg $+18 (if we are already inside a hook, then we don't want to
+        // replace the return address, so jump over the next few instructions)
+        0x7f, 0x18,
+        // inc dword fs:[0x44] (increase the hook count, why not zoidberg?)
+        0x64, 0xff, 0x05, 0x44, 0x00, 0x00, 0x00,
+        // push dword [esp] (obtain the current return address)
+        0xff, 0x34, 0xe4,
+        // pop dword fs:[0x50] (store the return address in the TIB)
+        0x64, 0x8f, 0x05, 0x50, 0x00, 0x00, 0x00,
+        // mov dword [esp], new_return_address (overwrite the return address)
+        0xc7, 0x04, 0xe4, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    memcpy(gate, pre_backup, sizeof(pre_backup));
+    gate += sizeof(pre_backup);
+
+    unsigned char **pre_backup_addr = (unsigned char **)(gate - 4);
+
     // our gate should be atleast contain enough bytes to fit the given length
     while (len > 0) {
 
@@ -158,9 +187,28 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
     // append a jump from the gate to the original function
     *gate++ = 0xe9;
     *(unsigned long *) gate = (unsigned long) addr - (unsigned long) gate - 4;
+    gate += 4;
+
+    // return address is the next instruction after the jmp
+    *pre_backup_addr = gate;
+
+    // the function returns here after executing, backup the Last Error Code
+    unsigned char post_backup[] = {
+        // dec dword fs:[0x44] (decrease the hook count)
+        0x64, 0xff, 0x0d, 0x44, 0x00, 0x00, 0x00,
+        // push dword fs:[0x34]
+        0x64, 0xff, 0x35, 0x34, 0x00, 0x00, 0x00,
+        // pop dword fs:[0x4c]
+        0x64, 0x8f, 0x05, 0x4c, 0x00, 0x00, 0x00,
+        // jmp dword fs:[0x50] (jmp to the real return address)
+        0x64, 0xff, 0x25, 0x50, 0x00, 0x00, 0x00,
+    };
+
+    memcpy(gate, post_backup, sizeof(post_backup));
+    gate += sizeof(post_backup);
 
     // return the length of this gate
-    return gate + 4 - base;
+    return gate - base;
 }
 
 // this function constructs the so-called pre-gate, this pre-gate determines
@@ -204,6 +252,10 @@ void hook_create_pre_gate(hook_t *h)
         // this is where the new_return_address is located..
         // dec dword fs:[0x44] (decrease the hook count)
         0x64, 0xff, 0x0d, 0x44, 0x00, 0x00, 0x00,
+        // push dword fs:[0x4c] (restore the Last Error Code)
+        0x64, 0xff, 0x35, 0x4c, 0x00, 0x00, 0x00,
+        // pop dword fs:[0x34]
+        0x64, 0x8f, 0x05, 0x34, 0x00, 0x00, 0x00,
         // jmp dword fs:[0x48] (jmp to the real return address)
         0x64, 0xff, 0x25, 0x48, 0x00, 0x00, 0x00,
     };
