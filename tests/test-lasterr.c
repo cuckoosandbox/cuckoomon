@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <windows.h>
+#include "hooking.h"
+#include "ntapi.h"
+
+#define HOOK(library, funcname) {L###library, #funcname, NULL, \
+    &New_##funcname, (void **) &Old_##funcname}
+
+HOOKDEF(BOOL, WINAPI, DeleteFileW,
+  __in  LPWSTR lpFileName
+) {
+    BOOL ret = Old_DeleteFileW(lpFileName);
+
+    printf("ret: %d, lasterr: %d\n", ret, GetLastError());
+
+    SetLastError(0x1337);
+
+    printf("ret: %d, lasterr: %d\n", ret, GetLastError());
+
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
+  __out  PHANDLE FileHandle,
+  __in   ACCESS_MASK DesiredAccess,
+  __in   POBJECT_ATTRIBUTES ObjectAttributes,
+  __out  PIO_STATUS_BLOCK IoStatusBlock,
+  __in   ULONG ShareAccess,
+  __in   ULONG OpenOptions
+) {
+    NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
+        IoStatusBlock, ShareAccess, OpenOptions);
+    SetLastError(0x1338);
+    printf("OMG!!! %d\n", GetLastError());
+    return ret;
+}
+
+int main()
+{
+    static hook_t hook[] = {
+        HOOK(kernel32, DeleteFileW),
+        HOOK(ntdll, NtOpenFile),
+    };
+
+    DWORD old_protect;
+    VirtualProtect(hook, sizeof(hook), PAGE_EXECUTE_READWRITE, &old_protect);
+
+    hook_api(&hook[0], HOOK_DIRECT_JMP);
+    hook_api(&hook[1], HOOK_DIRECT_JMP);
+
+    DeleteFile("hoi");
+    printf("lasterr: %d\n", GetLastError());
+}

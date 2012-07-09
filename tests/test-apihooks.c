@@ -12,10 +12,13 @@ int main()
     // there we go
     LoadLibrary("../cuckoomon.dll");
 
-    fclose(fopen("test-hello", "r"));
-    FILE *fp = fopen("test-hello", "wb");
+    FILE *fp = fopen("test-hello", "r");
+    if(fp != NULL) fclose(fp);
+
+    fp = fopen("test-hello", "wb");
     fwrite("whatsup", 1, 6, fp);
     fclose(fp);
+
     fp = fopen("test-hello", "rb");
     char buf[6];
     fread(buf, 1, 6, fp);
