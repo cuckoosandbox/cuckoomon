@@ -119,6 +119,9 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
         lpProgressRoutine, lpData, dwFlags);
     LOQ("uu", "ExistingFileName", lpExistingFileName,
         "NewFileName", lpNewFileName);
+    if(ret != FALSE) {
+        pipe_write("FILE:%S", lpNewFileName);
+    }
     return ret;
 }
 
