@@ -32,6 +32,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static hook_t g_hooks[] = {
 
     //
+    // Special Hooks
+    //
+    // NOTE: due to the fact that the "special" hooks don't use a hook count
+    // (whereas the "normal" hooks, those with allow_hook_recursion set to
+    // zero, do) we have to hook the "special" hooks first. Otherwise the
+    // execution flow will end up in an infinite loop, because of hook count
+    // and whatnot.
+    //
+    // In other words, do *NOT* place "special" hooks behind "normal" hooks.
+    //
+
+    HOOK2(ntdll, NtResumeThread, TRUE),
+    HOOK2(ntdll, LdrLoadDll, TRUE),
+
+    //
     // File Hooks
     //
 
@@ -174,13 +189,6 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, StartServiceW),
     HOOK(advapi32, ControlService),
     HOOK(advapi32, DeleteService),
-
-    //
-    // Special Hooks
-    //
-
-    HOOK2(ntdll, NtResumeThread, TRUE),
-    HOOK2(ntdll, LdrLoadDll, TRUE),
 };
 
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len)
