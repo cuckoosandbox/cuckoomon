@@ -38,8 +38,8 @@ typedef struct _hook_t {
     // this hook has been performed
     int is_hooked;
 
-    unsigned char gate[64];
-    unsigned char pre_gate[64];
+    unsigned char gate[128];
+    unsigned char pre_gate[128];
 } hook_t;
 
 int lde(void *addr);
