@@ -51,6 +51,9 @@ int hook_api(hook_t *h, int type);
 void hook_enable();
 void hook_disable();
 
+unsigned int hook_get_last_error();
+void hook_set_last_error(unsigned int errcode);
+
 #define HOOK_DIRECT_JMP 0
 #define HOOK_NOP_DIRECT_JMP 1
 

@@ -370,3 +370,15 @@ void hook_disable()
 {
     __asm__("incl %%fs:(%0)" :: "r" (0x44));
 }
+
+unsigned int hook_get_last_error()
+{
+    unsigned int lasterr;
+    __asm__("movl %%fs:(%1), %0" : "=r" (lasterr) : "r" (0x4c));
+    return lasterr;
+}
+
+void hook_set_last_error(unsigned int errcode)
+{
+    __asm__("movl %1, %%fs:(%0)" :: "r" (0x4c), "r" (errcode));
+}

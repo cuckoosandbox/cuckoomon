@@ -11,11 +11,18 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
 ) {
     BOOL ret = Old_DeleteFileW(lpFileName);
 
-    printf("ret: %d, lasterr: %d\n", ret, GetLastError());
+    printf("ret: %d, lasterr: %d, %d\n", ret, GetLastError(),
+        hook_get_last_error());
 
     SetLastError(0x1337);
 
-    printf("ret: %d, lasterr: %d\n", ret, GetLastError());
+    printf("ret: %d, lasterr: %d, %d\n", ret, GetLastError(),
+        hook_get_last_error());
+
+    hook_set_last_error(0xb00b);
+
+    printf("ret: %d, lasterr: %d, %d\n", ret, GetLastError(),
+        hook_get_last_error());
 
     return ret;
 }
