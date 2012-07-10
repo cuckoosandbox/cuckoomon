@@ -50,6 +50,8 @@ int main()
 
     printf("debugger: %d\n", IsDebuggerPresent());
 
+    CloseHandle(CreateThread(NULL, 0, &dummy, NULL, 0, NULL));
+
     HANDLE thread_handle = CreateRemoteThread(GetCurrentProcess(), NULL, 0,
         &dummy, NULL, 0, NULL);
     WaitForSingleObject(thread_handle, INFINITE);

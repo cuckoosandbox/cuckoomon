@@ -389,6 +389,15 @@ extern HOOKDEF(HANDLE, WINAPI, OpenThread,
   __in  DWORD dwThreadId
 );
 
+extern HOOKDEF(HANDLE, WINAPI, CreateThread,
+  __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
+  __in   SIZE_T dwStackSize,
+  __in   LPTHREAD_START_ROUTINE lpStartAddress,
+  __in   LPVOID lpParameter,
+  __in   DWORD dwCreationFlags,
+  __out  LPDWORD lpThreadId
+);
+
 extern HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
   __in   HANDLE hProcess,
   __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
