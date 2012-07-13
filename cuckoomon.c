@@ -231,6 +231,9 @@ void set_hooks()
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 {
     if(dwReason == DLL_PROCESS_ATTACH) {
+        // make sure advapi32 is loaded
+        LoadLibrary("advapi32");
+
         log_init();
         set_hooks();
     }
