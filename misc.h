@@ -2,6 +2,7 @@
 ULONG_PTR GetParentProcessId(); // By Napalm @ NetCore2K (rohitab.com)
 DWORD GetPidFromProcessHandle(HANDLE process_handle);
 DWORD GetPidFromThreadHandle(HANDLE thread_handle);
+DWORD random();
 
 typedef struct _PROCESS_BASIC_INFORMATION {
     PVOID Reserved1;

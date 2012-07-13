@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 #include "pipe.h"
+#include "misc.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "filesystem";
@@ -142,10 +143,15 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
         // generate an unique path
         wchar_t fname[MAX_PATH];
         do {
-            snwprintf(fname, sizeof(fname),
-                L"C:\\cuckoo\\files\\%d-%d-%s_", GetCurrentProcessId(),
-                rand(), pwszFileName);
-        } while (GetFileAttributesW(fname) != INVALID_FILE_ATTRIBUTES);
+            snwprintf(fname, ARRAYSIZE(fname), L"C:\\cuckoo\\files\\%u",
+                random());
+            // for now we assume that the only error we'll get is the
+            // ERROR_ALREADY_EXISTS error
+        } while (CreateDirectoryW(fname, NULL) == FALSE);
+
+        // append the filename
+        snwprintf(fname + lstrlenW(fname), ARRAYSIZE(fname) - lstrlenW(fname),
+            L"\\%s.bin", pwszFileName);
 
         // copy the file
         CopyFileW(lpFileName, fname, TRUE);

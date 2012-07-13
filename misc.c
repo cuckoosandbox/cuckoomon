@@ -56,3 +56,17 @@ DWORD GetPidFromThreadHandle(HANDLE thread_handle)
     }
     return 0;
 }
+
+DWORD random()
+{
+    static BOOLEAN (WINAPI *pRtlGenRandom)(PVOID RandomBuffer,
+        ULONG RandomBufferLength);
+
+    if(pRtlGenRandom == NULL) {
+        *(FARPROC *) &pRtlGenRandom = GetProcAddress(
+            GetModuleHandleW(L"advapi32"), "SystemFunction036");
+    }
+
+    DWORD ret;
+    return pRtlGenRandom(&ret, sizeof(ret)) ? ret : rand();
+}
