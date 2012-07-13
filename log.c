@@ -133,9 +133,9 @@ void loq(const char *fmt, ...)
     long return_value = va_arg(args, long);
 
     // first parameter in args indicates the hooking type
-    log_printf("\"%d\",\"%S\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%p\"", g_pid,
-        g_module_name, g_ppid, module_name, function_name,
-        is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
+    log_printf("\"%d\",\"%S\",\"%d\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%p\"",
+        g_pid, g_module_name, GetCurrentThreadId(), g_ppid, module_name,
+        function_name, is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
 
     while (--count || *fmt != 0) {
         log_bytes(",", 1);
