@@ -152,7 +152,8 @@ HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_ShellExecuteExW(pExecInfo);
-    LOQ("2ul", pExecInfo->lpFile, pExecInfo->lpParameters, pExecInfo->nShow);
+    LOQ("2ul", "FilePath", pExecInfo->lpFile,
+        "Parameters", pExecInfo->lpParameters, "Show", pExecInfo->nShow);
     return ret;
 }
 

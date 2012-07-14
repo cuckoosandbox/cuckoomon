@@ -59,13 +59,14 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 
     unsigned char pre_backup[] = {
         // cmp dword fs:[0x44], 1 (check if we are already inside a hook, the
+        // cmp dword fs:[0x54], 0 (check if we are already inside a hook, the
         // next few instructions only apply to the first hook)
-        0x64, 0x83, 0x3d, 0x44, 0x00, 0x00, 0x00, 0x00,
+        0x64, 0x83, 0x3d, 0x54, 0x00, 0x00, 0x00, 0x00,
         // jg $+18 (if we are already inside a hook, then we don't want to
         // replace the return address, so jump over the next few instructions)
         0x7f, 0x18,
-        // inc dword fs:[0x44] (increase the hook count, why not zoidberg?)
-        0x64, 0xff, 0x05, 0x44, 0x00, 0x00, 0x00,
+        // inc dword fs:[0x54] (increase the hook count, why not zoidberg?)
+        0x64, 0xff, 0x05, 0x54, 0x00, 0x00, 0x00,
         // push dword [esp] (obtain the current return address)
         0xff, 0x34, 0xe4,
         // pop dword fs:[0x50] (store the return address in the TIB)
@@ -194,8 +195,8 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 
     // the function returns here after executing, backup the Last Error Code
     unsigned char post_backup[] = {
-        // dec dword fs:[0x44] (decrease the hook count)
-        0x64, 0xff, 0x0d, 0x44, 0x00, 0x00, 0x00,
+        // dec dword fs:[0x54] (decrease the hook count)
+        0x64, 0xff, 0x0d, 0x54, 0x00, 0x00, 0x00,
         // push dword fs:[0x34]
         0x64, 0xff, 0x35, 0x34, 0x00, 0x00, 0x00,
         // pop dword fs:[0x4c]
