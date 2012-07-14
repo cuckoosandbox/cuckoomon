@@ -60,7 +60,7 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
     unsigned char pre_backup[] = {
         // cmp dword fs:[0x44], 1 (check if we are already inside a hook, the
         // next few instructions only apply to the first hook)
-        0x64, 0x83, 0x3d, 0x44, 0x00, 0x00, 0x00, 0x01,
+        0x64, 0x83, 0x3d, 0x44, 0x00, 0x00, 0x00, 0x00,
         // jg $+18 (if we are already inside a hook, then we don't want to
         // replace the return address, so jump over the next few instructions)
         0x7f, 0x18,
