@@ -50,7 +50,6 @@ void pipe_write_read(char *out, int *outlen, const char *fmt, ...)
 
     while ((pipe_handle = CreateFile(PIPE_NAME, GENERIC_WRITE | GENERIC_READ,
             0, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE) {
-        printf("oboy\n");
         if(GetLastError() == ERROR_PIPE_BUSY || !WaitNamedPipe(PIPE_NAME,
                 20000)) {
             return;

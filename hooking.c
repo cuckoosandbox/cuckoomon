@@ -314,7 +314,6 @@ int hook_api(hook_t *h, int type)
             h->funcname);
     }
     if(addr == NULL) {
-        printf("Error obtaining address of %S!%s\n", h->library, h->funcname);
         return 0;
     }
 
