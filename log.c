@@ -29,25 +29,45 @@ static wchar_t g_module_name_buf[256];
 static const wchar_t *g_module_name;
 static FILE *g_fp;
 
+static char g_buffer[4096];
+static int g_idx;
+
 //
 // Log API
 //
+
+static void log_flush()
+{
+    if(g_idx != 0) {
+        fwrite(g_buffer, 1, g_idx, g_fp);
+        fflush(g_fp);
+        g_idx = 0;
+    }
+}
 
 static void log_bytes(const void *bytes, int len)
 {
     const unsigned char *b = (const unsigned char *) bytes;
     while (len--) {
+        if(4096 - g_idx < 4) {
+            log_flush();
+        }
         if(*b >= ' ' && *b < 0x7f) {
-            fwrite(b, 1, 1, g_fp);
+            g_buffer[g_idx++] = *b;
         }
         else if(*b == '\r' || *b == '\n' || *b == '\t') {
-            char ch = 'r';
-            if(*b == '\n') ch = 'n';
-            if(*b == '\t') ch = 't';
-            fprintf(g_fp, "\\%c", ch);
+            g_buffer[g_idx++] = '\\';
+            switch (*b) {
+            case '\r': g_buffer[g_idx++] = 'r'; break;
+            case '\n': g_buffer[g_idx++] = 'n'; break;
+            case '\t': g_buffer[g_idx++] = 't'; break;
+            }
         }
         else {
-            fprintf(g_fp, "\\x%02x", *b);
+            g_buffer[g_idx++] = '\\';
+            g_buffer[g_idx++] = 'x';
+            g_buffer[g_idx++] = "0123456789abcdef"[*b >> 4];
+            g_buffer[g_idx++] = "0123456789abcdef"[*b & 15];
         }
         b++;
     }
@@ -105,11 +125,88 @@ static void log_wstring(const wchar_t *str, int len, int quotes)
     if(quotes) log_bytes("\"", 1);
 }
 
+static void log_itoa(unsigned long value, int base, int width, int nullpad)
+{
+    char buf[32] = {0}; int i;
+
+    for (i = 30; value != 0 && i != 0; i--, value /= base, width--) {
+        buf[i] = "0123456789abcdef"[value % base];
+    }
+
+    // if value is zero
+    if(i == 30 && width == 0) {
+        buf[i--] = '0';
+    }
+
+    while (width-- > 0) {
+        buf[i--] = nullpad ? '0' : ' ';
+    }
+
+    log_string(&buf[i + 1], -1, 0);
+}
+
 static void log_printf(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    vfprintf(g_fp, fmt, args);
+
+    while (*fmt != 0) {
+        if(*fmt != '%') {
+            log_bytes(fmt++, 1);
+            continue;
+        }
+
+        int done = 0, nullpad = 0, width = 0;
+
+        while (done == 0) {
+            switch (*++fmt) {
+            case '%':
+                log_bytes(fmt, 1);
+                done = 1;
+                break;
+
+            case '0':
+                nullpad = 1;
+                break;
+
+            case '1': case '2': case '3': case '4': case '5':
+            case '6': case '7': case '8': case '9':
+                width = width * 10 + *fmt - '0';
+                break;
+
+            case 'l':
+                break;
+
+            case 'd':
+                log_itoa(va_arg(args, long), 10, width, nullpad);
+                done = 1;
+                break;
+
+            case 'p':
+                log_bytes("0x", 2);
+                log_itoa(va_arg(args, long), 16, 2 * sizeof(long), 1);
+                done = 1;
+                break;
+
+            case 's':
+                log_string(va_arg(args, const char *), -1, 0);
+                done = 1;
+                break;
+
+            case 'S':
+                log_wstring(va_arg(args, const wchar_t *), -1, 0);
+                done = 1;
+                break;
+
+            default:
+                // dafuq?
+                fprintf(stderr, "invalid format specifier.. %c\n", *fmt);
+                break;
+            }
+        }
+        fmt++;
+    }
+
     va_end(args);
 }
 
@@ -124,6 +221,8 @@ void loq(const char *fmt, ...)
     SYSTEMTIME st;
     GetSystemTime(&st);
 
+    g_idx = 0;
+
     log_printf("\"%d-%02d-%02d %02d:%02d:%02d,%03d\",", st.wYear, st.wMonth,
         st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
@@ -133,7 +232,7 @@ void loq(const char *fmt, ...)
     long return_value = va_arg(args, long);
 
     // first parameter in args indicates the hooking type
-    log_printf("\"%d\",\"%S\",\"%d\",\"%d\",\"%s\",\"%s\",\"%s\",\"0x%p\"",
+    log_printf("\"%d\",\"%S\",\"%d\",\"%d\",\"%s\",\"%s\",\"%s\",\"%p\"",
         g_pid, g_module_name, GetCurrentThreadId(), g_ppid, module_name,
         function_name, is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
 
@@ -182,13 +281,13 @@ void loq(const char *fmt, ...)
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
             (void)len;
-            log_printf("0x%p", s);
+            log_printf("%p", s);
         }
         else if(key == 'B') {
             int *len = va_arg(args, int *);
             const char *s = va_arg(args, const char *);
             (void)len;
-            log_printf("0x%p", s);
+            log_printf("%p", s);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
@@ -196,11 +295,11 @@ void loq(const char *fmt, ...)
         }
         else if(key == 'l' || key == 'p') {
             long value = va_arg(args, long);
-            log_printf(key == 'l' ? "%ld" : "0x%p", value);
+            log_printf(key == 'l' ? "%ld" : "%p", value);
         }
         else if(key == 'L' || key == 'P') {
             void **ptr = va_arg(args, void **);
-            log_printf(key == 'L' ? "%ld" : "0x%p",
+            log_printf(key == 'L' ? "%ld" : "%p",
                 ptr != NULL ? *ptr : NULL);
         }
         else if(key == 'o') {
@@ -249,11 +348,12 @@ void loq(const char *fmt, ...)
         log_bytes("\"", 1);
     }
 
-    fprintf(g_fp, "\n");
     va_end(args);
 
+    g_buffer[g_idx++] = '\n';
+
     // make sure this entry is written to the log file
-    fflush(g_fp);
+    log_flush();
 
     LeaveCriticalSection(&g_mutex);
 }
