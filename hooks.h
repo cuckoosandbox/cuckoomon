@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <windns.h>
+#include "ntapi.h"
+
 //
 // File Hooks
 //
@@ -575,6 +578,47 @@ extern HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
   __in  DWORD dwHeadersLength,
   __in  LPVOID lpOptional,
   __in  DWORD dwOptionalLength
+);
+
+extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
+  __in         PCSTR lpstrName,
+  __in         WORD wType,
+  __in         DWORD Options,
+  __inout_opt  PVOID pExtra,
+  __out_opt    PDNS_RECORD *ppQueryResultsSet,
+  __out_opt    PVOID *pReserved
+);
+
+extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_UTF8,
+  __in         LPBYTE lpstrName,
+  __in         WORD wType,
+  __in         DWORD Options,
+  __inout_opt  PVOID pExtra,
+  __out_opt    PDNS_RECORD *ppQueryResultsSet,
+  __out_opt    PVOID *pReserved
+);
+
+extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_W,
+  __in         PWSTR lpstrName,
+  __in         WORD wType,
+  __in         DWORD Options,
+  __inout_opt  PVOID pExtra,
+  __out_opt    PDNS_RECORD *ppQueryResultsSet,
+  __out_opt    PVOID *pReserved
+);
+
+extern HOOKDEF(int, WSAAPI, getaddrinfo,
+  _In_opt_  PCSTR pNodeName,
+  _In_opt_  PCSTR pServiceName,
+  _In_opt_  const ADDRINFOA *pHints,
+  _Out_     PADDRINFOA *ppResult
+);
+
+extern HOOKDEF(int, WSAAPI, GetAddrInfoW,
+  _In_opt_  PCWSTR pNodeName,
+  _In_opt_  PCWSTR pServiceName,
+  _In_opt_  const ADDRINFOW *pHints,
+  _Out_     PADDRINFOW *ppResult
 );
 
 //

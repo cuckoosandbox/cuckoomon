@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __NTAPI_H__
+#define __NTAPI_H__
+
 typedef LONG NTSTATUS;
 
 #define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
@@ -27,6 +30,8 @@ typedef LONG NTSTATUS;
 #define __out_opt
 #define __inout
 #define __inout_opt
+#define _In_opt_
+#define _Out_
 
 typedef struct _STRING {
     USHORT Length;
@@ -63,3 +68,27 @@ typedef void *PIO_APC_ROUTINE;
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
 
 typedef void *HINTERNET;
+
+typedef struct addrinfo {
+  int             ai_flags;
+  int             ai_family;
+  int             ai_socktype;
+  int             ai_protocol;
+  size_t          ai_addrlen;
+  char            *ai_canonname;
+  struct sockaddr  *ai_addr;
+  struct addrinfo  *ai_next;
+} ADDRINFOA, *PADDRINFOA;
+
+typedef struct addrinfoW {
+  int              ai_flags;
+  int              ai_family;
+  int              ai_socktype;
+  int              ai_protocol;
+  size_t           ai_addrlen;
+  PWSTR            ai_canonname;
+  struct sockaddr  *ai_addr;
+  struct addrinfoW  *ai_next;
+} ADDRINFOW, *PADDRINFOW;
+
+#endif

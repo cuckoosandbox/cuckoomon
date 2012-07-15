@@ -81,3 +81,5 @@ void log_free();
     return ret != (DWORD) -1; }
 #define IS_SUCCESS_HWND() int is_success(HWND ret) { \
     return ret != NULL; }
+#define IS_SUCCESS_ZERO() int is_success(int ret) { \
+    return ret == 0; }

@@ -176,6 +176,12 @@ static hook_t g_hooks[] = {
     HOOK(wininet, HttpSendRequestA),
     HOOK(wininet, HttpSendRequestW),
 
+    HOOK(dnsapi, DnsQuery_A),
+    HOOK(dnsapi, DnsQuery_UTF8),
+    HOOK(dnsapi, DnsQuery_W),
+    HOOK(ws2_32, getaddrinfo),
+    HOOK(ws2_32, GetAddrInfoW),
+
     //
     // Service Hooks
     //

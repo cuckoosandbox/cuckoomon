@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <windows.h>
+#include <windns.h>
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
@@ -141,5 +142,79 @@ HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
     LOQ("pUb", "RequestHandle", hRequest,
         "Headers", dwHeadersLength, lpszHeaders,
         "PostData", dwOptionalLength, lpOptional);
+    return ret;
+}
+
+HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
+  __in         PCSTR lpstrName,
+  __in         WORD wType,
+  __in         DWORD Options,
+  __inout_opt  PVOID pExtra,
+  __out_opt    PDNS_RECORD *ppQueryResultsSet,
+  __out_opt    PVOID *pReserved
+) {
+    IS_SUCCESS_ZERO();
+
+    DNS_STATUS ret = Old_DnsQuery_A(lpstrName, wType, Options, pExtra,
+        ppQueryResultsSet, pReserved);
+    LOQ("sil", "Name", lpstrName, "Type", wType, "Options", Options);
+    return ret;
+}
+
+HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_UTF8,
+  __in         LPBYTE lpstrName,
+  __in         WORD wType,
+  __in         DWORD Options,
+  __inout_opt  PVOID pExtra,
+  __out_opt    PDNS_RECORD *ppQueryResultsSet,
+  __out_opt    PVOID *pReserved
+) {
+    IS_SUCCESS_ZERO();
+
+    DNS_STATUS ret = Old_DnsQuery_UTF8(lpstrName, wType, Options, pExtra,
+        ppQueryResultsSet, pReserved);
+    LOQ("sil", "Name", lpstrName, "Type", wType, "Options", Options);
+    return ret;
+}
+
+HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_W,
+  __in         PWSTR lpstrName,
+  __in         WORD wType,
+  __in         DWORD Options,
+  __inout_opt  PVOID pExtra,
+  __out_opt    PDNS_RECORD *ppQueryResultsSet,
+  __out_opt    PVOID *pReserved
+) {
+    IS_SUCCESS_ZERO();
+
+    DNS_STATUS ret = Old_DnsQuery_W(lpstrName, wType, Options, pExtra,
+        ppQueryResultsSet, pReserved);
+    LOQ("uil", "Name", lpstrName, "Type", wType, "Options", Options);
+    return ret;
+}
+
+HOOKDEF(int, WSAAPI, getaddrinfo,
+  _In_opt_  PCSTR pNodeName,
+  _In_opt_  PCSTR pServiceName,
+  _In_opt_  const ADDRINFOA *pHints,
+  _Out_     PADDRINFOA *ppResult
+) {
+    IS_SUCCESS_ZERO();
+
+    BOOL ret = Old_getaddrinfo(pNodeName, pServiceName, pHints, ppResult);
+    LOQ("ss", "NodeName", pNodeName, "ServiceName", pServiceName);
+    return ret;
+}
+
+HOOKDEF(int, WSAAPI, GetAddrInfoW,
+  _In_opt_  PCWSTR pNodeName,
+  _In_opt_  PCWSTR pServiceName,
+  _In_opt_  const ADDRINFOW *pHints,
+  _Out_     PADDRINFOW *ppResult
+) {
+    IS_SUCCESS_ZERO();
+
+    BOOL ret = Old_GetAddrInfoW(pNodeName, pServiceName, pHints, ppResult);
+    LOQ("uu", "NodeName", pNodeName, "ServiceName", pServiceName);
     return ret;
 }
