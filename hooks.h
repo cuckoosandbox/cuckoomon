@@ -82,6 +82,17 @@ extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
   __in  LPWSTR lpFileName
 );
 
+extern HOOKDEF(BOOL, WINAPI, CreateDirectoryW,
+  __in      LPCTSTR lpPathName,
+  __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+);
+
+extern HOOKDEF(BOOL, WINAPI, CreateDirectoryExW,
+  __in      LPWSTR lpTemplateDirectory,
+  __in      LPWSTR lpNewDirectory,
+  __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+);
+
 //
 // Registry Hooks
 //

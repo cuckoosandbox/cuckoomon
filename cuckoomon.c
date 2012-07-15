@@ -61,6 +61,12 @@ static hook_t g_hooks[] = {
     // perhaps go for NtSetInformationFile() later
     HOOK(kernel32, DeleteFileW),
 
+    // CreateDirectoryA calls CreateDirectoryW
+    // CreateDirectoryExA calls CreateDirectoryExW
+    // CreateDirectoryW does not call CreateDirectoryExW
+    HOOK(kernel32, CreateDirectoryW),
+    HOOK(kernel32, CreateDirectoryExW),
+
     //
     // Registry Hooks
     //

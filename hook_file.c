@@ -161,3 +161,27 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
     LOQ("u", "FileName", lpFileName);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, CreateDirectoryW,
+  __in      LPCTSTR lpPathName,
+  __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_CreateDirectoryW(lpPathName, lpSecurityAttributes);
+    LOQ("u", "DirectoryName", lpPathName);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, CreateDirectoryExW,
+  __in      LPWSTR lpTemplateDirectory,
+  __in      LPWSTR lpNewDirectory,
+  __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_CreateDirectoryExW(lpTemplateDirectory, lpNewDirectory,
+        lpSecurityAttributes);
+    LOQ("u", "DirectoryName", lpNewDirectory);
+    return ret;
+}
