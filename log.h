@@ -83,3 +83,6 @@ void log_free();
     return ret != NULL; }
 #define IS_SUCCESS_ZERO() int is_success(int ret) { \
     return ret == 0; }
+
+#define ENSURE_ULONG(param) \
+    ULONG _##param = 0; if(param == NULL) param = &_##param;

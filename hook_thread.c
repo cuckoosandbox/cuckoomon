@@ -126,8 +126,11 @@ HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
 ) {
     IS_SUCCESS_NTSTATUS();
 
+    ENSURE_ULONG(PreviousSuspendCount);
+
     NTSTATUS ret = Old_NtSuspendThread(ThreadHandle, PreviousSuspendCount);
-    LOQ("p", "ThreadHandle", ThreadHandle);
+    LOQ("pL", "ThreadHandle", ThreadHandle,
+        "SuspendCount", PreviousSuspendCount);
     return ret;
 }
 
@@ -137,7 +140,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
 ) {
     IS_SUCCESS_NTSTATUS();
 
+    ENSURE_ULONG(SuspendCount);
+
     NTSTATUS ret = Old_NtResumeThread(ThreadHandle, SuspendCount);
-    LOQ("p", "ThreadHandle", ThreadHandle);
+    LOQ("pL", "ThreadHandle", ThreadHandle, "SuspendCount", SuspendCount);
     return ret;
 }

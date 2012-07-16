@@ -166,6 +166,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
 ) {
     IS_SUCCESS_NTSTATUS();
 
+    ENSURE_ULONG(NumberOfBytesReaded);
+
     BOOL ret = Old_NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToRead, NumberOfBytesReaded);
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
@@ -181,6 +183,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __out_opt   ULONG *NumberOfBytesWritten
 ) {
     IS_SUCCESS_NTSTATUS();
+
+    ENSURE_ULONG(NumberOfBytesWritten);
 
     BOOL ret = Old_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToWrite, NumberOfBytesWritten);
