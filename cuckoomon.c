@@ -134,8 +134,8 @@ static hook_t g_hooks[] = {
 
     // all variants of ShellExecute end up in ShellExecuteExW
     HOOK(shell32, ShellExecuteExW),
-    HOOK(kernel32, ReadProcessMemory),
-    HOOK(kernel32, WriteProcessMemory),
+    HOOK(ntdll, NtReadVirtualMemory),
+    HOOK(ntdll, NtWriteVirtualMemory),
     HOOK(kernel32, VirtualAllocEx),
     HOOK(kernel32, VirtualProtectEx),
     HOOK(kernel32, VirtualFreeEx),
@@ -149,10 +149,10 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, CreateRemoteThread),
     HOOK(kernel32, TerminateThread),
     HOOK(kernel32, ExitThread),
-    HOOK(kernel32, GetThreadContext),
-    HOOK(kernel32, SetThreadContext),
-    HOOK(kernel32, SuspendThread),
-    HOOK(kernel32, ResumeThread),
+    HOOK(ntdll, NtGetContextThread),
+    HOOK(ntdll, NtSetContextThread),
+    HOOK(ntdll, NtSuspendThread),
+    HOOK(ntdll, NtResumeThread),
 
     //
     // Misc Hooks

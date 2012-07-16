@@ -157,35 +157,35 @@ HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
     return ret;
 }
 
-HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
-    __in   HANDLE hProcess,
-    __in   LPCVOID lpBaseAddress,
-    __out  LPVOID lpBuffer,
-    __in   SIZE_T nSize,
-    __out  SIZE_T *lpNumberOfBytesRead
+HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
+    __in        HANDLE ProcessHandle,
+    __in        LPCVOID BaseAddress,
+    __out       LPVOID Buffer,
+    __in        ULONG NumberOfBytesToRead,
+    __out_opt   PULONG NumberOfBytesReaded
 ) {
-    IS_SUCCESS_BOOL();
+    IS_SUCCESS_NTSTATUS();
 
-    BOOL ret = Old_ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer,
-        nSize, lpNumberOfBytesRead);
-    LOQ("2pB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
-        "Buffer", lpNumberOfBytesRead, lpBuffer);
+    BOOL ret = Old_NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer,
+        NumberOfBytesToRead, NumberOfBytesReaded);
+    LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "Buffer", NumberOfBytesReaded, Buffer);
     return ret;
 }
 
-HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
-    __in   HANDLE hProcess,
-    __in   LPVOID lpBaseAddress,
-    __in   LPCVOID lpBuffer,
-    __in   SIZE_T nSize,
-    __out  SIZE_T *lpNumberOfBytesWritten
+HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
+    __in        HANDLE ProcessHandle,
+    __in        LPVOID BaseAddress,
+    __in        LPCVOID Buffer,
+    __in        ULONG NumberOfBytesToWrite,
+    __out_opt   ULONG *NumberOfBytesWritten
 ) {
-    IS_SUCCESS_BOOL();
+    IS_SUCCESS_NTSTATUS();
 
-    BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
-        nSize, lpNumberOfBytesWritten);
-    LOQ("2pB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
-        "Buffer", lpNumberOfBytesWritten, lpBuffer);
+    BOOL ret = Old_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer,
+        NumberOfBytesToWrite, NumberOfBytesWritten);
+    LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "Buffer", NumberOfBytesWritten, Buffer);
     return ret;
 }
 

@@ -98,44 +98,46 @@ HOOKDEF(VOID, WINAPI, ExitThread,
     Old_ExitThread(dwExitCode);
 }
 
-HOOKDEF(BOOL, WINAPI, GetThreadContext,
-  __in     HANDLE hThread,
-  __inout  LPCONTEXT lpContext
+HOOKDEF(NTSTATUS, WINAPI, NtGetContextThread,
+  __in     HANDLE ThreadHandle,
+  __inout  LPCONTEXT Context
 ) {
-    IS_SUCCESS_BOOL();
+    IS_SUCCESS_NTSTATUS();
 
-    BOOL ret = Old_GetThreadContext(hThread, lpContext);
-    LOQ("p", "ThreadHandle", hThread);
+    NTSTATUS ret = Old_NtGetContextThread(ThreadHandle, Context);
+    LOQ("p", "ThreadHandle", ThreadHandle);
     return ret;
 }
 
-HOOKDEF(BOOL, WINAPI, SetThreadContext,
-  __in  HANDLE hThread,
-  __in  const CONTEXT *lpContext
+HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
+  __in  HANDLE ThreadHandle,
+  __in  const CONTEXT *Context
 ) {
-    IS_SUCCESS_BOOL();
+    IS_SUCCESS_NTSTATUS();
 
-    BOOL ret = Old_SetThreadContext(hThread, lpContext);
-    LOQ("p", "ThreadHandle", hThread);
+    NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
+    LOQ("p", "ThreadHandle", ThreadHandle);
     return ret;
 }
 
-HOOKDEF(DWORD, WINAPI, SuspendThread,
-  __in  HANDLE hThread
+HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
+  __in          HANDLE ThreadHandle,
+  __out_opt     ULONG *PreviousSuspendCount
 ) {
-    IS_SUCCESS_DWORDTHREAD();
+    IS_SUCCESS_NTSTATUS();
 
-    DWORD ret = Old_SuspendThread(hThread);
-    LOQ("p", "ThreadHandle", hThread);
+    NTSTATUS ret = Old_NtSuspendThread(ThreadHandle, PreviousSuspendCount);
+    LOQ("p", "ThreadHandle", ThreadHandle);
     return ret;
 }
 
-HOOKDEF(DWORD, WINAPI, ResumeThread,
-  __in  HANDLE hThread
+HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
+  __in          HANDLE ThreadHandle,
+  __out_opt     ULONG *SuspendCount
 ) {
-    IS_SUCCESS_DWORDTHREAD();
+    IS_SUCCESS_NTSTATUS();
 
-    DWORD ret = Old_ResumeThread(hThread);
-    LOQ("p", "ThreadHandle", hThread);
+    NTSTATUS ret = Old_NtResumeThread(ThreadHandle, SuspendCount);
+    LOQ("p", "ThreadHandle", ThreadHandle);
     return ret;
 }

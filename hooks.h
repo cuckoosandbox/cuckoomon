@@ -354,20 +354,20 @@ extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
   __inout  SHELLEXECUTEINFOW *pExecInfo
 );
 
-extern HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
-    __in   HANDLE hProcess,
-    __in   LPCVOID lpBaseAddress,
-    __out  LPVOID lpBuffer,
-    __in   SIZE_T nSize,
-    __out  SIZE_T *lpNumberOfBytesRead
+extern HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
+    __in        HANDLE ProcessHandle,
+    __in        LPCVOID BaseAddress,
+    __out       LPVOID Buffer,
+    __in        ULONG NumberOfBytesToRead,
+    __out_opt   PULONG NumberOfBytesReaded
 );
 
-extern HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
-    __in   HANDLE hProcess,
-    __in   LPVOID lpBaseAddress,
-    __in   LPCVOID lpBuffer,
-    __in   SIZE_T nSize,
-    __out  SIZE_T *lpNumberOfBytesWritten
+extern HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
+    __in        HANDLE ProcessHandle,
+    __in        LPVOID BaseAddress,
+    __in        LPCVOID Buffer,
+    __in        ULONG NumberOfBytesToWrite,
+    __out_opt   ULONG *NumberOfBytesWritten
 );
 
 extern HOOKDEF(LPVOID, WINAPI, VirtualAllocEx,
@@ -431,22 +431,24 @@ extern HOOKDEF(VOID, WINAPI, ExitThread,
   __in  DWORD dwExitCode
 );
 
-extern HOOKDEF(BOOL, WINAPI, GetThreadContext,
-  __in     HANDLE hThread,
-  __inout  LPCONTEXT lpContext
+extern HOOKDEF(NTSTATUS, WINAPI, NtGetContextThread,
+  __in     HANDLE ThreadHandle,
+  __inout  LPCONTEXT Context
 );
 
-extern HOOKDEF(BOOL, WINAPI, SetThreadContext,
-  __in  HANDLE hThread,
-  __in  const CONTEXT *lpContext
+extern HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
+  __in  HANDLE ThreadHandle,
+  __in  const CONTEXT *Context
 );
 
-extern HOOKDEF(DWORD, WINAPI, SuspendThread,
-  __in  HANDLE hThread
+extern HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
+  __in          HANDLE ThreadHandle,
+  __out_opt     ULONG *PreviousSuspendCount
 );
 
-extern HOOKDEF(DWORD, WINAPI, ResumeThread,
-  __in  HANDLE hThread
+extern HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
+  __in          HANDLE ThreadHandle,
+  __out_opt     ULONG *SuspendCount
 );
 
 //
