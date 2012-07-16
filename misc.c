@@ -70,3 +70,14 @@ DWORD random()
     DWORD ret;
     return pRtlGenRandom(&ret, sizeof(ret)) ? ret : rand();
 }
+
+int wcsnicmp(const wchar_t *a, const wchar_t *b, int len)
+{
+    while (len-- != 0) {
+        if(*a++ != *b++) {
+            return 1;
+        }
+    }
+    return 0;
+}
+

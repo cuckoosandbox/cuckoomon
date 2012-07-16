@@ -55,6 +55,16 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
     return ret;
 }
 
+HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
+  __in  HHOOK hhk
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_UnhookWindowsHookEx(hhk);
+    LOQ("p", hhk);
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,
     __in_opt    ULONG Flags,

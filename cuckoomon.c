@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "hooks.h"
 #include "log.h"
+#include "misc.h"
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
@@ -160,6 +161,7 @@ static hook_t g_hooks[] = {
 
     HOOK(user32, SetWindowsHookExA),
     HOOK(user32, SetWindowsHookExW),
+    HOOK(user32, UnhookWindowsHookEx),
     HOOK(ntdll, LdrLoadDll),
     HOOK(ntdll, LdrGetDllHandle),
     HOOK(ntdll, LdrGetProcedureAddress),
@@ -203,16 +205,6 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, ControlService),
     HOOK(advapi32, DeleteService),
 };
-
-int wcsnicmp(const wchar_t *a, const wchar_t *b, int len)
-{
-    while (len-- != 0) {
-        if(*a++ != *b++) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 void set_hooks_dll(const wchar_t *library, int len)
 {

@@ -469,6 +469,10 @@ extern HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
     __in  DWORD dwThreadId
 );
 
+extern HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
+  __in  HHOOK hhk
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,
     __in_opt    ULONG Flags,
