@@ -686,37 +686,37 @@ extern HOOKDEF(SC_HANDLE, WINAPI, CreateServiceW,
   __in_opt   LPWSTR lpPassword
 );
 
-HOOKDEF(SC_HANDLE, WINAPI, OpenServiceA,
+extern HOOKDEF(SC_HANDLE, WINAPI, OpenServiceA,
   __in  SC_HANDLE hSCManager,
   __in  LPCTSTR lpServiceName,
   __in  DWORD dwDesiredAccess
 );
 
-HOOKDEF(SC_HANDLE, WINAPI, OpenServiceW,
+extern HOOKDEF(SC_HANDLE, WINAPI, OpenServiceW,
   __in  SC_HANDLE hSCManager,
   __in  LPWSTR lpServiceName,
   __in  DWORD dwDesiredAccess
 );
 
-HOOKDEF(BOOL, WINAPI, StartServiceA,
+extern HOOKDEF(BOOL, WINAPI, StartServiceA,
   __in      SC_HANDLE hService,
   __in      DWORD dwNumServiceArgs,
   __in_opt  LPCTSTR *lpServiceArgVectors
 );
 
-HOOKDEF(BOOL, WINAPI, StartServiceW,
+extern HOOKDEF(BOOL, WINAPI, StartServiceW,
   __in      SC_HANDLE hService,
   __in      DWORD dwNumServiceArgs,
   __in_opt  LPWSTR *lpServiceArgVectors
 );
 
-HOOKDEF(BOOL, WINAPI, ControlService,
+extern HOOKDEF(BOOL, WINAPI, ControlService,
   __in   SC_HANDLE hService,
   __in   DWORD dwControl,
   __out  LPSERVICE_STATUS lpServiceStatus
 );
 
-HOOKDEF(BOOL, WINAPI, DeleteService,
+extern HOOKDEF(BOOL, WINAPI, DeleteService,
   __in  SC_HANDLE hService
 );
 
@@ -724,12 +724,12 @@ HOOKDEF(BOOL, WINAPI, DeleteService,
 // Special Hooks
 //
 
-HOOKDEF2(NTSTATUS, WINAPI, NtResumeThread,
+extern HOOKDEF2(NTSTATUS, WINAPI, NtResumeThread,
     __in        HANDLE ThreadHandle,
     __out_opt   PULONG SuspendCount
 );
 
-HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
+extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,
     __in_opt    ULONG Flags,
     __in        PUNICODE_STRING ModuleFileName,
