@@ -40,6 +40,7 @@ typedef struct _hook_t {
 
     unsigned char gate[128];
     unsigned char pre_gate[128];
+    unsigned char hook_data[32];
 } hook_t;
 
 int lde(void *addr);
@@ -54,8 +55,12 @@ void hook_disable();
 unsigned int hook_get_last_error();
 void hook_set_last_error(unsigned int errcode);
 
-#define HOOK_DIRECT_JMP 0
-#define HOOK_NOP_DIRECT_JMP 1
+#define HOOK_JMP_DIRECT 0
+#define HOOK_NOP_JMP_DIRECT 1
+#define HOOK_HOTPATCH_JMP_DIRECT 2
+#define HOOK_PUSH_RETN 3
+#define HOOK_JMP_INDIRECT 4
+#define HOOK_PUSH_FPU_RETN 5
 
 #define HOOKDEF(return_value, calling_convention, apiname, ...) \
     return_value (calling_convention *Old_##apiname)(__VA_ARGS__); \

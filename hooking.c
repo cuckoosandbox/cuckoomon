@@ -285,9 +285,75 @@ static int hook_api_jmp_direct(hook_t *h, unsigned char *from,
 static int hook_api_nop_jmp_direct(hook_t *h, unsigned char *from,
     unsigned char *to)
 {
-    // first instruction is a nop, followed by a regular direct jmp
+    // nop
     *from++ = 0x90;
+
     return hook_api_jmp_direct(h, from, to);
+}
+
+// useful for "detections" such as if(*api_addr == 0xe9)
+static int hook_api_hotpatch_jmp_direct(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // mov edi, edi
+    *from++ = 0x8b;
+    *from++ = 0xff;
+
+    return hook_api_jmp_direct(h, from, to);
+}
+
+static int hook_api_push_retn(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // push addr
+    *from++ = 0x68;
+    *(unsigned char **) from = to;
+
+    // retn
+    from[4] = 0xc3;
+
+    return 1;
+}
+
+static int hook_api_jmp_indirect(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // jmp dword [hook_data]
+    *from++ = 0xff;
+    *from++ = 0x25;
+
+    *(unsigned char **) from = h->hook_data;
+
+    // the real address is stored in hook_data
+    memcpy(h->hook_data, &to, sizeof(to));
+    return 1;
+}
+
+static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // push ebp
+    *from++ = 0x55;
+
+    // fld qword [hook_data]
+    *from++ = 0xdd;
+    *from++ = 0x05;
+
+    *(unsigned char **) from = h->hook_data;
+    from += 4;
+
+    // fistp dword [esp]
+    *from++ = 0xdb;
+    *from++ = 0x1c;
+    *from++ = 0xe4;
+
+    // retn
+    *from++ = 0xc3;
+
+    // store the address as double
+    double addr = (double) (unsigned long) to;
+    memcpy(h->hook_data, &addr, sizeof(addr));
+    return 1;
 }
 
 int hook_api(hook_t *h, int type)
@@ -297,8 +363,12 @@ int hook_api(hook_t *h, int type)
         int(*hook)(hook_t *h, unsigned char *from, unsigned char *to);
         int len;
     } hook_types[] = {
-        /* HOOK_DIRECT_JMP */ {&hook_api_jmp_direct, 5},
-        /* HOOK_NOP_DIRECT_JMP */ {&hook_api_nop_jmp_direct, 6},
+        /* HOOK_JMP_DIRECT */ {&hook_api_jmp_direct, 5},
+        /* HOOK_NOP_JMP_DIRECT */ {&hook_api_nop_jmp_direct, 6},
+        /* HOOK_HOTPATCH_JMP_DIRECT */ {&hook_api_hotpatch_jmp_direct, 7},
+        /* HOOK_PUSH_RETN */ {&hook_api_push_retn, 6},
+        /* HOOK_JMP_INDIRECT */ {&hook_api_jmp_indirect, 6},
+        /* HOOK_PUSH_FPU_RETN */ {&hook_api_push_fpu_retn, 11},
     };
 
     // is this address already hooked?
