@@ -206,7 +206,8 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, DeleteService),
 };
 
-#define HOOKTYPE (random() % HOOK_MAXTYPE)
+// get a random hooking technique, except for "direct jmp"
+#define HOOKTYPE (1 + (random() % (HOOK_MAXTYPE - 1)))
 
 void set_hooks_dll(const wchar_t *library, int len)
 {
