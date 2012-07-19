@@ -61,7 +61,7 @@ HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_UnhookWindowsHookEx(hhk);
-    LOQ("p", hhk);
+    LOQ("p", "HookHandle", hhk);
     return ret;
 }
 

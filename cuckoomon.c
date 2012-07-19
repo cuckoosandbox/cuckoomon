@@ -206,11 +206,13 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, DeleteService),
 };
 
+#define HOOKTYPE (random() % HOOK_MAXTYPE)
+
 void set_hooks_dll(const wchar_t *library, int len)
 {
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
         if(!wcsnicmp(g_hooks[i].library, library, len)) {
-            hook_api(&g_hooks[i], HOOK_DIRECT_JMP);
+            hook_api(&g_hooks[i], HOOKTYPE);
         }
     }
 }
@@ -226,7 +228,7 @@ void set_hooks()
 
     // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
-        hook_api(&g_hooks[i], HOOK_DIRECT_JMP);
+        hook_api(&g_hooks[i], HOOKTYPE);
     }
 
     hook_enable();
