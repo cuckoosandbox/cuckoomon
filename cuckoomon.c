@@ -207,7 +207,8 @@ static hook_t g_hooks[] = {
 };
 
 // get a random hooking technique, except for "direct jmp"
-#define HOOKTYPE (1 + (random() % (HOOK_MAXTYPE - 1)))
+// #define HOOKTYPE (1 + (random() % (HOOK_MAXTYPE - 1)))
+#define HOOKTYPE HOOK_JMP_DIRECT
 
 void set_hooks_dll(const wchar_t *library, int len)
 {

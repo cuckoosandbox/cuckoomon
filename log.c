@@ -39,9 +39,8 @@ static int g_idx;
 static void log_flush()
 {
     if(g_idx != 0) {
-        fwrite(g_buffer, 1, g_idx, g_fp);
+        g_idx -= fwrite(g_buffer, 1, g_idx, g_fp);
         fflush(g_fp);
-        g_idx = 0;
     }
 }
 
@@ -57,6 +56,7 @@ static void log_bytes(const void *bytes, int len)
         }
         else if(*b == '\r' || *b == '\n' || *b == '\t') {
             g_buffer[g_idx++] = '\\';
+            g_buffer[g_idx++] = '\\';
             switch (*b) {
             case '\r': g_buffer[g_idx++] = 'r'; break;
             case '\n': g_buffer[g_idx++] = 'n'; break;
@@ -64,6 +64,7 @@ static void log_bytes(const void *bytes, int len)
             }
         }
         else {
+            g_buffer[g_idx++] = '\\';
             g_buffer[g_idx++] = '\\';
             g_buffer[g_idx++] = 'x';
             g_buffer[g_idx++] = "0123456789abcdef"[*b >> 4];
@@ -79,8 +80,8 @@ static void log_string(const char *str, int len, int quotes)
 
     if(quotes) log_bytes("\"", 1);
     while (len--) {
-        if(*str == '"' || *str == '\\') {
-            log_bytes("\\", 1);
+        if(*str == '"') {
+            log_bytes("\"", 1);
         }
         log_bytes(str++, 1);
     }
@@ -117,8 +118,8 @@ static void log_wstring(const wchar_t *str, int len, int quotes)
 
     if(quotes) log_bytes("\"", 1);
     while (len--) {
-        if(*str == '"' || *str == '\\') {
-            log_bytes("\\", 1);
+        if(*str == '"') {
+            log_bytes("\"", 1);
         }
         log_wchar(*str++);
     }
