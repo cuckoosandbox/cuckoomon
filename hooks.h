@@ -97,155 +97,129 @@ extern HOOKDEF(BOOL, WINAPI, CreateDirectoryExW,
 // Registry Hooks
 //
 
-extern HOOKDEF(LONG, WINAPI, RegOpenKeyExA,
-  __in        HKEY hKey,
-  __in_opt    LPCTSTR lpSubKey,
-  __reserved  DWORD ulOptions,
-  __in        REGSAM samDesired,
-  __out       PHKEY phkResult
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,
+    __out       PHANDLE KeyHandle,
+    __in        ACCESS_MASK DesiredAccess,
+    __in        POBJECT_ATTRIBUTES ObjectAttributes,
+    __reserved  ULONG TitleIndex,
+    __in_opt    PUNICODE_STRING Class,
+    __in        ULONG CreateOptions,
+    __out_opt   PULONG Disposition
 );
 
-extern HOOKDEF(LONG, WINAPI, RegOpenKeyExW,
-  __in        HKEY hKey,
-  __in_opt    LPWSTR lpSubKey,
-  __reserved  DWORD ulOptions,
-  __in        REGSAM samDesired,
-  __out       PHKEY phkResult
+extern HOOKDEF(NTSTATUS, WINAPI, NtOpenKey,
+    __out  PHANDLE KeyHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
 );
 
-extern HOOKDEF(LONG, WINAPI, RegCreateKeyExA,
-  __in        HKEY hKey,
-  __in        LPCTSTR lpSubKey,
-  __reserved  DWORD Reserved,
-  __in_opt    LPTSTR lpClass,
-  __in        DWORD dwOptions,
-  __in        REGSAM samDesired,
-  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-  __out       PHKEY phkResult,
-  __out_opt   LPDWORD lpdwDisposition
+extern HOOKDEF(NTSTATUS, WINAPI, NtOpenKeyEx,
+    __out  PHANDLE KeyHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes,
+    __in   ULONG OpenOptions
 );
 
-extern HOOKDEF(LONG, WINAPI, RegCreateKeyExW,
-  __in        HKEY hKey,
-  __in        LPWSTR lpSubKey,
-  __reserved  DWORD Reserved,
-  __in_opt    LPWSTR lpClass,
-  __in        DWORD dwOptions,
-  __in        REGSAM samDesired,
-  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-  __out       PHKEY phkResult,
-  __out_opt   LPDWORD lpdwDisposition
+extern HOOKDEF(NTSTATUS, WINAPI, NtRenameKey,
+    __in  HANDLE KeyHandle,
+    __in  PUNICODE_STRING NewName
 );
 
-extern HOOKDEF(LONG, WINAPI, RegDeleteKeyA,
-  __in  HKEY hKey,
-  __in  LPCTSTR lpSubKey
+extern HOOKDEF(NTSTATUS, WINAPI, NtReplaceKey,
+    __in  POBJECT_ATTRIBUTES NewHiveFileName,
+    __in  HANDLE KeyHandle,
+    __in  POBJECT_ATTRIBUTES BackupHiveFileName
 );
 
-extern HOOKDEF(LONG, WINAPI, RegDeleteKeyW,
-  __in  HKEY hKey,
-  __in  LPWSTR lpSubKey
+extern HOOKDEF(NTSTATUS, WINAPI, NtEnumerateKey,
+    __in       HANDLE KeyHandle,
+    __in       ULONG Index,
+    __in       KEY_INFORMATION_CLASS KeyInformationClass,
+    __out_opt  PVOID KeyInformation,
+    __in       ULONG Length,
+    __out      PULONG ResultLength
 );
 
-extern HOOKDEF(LONG, WINAPI, RegEnumKeyW,
-  __in   HKEY hKey,
-  __in   DWORD dwIndex,
-  __out  LPWSTR lpName,
-  __in   DWORD cchName
+extern HOOKDEF(NTSTATUS, WINAPI, NtEnumerateValueKey,
+    __in       HANDLE KeyHandle,
+    __in       ULONG Index,
+    __in       KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
+    __out_opt  PVOID KeyValueInformation,
+    __in       ULONG Length,
+    __out      PULONG ResultLength
 );
 
-extern HOOKDEF(LONG, WINAPI, RegEnumKeyExA,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPTSTR lpName,
-  __inout      LPDWORD lpcName,
-  __reserved   LPDWORD lpReserved,
-  __inout      LPTSTR lpClass,
-  __inout_opt  LPDWORD lpcClass,
-  __out_opt    PFILETIME lpftLastWriteTime
+extern HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
+    __in      HANDLE KeyHandle,
+    __in      PUNICODE_STRING ValueName,
+    __in_opt  ULONG TitleIndex,
+    __in      ULONG Type,
+    __in_opt  PVOID Data,
+    __in      ULONG DataSize
 );
 
-extern HOOKDEF(LONG, WINAPI, RegEnumKeyExW,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPWSTR lpName,
-  __inout      LPDWORD lpcName,
-  __reserved   LPDWORD lpReserved,
-  __inout      LPWSTR lpClass,
-  __inout_opt  LPDWORD lpcClass,
-  __out_opt    PFILETIME lpftLastWriteTime
+extern HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
+    __in       HANDLE KeyHandle,
+    __in       PUNICODE_STRING ValueName,
+    __in       KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
+    __out_opt  PVOID KeyValueInformation,
+    __in       ULONG Length,
+    __out      PULONG ResultLength
 );
 
-extern HOOKDEF(LONG, WINAPI, RegEnumValueA,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPTSTR lpValueName,
-  __inout      LPDWORD lpcchValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+extern HOOKDEF(NTSTATUS, WINAPI, NtQueryMultipleValueKey,
+    __in       HANDLE KeyHandle,
+    __inout    PKEY_VALUE_ENTRY ValueEntries,
+    __in       ULONG EntryCount,
+    __out      PVOID ValueBuffer,
+    __inout    PULONG BufferLength,
+    __out_opt  PULONG RequiredBufferLength
 );
 
-extern HOOKDEF(LONG, WINAPI, RegEnumValueW,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPWSTR lpValueName,
-  __inout      LPDWORD lpcchValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+extern HOOKDEF(NTSTATUS, WINAPI, NtDeleteKey,
+    __in  HANDLE KeyHandle
 );
 
-extern HOOKDEF(LONG, WINAPI, RegSetValueExA,
-  __in        HKEY hKey,
-  __in_opt    LPCTSTR lpValueName,
-  __reserved  DWORD Reserved,
-  __in        DWORD dwType,
-  __in        const BYTE *lpData,
-  __in        DWORD cbData
+extern HOOKDEF(NTSTATUS, WINAPI, NtDeleteValueKey,
+    __in  HANDLE KeyHandle,
+    __in  PUNICODE_STRING ValueName
 );
 
-extern HOOKDEF(LONG, WINAPI, RegSetValueExW,
-  __in        HKEY hKey,
-  __in_opt    LPWSTR lpValueName,
-  __reserved  DWORD Reserved,
-  __in        DWORD dwType,
-  __in        const BYTE *lpData,
-  __in        DWORD cbData
+extern HOOKDEF(NTSTATUS, WINAPI, NtLoadKey,
+    __in  POBJECT_ATTRIBUTES TargetKey,
+    __in  POBJECT_ATTRIBUTES SourceFile
 );
 
-extern HOOKDEF(LONG, WINAPI, RegQueryValueExA,
-  __in         HKEY hKey,
-  __in_opt     LPCTSTR lpValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+extern HOOKDEF(NTSTATUS, WINAPI, NtLoadKey2,
+    __in  POBJECT_ATTRIBUTES TargetKey,
+    __in  POBJECT_ATTRIBUTES SourceFile,
+    __in  ULONG Flags
 );
 
-extern HOOKDEF(LONG, WINAPI, RegQueryValueExW,
-  __in         HKEY hKey,
-  __in_opt     LPWSTR lpValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+extern HOOKDEF(NTSTATUS, WINAPI, NtLoadKeyEx,
+    __in      POBJECT_ATTRIBUTES TargetKey,
+    __in      POBJECT_ATTRIBUTES SourceFile,
+    __in      ULONG Flags,
+    __in_opt  HANDLE TrustClassKey
 );
 
-extern HOOKDEF(LONG, WINAPI, RegDeleteValueA,
-  __in      HKEY hKey,
-  __in_opt  LPCTSTR lpValueName
+extern HOOKDEF(NTSTATUS, WINAPI, NtQueryKey,
+    __in       HANDLE KeyHandle,
+    __in       KEY_INFORMATION_CLASS KeyInformationClass,
+    __out_opt  PVOID KeyInformation,
+    __in       ULONG Length,
+    __out      PULONG ResultLength
 );
 
-extern HOOKDEF(LONG, WINAPI, RegDeleteValueW,
-  __in      HKEY hKey,
-  __in_opt  LPWSTR lpValueName
+extern HOOKDEF(NTSTATUS, WINAPI, NtSaveKey,
+    __in  HANDLE KeyHandle,
+    __in  HANDLE FileHandle
 );
 
-extern HOOKDEF(LONG, WINAPI, RegCloseKey,
-    __in    HKEY hKey
+extern HOOKDEF(NTSTATUS, WINAPI, NtSaveKeyEx,
+    __in  HANDLE KeyHandle,
+    __in  HANDLE FileHandle,
+    __in  ULONG Format
 );
 
 //
