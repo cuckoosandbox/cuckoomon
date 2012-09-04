@@ -91,4 +91,32 @@ typedef struct addrinfoW {
   struct addrinfoW  *ai_next;
 } ADDRINFOW, *PADDRINFOW;
 
+typedef enum _KEY_INFORMATION_CLASS {
+  KeyBasicInformation            = 0,
+  KeyNodeInformation             = 1,
+  KeyFullInformation             = 2,
+  KeyNameInformation             = 3,
+  KeyCachedInformation           = 4,
+  KeyFlagsInformation            = 5,
+  KeyVirtualizationInformation   = 6,
+  KeyHandleTagsInformation       = 7,
+  MaxKeyInfoClass                = 8
+} KEY_INFORMATION_CLASS;
+
+typedef enum _KEY_VALUE_INFORMATION_CLASS {
+  KeyValueBasicInformation            = 0,
+  KeyValueFullInformation             = 1,
+  KeyValuePartialInformation          = 2,
+  KeyValueFullInformationAlign64      = 3,
+  KeyValuePartialInformationAlign64   = 4,
+  MaxKeyValueInfoClass                = 5
+} KEY_VALUE_INFORMATION_CLASS;
+
+typedef struct _KEY_VALUE_ENTRY {
+    PUNICODE_STRING    ValueName;
+    ULONG        DataLength;
+    ULONG        DataOffset;
+    ULONG        Type;
+} KEY_VALUE_ENTRY, *PKEY_VALUE_ENTRY;
+
 #endif

@@ -3,8 +3,12 @@ CFLAGS = -Wall -std=c99 -s -O2
 DLL = -shared
 DIRS = -Idistorm3.2-package/include
 
-HOOKS = $(patsubst %.c, %.o, $(shell find 'hook_*.c'))
-DISTORM3 = $(patsubst %.c, %.o, $(shell find 'distorm3.2-package/src/*.c'))
+DISTORM3 = $(wildcard distorm3.2-package/src/*.c)
+DISTORM3OBJ = $(DISTORM3:.c=.o)
+
+HOOKS = $(wildcard hook_*.c)
+HOOKSOBJ = $(HOOKS:.c=.o)
+
 CUCKOO = hooking.o log.o special.o pipe.o misc.o cuckoomon.o
 
 default: cuckoomon.dll
@@ -12,8 +16,8 @@ default: cuckoomon.dll
 %.o: %.c
 	$(CC) $(CFLAGS) $(DIRS) -c $^ -o $@
 
-cuckoomon.dll: $(CUCKOO) $(HOOKS) $(DISTORM3)
+cuckoomon.dll: $(CUCKOO) $(HOOKSOBJ) $(DISTORM3OBJ)
 	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^
 
 clean:
-	rm $(CUCKOO) $(HOOKS) $(DISTORM3) cuckoomon.dll
+	rm $(CUCKOO) $(HOOKSOBJ) $(DISTORM3OBJ) cuckoomon.dll
