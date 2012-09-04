@@ -22,44 +22,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void pipe_write(const char *fmt, ...)
 {
-    va_list args; char buf[2048]; HANDLE pipe_handle; DWORD length;
+    va_list args; char buf[2048]; DWORD length;
 
     va_start(args, fmt);
     length = vsnprintf(buf, sizeof(buf), fmt, args);
-
-    while ((pipe_handle = CreateFile(PIPE_NAME, GENERIC_WRITE, 0, NULL,
-            OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE) {
-        if(GetLastError() == ERROR_PIPE_BUSY || !WaitNamedPipe(PIPE_NAME,
-                20000)) {
-            return;
-        }
-    }
-
-    WriteFile(pipe_handle, buf, length, &length, NULL);
-    CloseHandle(pipe_handle);
-
     va_end(args);
+
+    CallNamedPipe(PIPE_NAME, buf, length, NULL, 0, NULL, 0);
 }
 
 void pipe_write_read(char *out, int *outlen, const char *fmt, ...)
 {
-    va_list args; char buf[2048]; HANDLE pipe_handle; DWORD length;
+    va_list args; char buf[2048]; DWORD length;
 
     va_start(args, fmt);
     length = vsnprintf(buf, sizeof(buf), fmt, args);
-
-    while ((pipe_handle = CreateFile(PIPE_NAME, GENERIC_WRITE | GENERIC_READ,
-            0, NULL, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE) {
-        if(GetLastError() == ERROR_PIPE_BUSY || !WaitNamedPipe(PIPE_NAME,
-                20000)) {
-            return;
-        }
-    }
-
-    WriteFile(pipe_handle, buf, length, &length, NULL);
-    ReadFile(pipe_handle, out, *outlen, (DWORD *) outlen, NULL);
-    CloseHandle(pipe_handle);
-
     va_end(args);
+
+    CallNamedPipe(PIPE_NAME, buf, length, out, *outlen, (DWORD *) outlen, 0);
 }
 
