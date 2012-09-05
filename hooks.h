@@ -294,6 +294,34 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     __in        BOOLEAN InJob
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
+    __out     PHANDLE ProcessHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in      POBJECT_ATTRIBUTES ObjectAttributes,
+    __in_opt  PCLIENT_ID ClientId
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtTerminateProcess,
+    __in_opt  HANDLE ProcessHandle,
+    __in      NTSTATUS ExitStatus
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateSection,
+    __out     PHANDLE SectionHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in_opt  POBJECT_ATTRIBUTES ObjectAttributes,
+    __in_opt  PLARGE_INTEGER MaximumSize,
+    __in      ULONG SectionPageProtection,
+    __in      ULONG AllocationAttributes,
+    __in_opt  HANDLE FileHandle
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
+    __out  PHANDLE SectionHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
+);
+
 extern HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     __in_opt    LPVOID lpUnknown1,
     __in_opt    LPWSTR lpApplicationName,
@@ -309,23 +337,21 @@ extern HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     __in_opt    LPVOID lpUnknown2
 );
 
-extern HOOKDEF(HANDLE, WINAPI, OpenProcess,
-  __in  DWORD dwDesiredAccess,
-  __in  BOOL bInheritHandle,
-  __in  DWORD dwProcessId
-);
-
-extern HOOKDEF(BOOL, WINAPI, TerminateProcess,
-  __in  HANDLE hProcess,
-  __in  UINT uExitCode
-);
-
 extern HOOKDEF(VOID, WINAPI, ExitProcess,
   __in  UINT uExitCode
 );
 
 extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
   __inout  SHELLEXECUTEINFOW *pExecInfo
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
+    __in     HANDLE ProcessHandle,
+    __inout  PVOID *BaseAddress,
+    __in     ULONG_PTR ZeroBits,
+    __inout  PSIZE_T RegionSize,
+    __in     ULONG AllocationType,
+    __in     ULONG Protect
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
@@ -342,14 +368,6 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __in        LPCVOID Buffer,
     __in        ULONG NumberOfBytesToWrite,
     __out_opt   ULONG *NumberOfBytesWritten
-);
-
-extern HOOKDEF(LPVOID, WINAPI, VirtualAllocEx,
-    __in      HANDLE hProcess,
-    __in_opt  LPVOID lpAddress,
-    __in      SIZE_T dwSize,
-    __in      DWORD flAllocationType,
-    __in      DWORD flProtect
 );
 
 extern HOOKDEF(BOOL, WINAPI, VirtualProtectEx,

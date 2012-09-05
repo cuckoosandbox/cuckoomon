@@ -46,7 +46,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     NTSTATUS ret = Old_NtCreateProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ParentProcess, InheritObjectTable, SectionHandle,
         DebugPort, ExceptionPort);
-    LOQ("PO", "ProcessHandle", ProcessHandle, "FileName", ObjectAttributes);
+    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
         notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
     }
@@ -67,10 +68,66 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     NTSTATUS ret = Old_NtCreateProcessEx(ProcessHandle, DesiredAccess,
         ObjectAttributes, ParentProcess, Flags, SectionHandle, DebugPort,
         ExceptionPort, InJob);
-    LOQ("PO", "ProcessHandle", ProcessHandle, "FileName", ObjectAttributes);
+    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
         notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
     }
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
+    __out     PHANDLE ProcessHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in      POBJECT_ATTRIBUTES ObjectAttributes,
+    __in_opt  PCLIENT_ID ClientId
+) {
+    NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
+        ObjectAttributes, ClientId);
+    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes);
+    if(NT_SUCCESS(ret)) {
+        notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
+    }
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtTerminateProcess,
+    __in_opt  HANDLE ProcessHandle,
+    __in      NTSTATUS ExitStatus
+) {
+    NTSTATUS ret = Old_NtTerminateProcess(ProcessHandle, ExitStatus);
+    LOQ("pl", "ProcessHandle", ProcessHandle, "ExitCode", ExitStatus);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtCreateSection,
+    __out     PHANDLE SectionHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in_opt  POBJECT_ATTRIBUTES ObjectAttributes,
+    __in_opt  PLARGE_INTEGER MaximumSize,
+    __in      ULONG SectionPageProtection,
+    __in      ULONG AllocationAttributes,
+    __in_opt  HANDLE FileHandle
+) {
+    NTSTATUS ret = Old_NtCreateSection(SectionHandle, DesiredAccess,
+        ObjectAttributes, MaximumSize, SectionPageProtection,
+        AllocationAttributes, FileHandle);
+    LOQ("PlOp", "SectionHandle", SectionHandle,
+        "DesiredAccess", DesiredAccess, "ObjectAttributes", ObjectAttributes,
+        "FileHandle", FileHandle);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
+    __out  PHANDLE SectionHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
+) {
+    NTSTATUS ret = Old_NtOpenSection(SectionHandle, DesiredAccess,
+        ObjectAttributes);
+    LOQ("PlO", "SectionHandle", SectionHandle, "DesiredAccess", DesiredAccess,
+        "ObjectAttributes", ObjectAttributes);
     return ret;
 }
 
@@ -112,30 +169,6 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     return ret;
 }
 
-HOOKDEF(HANDLE, WINAPI, OpenProcess,
-  __in  DWORD dwDesiredAccess,
-  __in  BOOL bInheritHandle,
-  __in  DWORD dwProcessId
-) {
-    IS_SUCCESS_HANDLE();
-
-    HANDLE ret = Old_OpenProcess(dwDesiredAccess, bInheritHandle,
-        dwProcessId);
-    LOQ("ll", "DesiredAccess", dwDesiredAccess, "ProcessId", dwProcessId);
-    return ret;
-}
-
-HOOKDEF(BOOL, WINAPI, TerminateProcess,
-  __in  HANDLE hProcess,
-  __in  UINT uExitCode
-) {
-    IS_SUCCESS_BOOL();
-
-    BOOL ret = Old_TerminateProcess(hProcess, uExitCode);
-    LOQ("pl", "ProcessHandle", hProcess, "ExitCode", uExitCode);
-    return ret;
-}
-
 HOOKDEF(VOID, WINAPI, ExitProcess,
   __in  UINT uExitCode
 ) {
@@ -157,6 +190,21 @@ HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
+    __in     HANDLE ProcessHandle,
+    __inout  PVOID *BaseAddress,
+    __in     ULONG_PTR ZeroBits,
+    __inout  PSIZE_T RegionSize,
+    __in     ULONG AllocationType,
+    __in     ULONG Protect
+) {
+    NTSTATUS ret = Old_NtAllocateVirtualMemory(ProcessHandle, BaseAddress,
+        ZeroBits, RegionSize, AllocationType, Protect);
+    LOQ("pPLl", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "RegionSize", RegionSize, "Protection", Protect);
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
     __in        HANDLE ProcessHandle,
     __in        LPCVOID BaseAddress,
@@ -164,8 +212,6 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
     __in        ULONG NumberOfBytesToRead,
     __out_opt   PULONG NumberOfBytesReaded
 ) {
-    IS_SUCCESS_NTSTATUS();
-
     ENSURE_ULONG(NumberOfBytesReaded);
 
     BOOL ret = Old_NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer,
@@ -182,31 +228,12 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __in        ULONG NumberOfBytesToWrite,
     __out_opt   ULONG *NumberOfBytesWritten
 ) {
-    IS_SUCCESS_NTSTATUS();
-
     ENSURE_ULONG(NumberOfBytesWritten);
 
     BOOL ret = Old_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToWrite, NumberOfBytesWritten);
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesWritten, Buffer);
-    return ret;
-}
-
-HOOKDEF(LPVOID, WINAPI, VirtualAllocEx,
-    __in      HANDLE hProcess,
-    __in_opt  LPVOID lpAddress,
-    __in      SIZE_T dwSize,
-    __in      DWORD flAllocationType,
-    __in      DWORD flProtect
-) {
-    IS_SUCCESS_HANDLE();
-
-    LPVOID ret = Old_VirtualAllocEx(hProcess, lpAddress, dwSize,
-        flAllocationType, flProtect);
-    LOQ("pplll", "ProcessHandle", hProcess, "Address", lpAddress,
-        "Size", dwSize, "AllocationType", flAllocationType,
-        "Protection", flProtect);
     return ret;
 }
 

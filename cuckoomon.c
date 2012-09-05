@@ -19,10 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <windows.h>
 #include "ntapi.h"
+#include "misc.h"
 #include "hooking.h"
 #include "hooks.h"
 #include "log.h"
-#include "misc.h"
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
@@ -117,16 +117,18 @@ static hook_t g_hooks[] = {
 
     HOOK(ntdll, NtCreateProcess),
     HOOK(ntdll, NtCreateProcessEx),
+    HOOK(ntdll, NtOpenProcess),
+    HOOK(ntdll, NtTerminateProcess),
+    HOOK(ntdll, NtCreateSection),
+    HOOK(ntdll, NtOpenSection),
     HOOK(kernel32, CreateProcessInternalW),
-    HOOK(kernel32, OpenProcess),
-    HOOK(kernel32, TerminateProcess),
     HOOK(kernel32, ExitProcess),
 
     // all variants of ShellExecute end up in ShellExecuteExW
     HOOK(shell32, ShellExecuteExW),
+    HOOK(ntdll, NtAllocateVirtualMemory),
     HOOK(ntdll, NtReadVirtualMemory),
     HOOK(ntdll, NtWriteVirtualMemory),
-    HOOK(kernel32, VirtualAllocEx),
     HOOK(kernel32, VirtualProtectEx),
     HOOK(kernel32, VirtualFreeEx),
 
