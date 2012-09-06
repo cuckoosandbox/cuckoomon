@@ -370,7 +370,7 @@ void log_init()
         }
     }
     g_pid = GetCurrentProcessId();
-    g_ppid = GetParentProcessId();
+    g_ppid = parent_process_id();
 
     char fname[256];
     sprintf(fname, "C:\\cuckoo\\logs\\%d.csv", GetCurrentProcessId());

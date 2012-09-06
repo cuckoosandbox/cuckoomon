@@ -49,7 +49,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
+        notify_pipe(pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -71,7 +71,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
+        notify_pipe(pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -87,7 +87,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe(GetPidFromProcessHandle(*ProcessHandle));
+        notify_pipe(pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }

@@ -43,7 +43,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
     __in      PINITIAL_TEB InitialTeb,
     __in      BOOLEAN CreateSuspended
 ) {
-    notify_pipe(GetPidFromProcessHandle(ProcessHandle));
+    notify_pipe(pid_from_process_handle(ProcessHandle));
     NTSTATUS ret = Old_NtCreateThread(ThreadHandle, DesiredAccess,
         ObjectAttributes, ProcessHandle, ClientId, ThreadContext,
         InitialTeb, CreateSuspended);
@@ -147,7 +147,7 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
 ) {
     IS_SUCCESS_HANDLE();
 
-    notify_pipe(GetPidFromProcessHandle(hProcess));
+    notify_pipe(pid_from_process_handle(hProcess));
     HANDLE ret = Old_CreateRemoteThread(hProcess, lpThreadAttributes,
         dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,
         lpThreadId);
