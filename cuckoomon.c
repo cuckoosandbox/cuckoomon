@@ -136,15 +136,16 @@ static hook_t g_hooks[] = {
     // Thread Hooks
     //
 
-    HOOK(kernel32, OpenThread),
-    HOOK(kernel32, CreateThread),
-    HOOK(kernel32, CreateRemoteThread),
-    HOOK(kernel32, TerminateThread),
-    HOOK(kernel32, ExitThread),
+    HOOK(ntdll, NtCreateThread),
+    HOOK(ntdll, NtOpenThread),
     HOOK(ntdll, NtGetContextThread),
     HOOK(ntdll, NtSetContextThread),
     HOOK(ntdll, NtSuspendThread),
     HOOK(ntdll, NtResumeThread),
+    HOOK(ntdll, NtTerminateThread),
+    HOOK(kernel32, CreateThread),
+    HOOK(kernel32, CreateRemoteThread),
+    HOOK(kernel32, ExitThread),
 
     //
     // Misc Hooks

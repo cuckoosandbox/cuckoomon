@@ -144,4 +144,12 @@ typedef struct _THREAD_BASIC_INFORMATION {
     KPRIORITY BasePriority;
 } THREAD_BASIC_INFORMATION, *PTHREAD_BASIC_INFORMATION;
 
+typedef struct _INITIAL_TEB {
+  PVOID StackBase;
+  PVOID StackLimit;
+  PVOID StackCommit;
+  PVOID StackCommitMax;
+  PVOID StackReserved;
+} INITIAL_TEB, *PINITIAL_TEB;
+
 #endif

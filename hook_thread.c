@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "misc.h"
 
-static IS_SUCCESS_HANDLE();
+static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "threading";
 
 static void notify_pipe(DWORD process_id)
@@ -33,13 +33,89 @@ static void notify_pipe(DWORD process_id)
     pipe_write_read(buf, &len, "PID:%d", process_id);
 }
 
-HOOKDEF(HANDLE, WINAPI, OpenThread,
-  __in  DWORD dwDesiredAccess,
-  __in  BOOL bInheritHandle,
-  __in  DWORD dwThreadId
+HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
+    __out     PHANDLE ThreadHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in_opt  POBJECT_ATTRIBUTES ObjectAttributes,
+    __in      HANDLE ProcessHandle,
+    __out     PCLIENT_ID ClientId,
+    __in      PCONTEXT ThreadContext,
+    __in      PINITIAL_TEB InitialTeb,
+    __in      BOOLEAN CreateSuspended
 ) {
-    HANDLE ret = Old_OpenThread(dwDesiredAccess, bInheritHandle, dwThreadId);
-    LOQ("ll", "DesiredAccess", dwDesiredAccess, "ThreadId", dwThreadId);
+    notify_pipe(GetPidFromProcessHandle(ProcessHandle));
+    NTSTATUS ret = Old_NtCreateThread(ThreadHandle, DesiredAccess,
+        ObjectAttributes, ProcessHandle, ClientId, ThreadContext,
+        InitialTeb, CreateSuspended);
+    LOQ("PpO", "ThreadHandle", ThreadHandle, "ProcessHandle", ProcessHandle,
+        "ObjectAttributes", ObjectAttributes);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtOpenThread,
+    __out  PHANDLE ThreadHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes,
+    __in   PCLIENT_ID ClientId
+) {
+    NTSTATUS ret = Old_NtOpenThread(ThreadHandle, DesiredAccess,
+        ObjectAttributes, ClientId);
+    LOQ("PlO", "ThreadHandle", ThreadHandle, "DesiredAccess", DesiredAccess,
+        "ObjectAttributes", ObjectAttributes);
+    if(NT_SUCCESS(ret)) {
+        notify_pipe((DWORD) ClientId->UniqueProcess);
+    }
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtGetContextThread,
+    __in     HANDLE ThreadHandle,
+    __inout  LPCONTEXT Context
+) {
+    NTSTATUS ret = Old_NtGetContextThread(ThreadHandle, Context);
+    LOQ("p", "ThreadHandle", ThreadHandle);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
+    __in  HANDLE ThreadHandle,
+    __in  const CONTEXT *Context
+) {
+    NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
+    LOQ("p", "ThreadHandle", ThreadHandle);
+    // TODO notify_pipe with process identifier
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
+    __in        HANDLE ThreadHandle,
+    __out_opt   ULONG *PreviousSuspendCount
+) {
+    ENSURE_ULONG(PreviousSuspendCount);
+
+    NTSTATUS ret = Old_NtSuspendThread(ThreadHandle, PreviousSuspendCount);
+    LOQ("pL", "ThreadHandle", ThreadHandle,
+        "SuspendCount", PreviousSuspendCount);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
+    __in        HANDLE ThreadHandle,
+    __out_opt   ULONG *SuspendCount
+) {
+    ENSURE_ULONG(SuspendCount);
+
+    NTSTATUS ret = Old_NtResumeThread(ThreadHandle, SuspendCount);
+    LOQ("pL", "ThreadHandle", ThreadHandle, "SuspendCount", SuspendCount);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtTerminateThread,
+    __in  HANDLE ThreadHandle,
+    __in  NTSTATUS ExitStatus
+) {
+    NTSTATUS ret = Old_NtTerminateThread(ThreadHandle, ExitStatus);
+    LOQ("pl", "ThreadHandle", ThreadHandle, "ExitStatus", ExitStatus);
     return ret;
 }
 
@@ -51,6 +127,8 @@ HOOKDEF(HANDLE, WINAPI, CreateThread,
   __in   DWORD dwCreationFlags,
   __out  LPDWORD lpThreadId
 ) {
+    IS_SUCCESS_HANDLE();
+
     HANDLE ret = Old_CreateThread(lpThreadAttributes, dwStackSize,
         lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
     LOQ("pplL", "StartRoutine", lpStartAddress, "Parameter", lpParameter,
@@ -67,6 +145,8 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
   __in   DWORD dwCreationFlags,
   __out  LPDWORD lpThreadId
 ) {
+    IS_SUCCESS_HANDLE();
+
     notify_pipe(GetPidFromProcessHandle(hProcess));
     HANDLE ret = Old_CreateRemoteThread(hProcess, lpThreadAttributes,
         dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,
@@ -74,17 +154,6 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
     LOQ("3plL", "ProcessHandle", hProcess, "StartRoutine", lpStartAddress,
         "Parameter", lpParameter, "CreationFlags", dwCreationFlags,
         "ThreadId", lpThreadId);
-    return ret;
-}
-
-HOOKDEF(BOOL, WINAPI, TerminateThread,
-  __inout  HANDLE hThread,
-  __in     DWORD dwExitCode
-) {
-    IS_SUCCESS_BOOL();
-
-    BOOL ret = Old_TerminateThread(hThread, dwExitCode);
-    LOQ("pl", "ThreadHandle", hThread, "ExitCode", dwExitCode);
     return ret;
 }
 
@@ -96,53 +165,4 @@ HOOKDEF(VOID, WINAPI, ExitThread,
     int ret = 0;
     LOQ("l", "ExitCode", dwExitCode);
     Old_ExitThread(dwExitCode);
-}
-
-HOOKDEF(NTSTATUS, WINAPI, NtGetContextThread,
-  __in     HANDLE ThreadHandle,
-  __inout  LPCONTEXT Context
-) {
-    IS_SUCCESS_NTSTATUS();
-
-    NTSTATUS ret = Old_NtGetContextThread(ThreadHandle, Context);
-    LOQ("p", "ThreadHandle", ThreadHandle);
-    return ret;
-}
-
-HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
-  __in  HANDLE ThreadHandle,
-  __in  const CONTEXT *Context
-) {
-    IS_SUCCESS_NTSTATUS();
-
-    NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
-    LOQ("p", "ThreadHandle", ThreadHandle);
-    return ret;
-}
-
-HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
-  __in          HANDLE ThreadHandle,
-  __out_opt     ULONG *PreviousSuspendCount
-) {
-    IS_SUCCESS_NTSTATUS();
-
-    ENSURE_ULONG(PreviousSuspendCount);
-
-    NTSTATUS ret = Old_NtSuspendThread(ThreadHandle, PreviousSuspendCount);
-    LOQ("pL", "ThreadHandle", ThreadHandle,
-        "SuspendCount", PreviousSuspendCount);
-    return ret;
-}
-
-HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
-  __in          HANDLE ThreadHandle,
-  __out_opt     ULONG *SuspendCount
-) {
-    IS_SUCCESS_NTSTATUS();
-
-    ENSURE_ULONG(SuspendCount);
-
-    NTSTATUS ret = Old_NtResumeThread(ThreadHandle, SuspendCount);
-    LOQ("pL", "ThreadHandle", ThreadHandle, "SuspendCount", SuspendCount);
-    return ret;
 }

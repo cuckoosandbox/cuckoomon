@@ -389,10 +389,47 @@ extern HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
 // Thread Hooks
 //
 
-extern HOOKDEF(HANDLE, WINAPI, OpenThread,
-  __in  DWORD dwDesiredAccess,
-  __in  BOOL bInheritHandle,
-  __in  DWORD dwThreadId
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
+    __out     PHANDLE ThreadHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in_opt  POBJECT_ATTRIBUTES ObjectAttributes,
+    __in       HANDLE ProcessHandle,
+    __out      PCLIENT_ID ClientId,
+    __in       PCONTEXT ThreadContext,
+    __in        PINITIAL_TEB InitialTeb,
+    __in      BOOLEAN CreateSuspended
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtOpenThread,
+    __out  PHANDLE ThreadHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes,
+    __in   PCLIENT_ID ClientId
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtGetContextThread,
+    __in     HANDLE ThreadHandle,
+    __inout  LPCONTEXT Context
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
+    __in  HANDLE ThreadHandle,
+    __in  const CONTEXT *Context
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
+    __in       HANDLE ThreadHandle,
+    __out_opt  ULONG *PreviousSuspendCount
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
+    __in        HANDLE ThreadHandle,
+    __out_opt   ULONG *SuspendCount
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtTerminateThread,
+    __in  HANDLE ThreadHandle,
+    __in  NTSTATUS ExitStatus
 );
 
 extern HOOKDEF(HANDLE, WINAPI, CreateThread,
@@ -421,26 +458,6 @@ extern HOOKDEF(BOOL, WINAPI, TerminateThread,
 
 extern HOOKDEF(VOID, WINAPI, ExitThread,
   __in  DWORD dwExitCode
-);
-
-extern HOOKDEF(NTSTATUS, WINAPI, NtGetContextThread,
-  __in     HANDLE ThreadHandle,
-  __inout  LPCONTEXT Context
-);
-
-extern HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
-  __in  HANDLE ThreadHandle,
-  __in  const CONTEXT *Context
-);
-
-extern HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
-  __in          HANDLE ThreadHandle,
-  __out_opt     ULONG *PreviousSuspendCount
-);
-
-extern HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
-  __in          HANDLE ThreadHandle,
-  __out_opt     ULONG *SuspendCount
 );
 
 //
