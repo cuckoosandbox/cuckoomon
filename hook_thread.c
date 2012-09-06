@@ -83,7 +83,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
 ) {
     NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
     LOQ("p", "ThreadHandle", ThreadHandle);
-    // TODO notify_pipe with process identifier
+    notify_pipe(pid_from_thread_handle(ThreadHandle));
     return ret;
 }
 
