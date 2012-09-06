@@ -253,5 +253,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         log_init();
         set_hooks();
     }
+    else if(dwReason == DLL_PROCESS_DETACH) {
+        log_free();
+    }
+
     return TRUE;
 }
