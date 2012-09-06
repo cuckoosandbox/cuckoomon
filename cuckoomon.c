@@ -55,18 +55,34 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtOpenFile),
     HOOK(ntdll, NtReadFile),
     HOOK(ntdll, NtWriteFile),
+    HOOK(ntdll, NtDeleteFile),
+    HOOK(ntdll, NtDeviceIoControlFile),
+    HOOK(ntdll, NtQueryDirectoryFile),
+    HOOK(ntdll, NtQueryInformationFile),
+    HOOK(ntdll, NtSetInformationFile),
+    HOOK(ntdll, NtCreateDirectoryObject),
 
-    // lowest variant of MoveFile()
-    HOOK(kernel32, MoveFileWithProgressW),
-
-    // perhaps go for NtSetInformationFile() later
-    HOOK(kernel32, DeleteFileW),
-
-    // CreateDirectoryA calls CreateDirectoryW
     // CreateDirectoryExA calls CreateDirectoryExW
     // CreateDirectoryW does not call CreateDirectoryExW
     HOOK(kernel32, CreateDirectoryW),
     HOOK(kernel32, CreateDirectoryExW),
+
+    HOOK(kernel32, RemoveDirectoryA),
+    HOOK(kernel32, RemoveDirectoryW),
+
+    // lowest variant of MoveFile()
+    HOOK(kernel32, MoveFileWithProgressW),
+
+    HOOK(kernel32, FindFirstFileExA),
+    HOOK(kernel32, FindFirstFileExW),
+
+    // Covered by NtCreateFile() but still grap this information
+    HOOK(kernel32, CopyFileA),
+    HOOK(kernel32, CopyFileW),
+
+    // Covered by NtSetInformationFile() but still grap this information
+    HOOK(kernel32, DeleteFileA),
+    HOOK(kernel32, DeleteFileW),
 
     //
     // Registry Hooks

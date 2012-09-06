@@ -70,16 +70,65 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtWriteFile,
   __in_opt  PULONG Key
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtDeleteFile,
+    __in  POBJECT_ATTRIBUTES ObjectAttributes
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtDeviceIoControlFile,
+    __in   HANDLE FileHandle,
+    __in   HANDLE Event,
+    __in   PIO_APC_ROUTINE ApcRoutine,
+    __in   PVOID ApcContext,
+    __out  PIO_STATUS_BLOCK IoStatusBlock,
+    __in   ULONG IoControlCode,
+    __in   PVOID InputBuffer,
+    __in   ULONG InputBufferLength,
+    __out  PVOID OutputBuffer,
+    __in   ULONG OutputBufferLength
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtQueryDirectoryFile,
+    __in      HANDLE FileHandle,
+    __in_opt  HANDLE Event,
+    __in_opt  PIO_APC_ROUTINE ApcRoutine,
+    __in_opt  PVOID ApcContext,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __out     PVOID FileInformation,
+    __in      ULONG Length,
+    __in      FILE_INFORMATION_CLASS FileInformationClass,
+    __in      BOOLEAN ReturnSingleEntry,
+    __in_opt  PUNICODE_STRING FileName,
+    __in      BOOLEAN RestartScan
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtQueryInformationFile,
+    __in   HANDLE FileHandle,
+    __out  PIO_STATUS_BLOCK IoStatusBlock,
+    __out  PVOID FileInformation,
+    __in   ULONG Length,
+    __in   FILE_INFORMATION_CLASS FileInformationClass
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtSetInformationFile,
+    __in   HANDLE FileHandle,
+    __out  PIO_STATUS_BLOCK IoStatusBlock,
+    __in   PVOID FileInformation,
+    __in   ULONG Length,
+    __in   FILE_INFORMATION_CLASS FileInformationClass
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateDirectoryObject,
+    __out  PHANDLE DirectoryHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
+);
+
 extern HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
   __in      LPWSTR lpExistingFileName,
   __in_opt  LPWSTR lpNewFileName,
   __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
   __in_opt  LPVOID lpData,
   __in      DWORD dwFlags
-);
-
-extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
-  __in  LPWSTR lpFileName
 );
 
 extern HOOKDEF(BOOL, WINAPI, CreateDirectoryW,
@@ -91,6 +140,60 @@ extern HOOKDEF(BOOL, WINAPI, CreateDirectoryExW,
   __in      LPWSTR lpTemplateDirectory,
   __in      LPWSTR lpNewDirectory,
   __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+);
+
+extern HOOKDEF(BOOL, WINAPI, RemoveDirectoryA,
+    __in  LPCTSTR  lpPathName
+);
+
+extern HOOKDEF(BOOL, WINAPI, RemoveDirectoryW,
+    __in  LPWSTR lpPathName
+);
+
+extern HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
+  __in      LPWSTR lpExistingFileName,
+  __in_opt  LPWSTR lpNewFileName,
+  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+  __in_opt  LPVOID lpData,
+  __in      DWORD dwFlags
+);
+
+extern HOOKDEF(HANDLE, WINAPI, FindFirstFileExA,
+    __in        LPCTSTR lpFileName,
+    __in        FINDEX_INFO_LEVELS fInfoLevelId,
+    __out       LPVOID lpFindFileData,
+    __in        FINDEX_SEARCH_OPS fSearchOp,
+    __reserved  LPVOID lpSearchFilter,
+    __in        DWORD dwAdditionalFlags
+);
+
+extern HOOKDEF(HANDLE, WINAPI, FindFirstFileExW,
+    __in        LPWSTR lpFileName,
+    __in        FINDEX_INFO_LEVELS fInfoLevelId,
+    __out       LPVOID lpFindFileData,
+    __in        FINDEX_SEARCH_OPS fSearchOp,
+    __reserved  LPVOID lpSearchFilter,
+    __in        DWORD dwAdditionalFlags
+);
+
+extern HOOKDEF(BOOL, WINAPI, CopyFileA,
+    __in  LPCTSTR lpExistingFileName,
+    __in  LPCTSTR lpNewFileName,
+    __in  BOOL bFailIfExists
+);
+
+extern HOOKDEF(BOOL, WINAPI, CopyFileW,
+    __in  LPWSTR lpExistingFileName,
+    __in  LPWSTR lpNewFileName,
+    __in  BOOL bFailIfExists
+);
+
+extern HOOKDEF(BOOL, WINAPI, DeleteFileA,
+    __in  LPCSTR lpFileName
+);
+
+extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
+    __in  LPWSTR lpFileName
 );
 
 //
