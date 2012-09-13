@@ -68,7 +68,7 @@ int main()
     hook->new_func = &functions[SIZE];
     hook->old_func = &old_addr;
 
-    hook_api(hook, HOOK_DIRECT_JMP);
+    hook_api(hook, HOOK_JMP_DIRECT);
     if(memcmp(functions, "\xe9\x3b\x00\x00\x00\x40", 6) || memcmp(hook->gate,
             "\x55\x89\xe5\x83\xec\x40\xe9\xe7\xdf\xff\xff", 11)) {
         printf("Invalid first hook!\n");

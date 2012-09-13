@@ -52,8 +52,8 @@ int main()
     DWORD old_protect;
     VirtualProtect(hook, sizeof(hook), PAGE_EXECUTE_READWRITE, &old_protect);
 
-    hook_api(&hook[0], HOOK_DIRECT_JMP);
-    hook_api(&hook[1], HOOK_DIRECT_JMP);
+    hook_api(&hook[0], HOOK_JMP_DIRECT);
+    hook_api(&hook[1], HOOK_JMP_DIRECT);
 
     DeleteFile("hoi");
     printf("lasterr: %d\n", GetLastError());
