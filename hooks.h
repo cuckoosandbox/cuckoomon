@@ -325,6 +325,36 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtSaveKeyEx,
     __in  ULONG Format
 );
 
+extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyA,
+    _In_         HKEY hKey,
+    _Out_opt_    LPTSTR lpClass,
+    _Inout_opt_  LPDWORD lpcClass,
+    _Reserved_   LPDWORD lpReserved,
+    _Out_opt_    LPDWORD lpcSubKeys,
+    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
+    _Out_opt_    LPDWORD lpcMaxClassLen,
+    _Out_opt_    LPDWORD lpcValues,
+    _Out_opt_    LPDWORD lpcMaxValueNameLen,
+    _Out_opt_    LPDWORD lpcMaxValueLen,
+    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
+    _Out_opt_    PFILETIME lpftLastWriteTime
+);
+
+extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyW,
+    _In_         HKEY hKey,
+    _Out_opt_    LPWSTR lpClass,
+    _Inout_opt_  LPDWORD lpcClass,
+    _Reserved_   LPDWORD lpReserved,
+    _Out_opt_    LPDWORD lpcSubKeys,
+    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
+    _Out_opt_    LPDWORD lpcMaxClassLen,
+    _Out_opt_    LPDWORD lpcValues,
+    _Out_opt_    LPDWORD lpcMaxValueNameLen,
+    _Out_opt_    LPDWORD lpcMaxValueLen,
+    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
+    _Out_opt_    PFILETIME lpftLastWriteTime
+);
+
 //
 // Window Hooks
 //

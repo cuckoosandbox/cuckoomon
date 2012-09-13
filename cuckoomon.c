@@ -110,6 +110,8 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtQueryKey),
     HOOK(ntdll, NtSaveKey),
     HOOK(ntdll, NtSaveKeyEx),
+    HOOK(advapi32, RegQueryInfoKeyA),
+    HOOK(advapi32, RegQueryInfoKeyW),
 
     //
     // Window Hooks

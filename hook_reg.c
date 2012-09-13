@@ -245,3 +245,59 @@ HOOKDEF(NTSTATUS, WINAPI, NtSaveKeyEx,
         "Format", Format);
     return ret;
 }
+
+HOOKDEF(LONG, WINAPI, RegQueryInfoKeyA,
+    _In_         HKEY hKey,
+    _Out_opt_    LPTSTR lpClass,
+    _Inout_opt_  LPDWORD lpcClass,
+    _Reserved_   LPDWORD lpReserved,
+    _Out_opt_    LPDWORD lpcSubKeys,
+    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
+    _Out_opt_    LPDWORD lpcMaxClassLen,
+    _Out_opt_    LPDWORD lpcValues,
+    _Out_opt_    LPDWORD lpcMaxValueNameLen,
+    _Out_opt_    LPDWORD lpcMaxValueLen,
+    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
+    _Out_opt_    PFILETIME lpftLastWriteTime
+) {
+    IS_SUCCESS_LONGREG();
+
+    LONG ret = Old_RegQueryInfoKeyA(hKey, lpClass, lpcClass, lpReserved,
+        lpcSubKeys, lpcMaxSubKeyLen, lpcMaxClassLen, lpcValues,
+        lpcMaxValueNameLen, lpcMaxValueLen, lpcbSecurityDescriptor,
+        lpftLastWriteTime);
+    LOQ("pS6L", "KeyHandle", hKey, "Class", lpcClass ? *lpcClass : 0, lpClass,
+        "SubKeyCount", lpcSubKeys, "MaxSubKeyLength", lpcMaxSubKeyLen,
+        "MaxClassLength", lpcMaxClassLen, "ValueCount", lpcValues,
+        "MaxValueNameLength", lpcMaxValueNameLen,
+        "MaxValueLength", lpcMaxValueLen);
+    return ret;
+}
+
+HOOKDEF(LONG, WINAPI, RegQueryInfoKeyW,
+    _In_         HKEY hKey,
+    _Out_opt_    LPWSTR lpClass,
+    _Inout_opt_  LPDWORD lpcClass,
+    _Reserved_   LPDWORD lpReserved,
+    _Out_opt_    LPDWORD lpcSubKeys,
+    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
+    _Out_opt_    LPDWORD lpcMaxClassLen,
+    _Out_opt_    LPDWORD lpcValues,
+    _Out_opt_    LPDWORD lpcMaxValueNameLen,
+    _Out_opt_    LPDWORD lpcMaxValueLen,
+    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
+    _Out_opt_    PFILETIME lpftLastWriteTime
+) {
+    IS_SUCCESS_LONGREG();
+
+    LONG ret = Old_RegQueryInfoKeyW(hKey, lpClass, lpcClass, lpReserved,
+        lpcSubKeys, lpcMaxSubKeyLen, lpcMaxClassLen, lpcValues,
+        lpcMaxValueNameLen, lpcMaxValueLen, lpcbSecurityDescriptor,
+        lpftLastWriteTime);
+    LOQ("pU6L", "KeyHandle", hKey, "Class", lpcClass ? *lpcClass : 0, lpClass,
+        "SubKeyCount", lpcSubKeys, "MaxSubKeyLength", lpcMaxSubKeyLen,
+        "MaxClassLength", lpcMaxClassLen, "ValueCount", lpcValues,
+        "MaxValueNameLength", lpcMaxValueNameLen,
+        "MaxValueLength", lpcMaxValueLen);
+    return ret;
+}

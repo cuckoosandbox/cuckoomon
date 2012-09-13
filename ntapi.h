@@ -30,8 +30,12 @@ typedef LONG NTSTATUS;
 #define __out_opt
 #define __inout
 #define __inout_opt
+#define _In_
 #define _In_opt_
 #define _Out_
+#define _Out_opt_
+#define _Inout_opt_
+#define _Reserved_
 
 typedef struct _STRING {
     USHORT Length;

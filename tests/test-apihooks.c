@@ -30,6 +30,8 @@ int main()
     if(RegCreateKeyEx(HKEY_CURRENT_USER,
             "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, NULL, 0,
             KEY_ALL_ACCESS, NULL, &hKey, NULL) == ERROR_SUCCESS) {
+        RegQueryInfoKey(hKey, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+            NULL, NULL, NULL);
         RegSetValueEx(hKey, "TestApiHooks", 0, REG_SZ, (BYTE *) "Hoi", 3);
         RegDeleteValue(hKey, "TestApiHooks");
         RegCloseKey(hKey);
