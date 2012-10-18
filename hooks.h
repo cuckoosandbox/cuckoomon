@@ -690,6 +690,22 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtClose,
     __in    HANDLE Handle
 );
 
+extern HOOKDEF(BOOL, WINAPI, WriteConsoleA,
+    _In_        HANDLE hConsoleOutput,
+    _In_        const VOID *lpBuffer,
+    _In_        DWORD nNumberOfCharsToWrite,
+    _Out_       LPDWORD lpNumberOfCharsWritten,
+    _Reserved_  LPVOID lpReseverd
+);
+
+extern HOOKDEF(BOOL, WINAPI, WriteConsoleW,
+    _In_        HANDLE hConsoleOutput,
+    _In_        const VOID *lpBuffer,
+    _In_        DWORD nNumberOfCharsToWrite,
+    _Out_       LPDWORD lpNumberOfCharsWritten,
+    _Reserved_  LPVOID lpReseverd
+);
+
 //
 // Network Hooks
 //

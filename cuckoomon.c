@@ -184,6 +184,8 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, IsDebuggerPresent),
     HOOK(advapi32, LookupPrivilegeValueW),
     HOOK(ntdll, NtClose),
+    HOOK(kernel32, WriteConsoleA),
+    HOOK(kernel32, WriteConsoleW),
 
     //
     // Network Hooks
