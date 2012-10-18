@@ -269,7 +269,6 @@ void hook_create_pre_gate(hook_t *h)
     memcpy(h->pre_gate, sc, sizeof(sc));
 }
 
-// direct 0xe9 jmp
 static int hook_api_jmp_direct(hook_t *h, unsigned char *from,
     unsigned char *to)
 {
@@ -281,7 +280,6 @@ static int hook_api_jmp_direct(hook_t *h, unsigned char *from,
     return 0;
 }
 
-// useful for "detections" such as if(*api_addr == 0xe9)
 static int hook_api_nop_jmp_direct(hook_t *h, unsigned char *from,
     unsigned char *to)
 {
@@ -291,7 +289,6 @@ static int hook_api_nop_jmp_direct(hook_t *h, unsigned char *from,
     return hook_api_jmp_direct(h, from, to);
 }
 
-// useful for "detections" such as if(*api_addr == 0xe9)
 static int hook_api_hotpatch_jmp_direct(hook_t *h, unsigned char *from,
     unsigned char *to)
 {
@@ -313,6 +310,15 @@ static int hook_api_push_retn(hook_t *h, unsigned char *from,
     from[4] = 0xc3;
 
     return 0;
+}
+
+static int hook_api_nop_push_retn(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // nop
+    *from++ = 0x90;
+
+    return hook_api_push_retn(h, from, to);
 }
 
 static int hook_api_jmp_indirect(hook_t *h, unsigned char *from,
@@ -395,6 +401,7 @@ static int hook_api_mov_eax_indirect_push_retn(hook_t *h, unsigned char *from,
     return 1;
 }
 
+#if HOOK_ENABLE_FPU
 static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
     unsigned char *to)
 {
@@ -421,6 +428,7 @@ static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
     memcpy(h->hook_data, &addr, sizeof(addr));
     return 0;
 }
+#endif
 
 int hook_api(hook_t *h, int type)
 {
@@ -433,6 +441,7 @@ int hook_api(hook_t *h, int type)
         /* HOOK_NOP_JMP_DIRECT */ {&hook_api_nop_jmp_direct, 6},
         /* HOOK_HOTPATCH_JMP_DIRECT */ {&hook_api_hotpatch_jmp_direct, 7},
         /* HOOK_PUSH_RETN */ {&hook_api_push_retn, 6},
+        /* HOOK_NOP_PUSH_RETN */ {&hook_api_nop_push_retn, 7},
         /* HOOK_JMP_INDIRECT */ {&hook_api_jmp_indirect, 6},
         /* HOOK_MOV_EAX_JMP_EAX */ {&hook_api_mov_eax_jmp_eax, 7},
         /* HOOK_MOV_EAX_PUSH_RETN */ {&hook_api_mov_eax_push_retn, 7},
@@ -440,7 +449,9 @@ int hook_api(hook_t *h, int type)
             {&hook_api_mov_eax_indirect_jmp_eax, 7},
         /* HOOK_MOV_EAX_INDIRECT_PUSH_RETN */
             {&hook_api_mov_eax_indirect_push_retn, 7},
+#if HOOK_ENABLE_FPU
         /* HOOK_PUSH_FPU_RETN */ {&hook_api_push_fpu_retn, 11},
+#endif
     };
 
     // is this address already hooked?

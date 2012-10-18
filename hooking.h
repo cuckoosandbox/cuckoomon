@@ -55,17 +55,23 @@ void hook_disable();
 unsigned int hook_get_last_error();
 void hook_set_last_error(unsigned int errcode);
 
+#define HOOK_ENABLE_FPU 0
+
 enum {
     HOOK_JMP_DIRECT,
     HOOK_NOP_JMP_DIRECT,
     HOOK_HOTPATCH_JMP_DIRECT,
     HOOK_PUSH_RETN,
+    HOOK_NOP_PUSH_RETN,
     HOOK_JMP_INDIRECT,
     HOOK_MOV_EAX_JMP_EAX,
     HOOK_MOV_EAX_PUSH_RETN,
     HOOK_MOV_EAX_INDIRECT_JMP_EAX,
     HOOK_MOV_EAX_INDIRECT_PUSH_RETN,
+#if HOOK_ENABLE_FPU
     HOOK_PUSH_FPU_RETN,
+#endif
+    HOOK_TECHNIQUE_MAXTYPE,
 };
 
 #define HOOKDEF(return_value, calling_convention, apiname, ...) \

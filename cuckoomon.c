@@ -289,9 +289,8 @@ static hook_t g_hooks[] = {
     HOOK(ws2_32, WSAStartup),
 };
 
-// get a random hooking method, except for hook_jmp_direct and
-// hook_push_fpu_retn
-#define HOOKTYPE randint(HOOK_NOP_JMP_DIRECT, HOOK_MOV_EAX_INDIRECT_PUSH_RETN)
+// get a random hooking method, except for hook_jmp_direct
+#define HOOKTYPE randint(HOOK_JMP_DIRECT + 1, HOOK_TECHNIQUE_MAXTYPE - 1)
 
 void set_hooks_dll(const wchar_t *library, int len)
 {
