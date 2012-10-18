@@ -60,8 +60,9 @@ void hook_set_last_error(unsigned int errcode);
 #define HOOK_HOTPATCH_JMP_DIRECT 2
 #define HOOK_PUSH_RETN 3
 #define HOOK_JMP_INDIRECT 4
-#define HOOK_PUSH_FPU_RETN 5
-#define HOOK_MAXTYPE 6 // value to be used in modulo statements
+#define HOOK_MOV_EAX_JMP_EAX 5
+#define HOOK_PUSH_FPU_RETN 6
+#define HOOK_MAXTYPE 7 // value to be used in modulo statements
 
 #define HOOKDEF(return_value, calling_convention, apiname, ...) \
     return_value (calling_convention *Old_##apiname)(__VA_ARGS__); \

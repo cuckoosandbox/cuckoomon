@@ -329,6 +329,20 @@ static int hook_api_jmp_indirect(hook_t *h, unsigned char *from,
     return 0;
 }
 
+static int hook_api_mov_eax_jmp_eax(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // mov eax, address
+    *from++ = 0xb8;
+    *(unsigned char **) from = to;
+    from += 4;
+
+    // jmp eax
+    *from++ = 0xff;
+    *from++ = 0xe0;
+    return 1;
+}
+
 static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
     unsigned char *to)
 {
@@ -368,6 +382,7 @@ int hook_api(hook_t *h, int type)
         /* HOOK_HOTPATCH_JMP_DIRECT */ {&hook_api_hotpatch_jmp_direct, 7},
         /* HOOK_PUSH_RETN */ {&hook_api_push_retn, 6},
         /* HOOK_JMP_INDIRECT */ {&hook_api_jmp_indirect, 6},
+        /* HOOK_MOV_EAX_JMP_EAX */ {&hook_api_mov_eax_jmp_eax, 7},
         /* HOOK_PUSH_FPU_RETN */ {&hook_api_push_fpu_retn, 11},
     };
 
