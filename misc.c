@@ -71,6 +71,11 @@ DWORD random()
     return pRtlGenRandom(&ret, sizeof(ret)) ? ret : rand();
 }
 
+DWORD randint(DWORD min, DWORD max)
+{
+    return min + (random() % (max - min + 1));
+}
+
 BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj)
 {
     static NTSTATUS (WINAPI *pNtQueryAttributesFile)(
