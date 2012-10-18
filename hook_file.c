@@ -323,6 +323,23 @@ HOOKDEF(BOOL, WINAPI, CopyFileW,
     return ret;
 }
 
+HOOKDEF(BOOL, WINAPI, CopyFileExW,
+  _In_      LPWSTR lpExistingFileName,
+  _In_      LPWSTR lpNewFileName,
+  _In_opt_  LPPROGRESS_ROUTINE lpProgressRoutine,
+  _In_opt_  LPVOID lpData,
+  _In_opt_  LPBOOL pbCancel,
+  _In_      DWORD dwCopyFlags
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_CopyFileExW(lpExistingFileName, lpNewFileName,
+        lpProgressRoutine, lpData, pbCancel, dwCopyFlags);
+    LOQ("uul", "ExistingFileName", lpExistingFileName,
+        "NewFileName", lpNewFileName, "CopyFlags", dwCopyFlags);
+    return ret;
+}
+
 HOOKDEF(BOOL, WINAPI, DeleteFileA,
     __in  LPCSTR lpFileName
 ) {

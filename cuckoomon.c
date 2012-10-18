@@ -79,6 +79,7 @@ static hook_t g_hooks[] = {
     // Covered by NtCreateFile() but still grap this information
     HOOK(kernel32, CopyFileA),
     HOOK(kernel32, CopyFileW),
+    HOOK(kernel32, CopyFileExW),
 
     // Covered by NtSetInformationFile() but still grap this information
     HOOK(kernel32, DeleteFileA),
