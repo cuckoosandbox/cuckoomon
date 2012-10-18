@@ -291,7 +291,7 @@ HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
 HOOKDEF(int, CDECL, system,
     const char *command
 ) {
-    IS_SUCCESS_BOOL();
+    IS_SUCCESS_INTM1();
 
     int ret = Old_system(command);
     LOQ("s", "Command", command);
