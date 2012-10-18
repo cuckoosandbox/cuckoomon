@@ -46,6 +46,7 @@ static hook_t g_hooks[] = {
 
     HOOK2(ntdll, NtResumeThread, TRUE),
     HOOK2(ntdll, LdrLoadDll, TRUE),
+    HOOK2(kernel32, CreateProcessInternalW, TRUE),
 
     //
     // File Hooks
@@ -150,6 +151,8 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, VirtualProtectEx),
     HOOK(kernel32, VirtualFreeEx),
 
+    HOOK(msvcrt, system),
+
     //
     // Thread Hooks
     //
@@ -253,6 +256,17 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         LoadLibrary("advapi32");
 
         log_init();
+
+        // notify analyzer.py that we've loaded
+        char name[64];
+        sprintf(name, "CuckooEvent%d", GetCurrentProcessId());
+        HANDLE event_handle = OpenEvent(EVENT_ALL_ACCESS, FALSE, name);
+        if(event_handle != NULL) {
+            SetEvent(event_handle);
+            CloseHandle(event_handle);
+        }
+
+        // initialize all hooks
         set_hooks();
     }
     else if(dwReason == DLL_PROCESS_DETACH) {

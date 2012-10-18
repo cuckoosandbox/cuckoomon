@@ -131,7 +131,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
     return ret;
 }
 
-HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
+HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
     __in_opt    LPVOID lpUnknown1,
     __in_opt    LPWSTR lpApplicationName,
     __inout_opt LPWSTR lpCommandLine,
@@ -147,16 +147,10 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
 ) {
     IS_SUCCESS_BOOL();
 
-    BOOL ret = Old_CreateProcessInternalW(lpUnknown1, lpApplicationName,
+    BOOL ret = Old2_CreateProcessInternalW(lpUnknown1, lpApplicationName,
         lpCommandLine, lpProcessAttributes, lpThreadAttributes,
         bInheritHandles, dwCreationFlags | CREATE_SUSPENDED, lpEnvironment,
         lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
-    LOQ("uu3l2p", "ApplicationName", lpApplicationName,
-        "CommandLine", lpCommandLine, "CreationFlags", dwCreationFlags,
-        "ProcessId", lpProcessInformation->dwProcessId,
-        "ThreadId", lpProcessInformation->dwThreadId,
-        "ProcessHandle", lpProcessInformation->hProcess,
-        "ThreadHandle", lpProcessInformation->hThread);
     if(ret != FALSE) {
         notify_pipe(lpProcessInformation->dwProcessId);
 
@@ -166,6 +160,33 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
             ResumeThread(lpProcessInformation->hThread);
         }
     }
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
+    __in_opt    LPVOID lpUnknown1,
+    __in_opt    LPWSTR lpApplicationName,
+    __inout_opt LPWSTR lpCommandLine,
+    __in_opt    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    __in_opt    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    __in        BOOL bInheritHandles,
+    __in        DWORD dwCreationFlags,
+    __in_opt    LPVOID lpEnvironment,
+    __in_opt    LPWSTR lpCurrentDirectory,
+    __in        LPSTARTUPINFO lpStartupInfo,
+    __out       LPPROCESS_INFORMATION lpProcessInformation,
+    __in_opt    LPVOID lpUnknown2
+) {
+    BOOL ret = Old_CreateProcessInternalW(lpUnknown1, lpApplicationName,
+        lpCommandLine, lpProcessAttributes, lpThreadAttributes,
+        bInheritHandles, dwCreationFlags, lpEnvironment,
+        lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
+    LOQ("uu3l2p", "ApplicationName", lpApplicationName,
+        "CommandLine", lpCommandLine, "CreationFlags", dwCreationFlags,
+        "ProcessId", lpProcessInformation->dwProcessId,
+        "ThreadId", lpProcessInformation->dwThreadId,
+        "ProcessHandle", lpProcessInformation->hProcess,
+        "ThreadHandle", lpProcessInformation->hThread);
     return ret;
 }
 
@@ -264,5 +285,15 @@ HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
     BOOL ret = Old_VirtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType);
     LOQ("ppll", "ProcessHandle", hProcess, "Address", lpAddress,
         "Size", dwSize, "FreeType", dwFreeType);
+    return ret;
+}
+
+HOOKDEF(int, CDECL, system,
+    const char *command
+) {
+    IS_SUCCESS_BOOL();
+
+    int ret = Old_system(command);
+    LOQ("s", "Command", command);
     return ret;
 }
