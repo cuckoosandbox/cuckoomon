@@ -40,7 +40,7 @@ HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
         dwReserved, lpfnCB);
     LOQ("uu", "URL", szURL, "FileName", szFileName);
     if(ret == S_OK) {
-        pipe_write("FILE:%S", szFileName);
+        pipe("FILE_NEW:%S", szFileName);
     }
     return ret;
 }

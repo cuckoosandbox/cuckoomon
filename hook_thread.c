@@ -27,12 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "threading";
 
-static void notify_pipe(DWORD process_id)
-{
-    char buf[32] = {}; int len = sizeof(buf);
-    pipe_write_read(buf, &len, "PID:%d", process_id);
-}
-
 HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
     __out     PHANDLE ThreadHandle,
     __in      ACCESS_MASK DesiredAccess,
@@ -43,7 +37,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
     __in      PINITIAL_TEB InitialTeb,
     __in      BOOLEAN CreateSuspended
 ) {
-    notify_pipe(pid_from_process_handle(ProcessHandle));
+    char buf[4]; int len = sizeof(buf);
+    pipe2(buf, &len, "PID:%d", pid_from_process_handle(ProcessHandle));
+
     NTSTATUS ret = Old_NtCreateThread(ThreadHandle, DesiredAccess,
         ObjectAttributes, ProcessHandle, ClientId, ThreadContext,
         InitialTeb, CreateSuspended);
@@ -63,7 +59,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenThread,
     LOQ("PlO", "ThreadHandle", ThreadHandle, "DesiredAccess", DesiredAccess,
         "ObjectAttributes", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe((DWORD) ClientId->UniqueProcess);
+        char buf[4]; int len = sizeof(buf);
+        pipe2(buf, &len, "PID:%d", ClientId->UniqueProcess);
     }
     return ret;
 }
@@ -83,7 +80,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
 ) {
     NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
     LOQ("p", "ThreadHandle", ThreadHandle);
-    notify_pipe(pid_from_thread_handle(ThreadHandle));
+
+    char buf[4]; int len = sizeof(buf);
+    pipe2(buf, &len, "PID:%d", pid_from_thread_handle(ThreadHandle));
     return ret;
 }
 
@@ -147,7 +146,9 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
 ) {
     IS_SUCCESS_HANDLE();
 
-    notify_pipe(pid_from_process_handle(hProcess));
+    char buf[4]; int len = sizeof(buf);
+    pipe2(buf, &len, "PID:%d", pid_from_process_handle(hProcess));
+
     HANDLE ret = Old_CreateRemoteThread(hProcess, lpThreadAttributes,
         dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,
         lpThreadId);
