@@ -43,8 +43,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        char buf[4]; int len = sizeof(buf);
-        pipe2(buf, &len, "PID:%d", pid_from_process_handle(*ProcessHandle));
+        pipe2(NULL, NULL, "PID:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -66,8 +65,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        char buf[4]; int len = sizeof(buf);
-        pipe2(buf, &len, "PID:%d", pid_from_process_handle(*ProcessHandle));
+        pipe2(NULL, NULL, "PID:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -83,8 +81,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        char buf[4]; int len = sizeof(buf);
-        pipe2(buf, &len, "PID:%d", pid_from_process_handle(*ProcessHandle));
+        pipe2(NULL, NULL, "PID:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -155,8 +152,7 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ProcessHandle", lpProcessInformation->hProcess,
         "ThreadHandle", lpProcessInformation->hThread);
     if(ret != FALSE) {
-        char buf[4]; int len = sizeof(buf);
-        pipe2(buf, &len, "PID:%d", lpProcessInformation->dwProcessId);
+        pipe2(NULL, NULL, "PID:%d", lpProcessInformation->dwProcessId);
 
         // if the CREATE_SUSPENDED flag was not set, then we have to resume
         // the main thread ourself

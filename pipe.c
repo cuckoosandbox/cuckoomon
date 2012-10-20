@@ -150,6 +150,12 @@ int pipe2(void *out, int *outlen, const char *fmt, ...)
         _pipe_sprintf(buf, fmt, args);
         va_end(args);
 
+        // default out buffer
+        char _out[128]; int _outlen = sizeof(_out);
+        if(out == NULL && outlen == NULL) {
+            out = _out, outlen = &_outlen;
+        }
+
         return CallNamedPipe(PIPE_NAME, buf, len, out, *outlen,
             (DWORD *) outlen, 0);
     }
