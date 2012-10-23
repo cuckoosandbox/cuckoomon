@@ -204,6 +204,7 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, StartServiceW),
     HOOK(advapi32, ControlService),
     HOOK(advapi32, DeleteService),
+	HOOK(kernel32, Sleep),
 };
 
 // get a random hooking technique, except for "direct jmp"

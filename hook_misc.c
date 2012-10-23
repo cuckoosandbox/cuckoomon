@@ -135,8 +135,12 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
     __in    PLARGE_INTEGER DelayInterval
 ) {
     int ret = 0;
-    LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
-    return Old_NtDelayExecution(Alertable, DelayInterval);
+	
+	LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
+	if(-DelayInterval->QuadPart / 10000 > 5000) { 
+		DelayInterval->QuadPart = -500 * 10000;
+	}
+	return Old_NtDelayExecution(Alertable, DelayInterval);
 }
 
 HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
@@ -179,3 +183,17 @@ HOOKDEF(NTSTATUS, WINAPI, NtClose,
     LOQ("p", "Handle", Handle);
     return ret;
 }
+
+HOOKDEF(VOID, WINAPI, Sleep,
+	__in DWORD dwMilliseconds
+) {
+
+	BOOL ret = 0;
+	LOQ("l","dwMilliseconds", dwMilliseconds);
+	if(dwMilliseconds > 5000) {
+		 Old_Sleep(500);
+	} else {
+		 Old_Sleep(dwMilliseconds);
+	}
+}
+
