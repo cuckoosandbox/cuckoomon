@@ -720,6 +720,12 @@ extern HOOKDEF(BOOL, WINAPI, DeleteService,
   __in  SC_HANDLE hService
 );
 
+extern HOOKDEF(VOID, WINAPI, Sleep,
+  __in DWORD dwMilliseconds
+);
+
+
+
 //
 // Special Hooks
 //
@@ -735,3 +741,5 @@ extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 );
+
+
