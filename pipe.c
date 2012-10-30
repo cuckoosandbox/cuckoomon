@@ -121,6 +121,7 @@ static int _pipe_sprintf(char *out, const char *fmt, va_list args)
             sprintf(s, "%d", va_arg(args, int));
             ret += _pipe_ascii(&out, s, strlen(s));
         }
+        fmt++;
     }
     return ret;
 }
