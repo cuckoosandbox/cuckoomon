@@ -45,7 +45,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
     LOQ("PlOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition);
-    if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
+    if(NT_SUCCESS(ret) && DesiredAccess & (GENERIC_WRITE |
+            FILE_GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA |
+            STANDARD_RIGHTS_WRITE)) {
         pipe("FILE_NEW:%O", ObjectAttributes);
     }
     return ret;
@@ -63,7 +65,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
         IoStatusBlock, ShareAccess, OpenOptions);
     LOQ("PlO", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
-    if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
+    if(NT_SUCCESS(ret) && DesiredAccess & (GENERIC_WRITE |
+            FILE_GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA |
+            STANDARD_RIGHTS_WRITE)) {
         pipe("FILE_NEW:%O", ObjectAttributes);
     }
     return ret;
