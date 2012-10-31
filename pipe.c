@@ -28,7 +28,7 @@ void pipe_write(const char *fmt, ...)
     length = vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
 
-    CallNamedPipe(PIPE_NAME, buf, length, NULL, 0, NULL, 0);
+    CallNamedPipe(PIPE_NAME, buf, length, buf, sizeof(buf), &length, 0);
 }
 
 void pipe_write_read(char *out, int *outlen, const char *fmt, ...)
