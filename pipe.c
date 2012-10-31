@@ -44,7 +44,7 @@ static int _pipe_utf8x(char **out, unsigned short x)
 {
     unsigned char buf[3];
     int len = _pipe_utf8(x, buf);
-    if(out != NULL) {
+    if(*out != NULL) {
         memcpy(*out, buf, len);
         *out += len;
     }
