@@ -125,7 +125,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
 ) {
     NTSTATUS ret = Old_NtSetValueKey(KeyHandle, ValueName, TitleIndex,
         Type, Data, DataSize);
-    LOQ("polb", "KeyHandle", KeyHandle, "ValueName", ValueName, "Type", Type,
+    LOQ("polS", "KeyHandle", KeyHandle, "ValueName", ValueName, "Type", Type,
         "Buffer", DataSize, Data);
     return ret;
 }
@@ -156,8 +156,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryMultipleValueKey,
 ) {
     NTSTATUS ret = Old_NtQueryMultipleValueKey(KeyHandle, ValueEntries,
         EntryCount, ValueBuffer, BufferLength, RequiredBufferLength);
-    LOQ("poB", "KeyHandle", KeyHandle, "ValueName", ValueEntries->ValueName,
-        "ValueBuffer", BufferLength, ValueBuffer);
+    LOQ("poS", "KeyHandle", KeyHandle, "ValueName", ValueEntries->ValueName,
+        "ValueBuffer", *BufferLength, ValueBuffer);
     return ret;
 }
 
