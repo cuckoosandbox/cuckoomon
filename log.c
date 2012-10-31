@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdarg.h>
 #include <windows.h>
+#include <dirent.h>
 #include "ntapi.h"
 #include "misc.h"
 
@@ -371,6 +372,9 @@ void log_init()
     }
     g_pid = GetCurrentProcessId();
     g_ppid = parent_process_id();
+
+    mkdir("C:\\cuckoo");
+    mkdir("C:\\cuckoo\\logs");
 
     char fname[256];
     sprintf(fname, "C:\\cuckoo\\logs\\%d.csv", GetCurrentProcessId());
