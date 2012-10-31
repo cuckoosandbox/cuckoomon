@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
 
 static IS_SUCCESS_LONGREG();
 static const char *module_name = "registry";
@@ -125,8 +126,24 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
 ) {
     NTSTATUS ret = Old_NtSetValueKey(KeyHandle, ValueName, TitleIndex,
         Type, Data, DataSize);
-    LOQ("polS", "KeyHandle", KeyHandle, "ValueName", ValueName, "Type", Type,
-        "Buffer", DataSize, Data);
+    if(NT_SUCCESS(ret) && Data != NULL) {
+        if(Type == REG_DWORD || Type == REG_DWORD_LITTLE_ENDIAN) {
+            LOQ("polL", "KeyHandle", KeyHandle, "ValueName", ValueName,
+                "Type", Type, "Buffer", Data);
+        }
+        else if(Type == REG_EXPAND_SZ || Type == REG_SZ) {
+            LOQ("polu", "KeyHandle", KeyHandle, "ValueName", ValueName,
+                "Type", Type, "Buffer", Data);
+        }
+        else {
+            LOQ("polU", "KeyHandle", KeyHandle, "ValueName", ValueName,
+                "Type", Type, "Buffer", DataSize, Data);
+        }
+    }
+    else {
+        LOQ("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
+            "Type", Type);
+    }
     return ret;
 }
 
@@ -138,11 +155,47 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
     __in       ULONG Length,
     __out      PULONG ResultLength
 ) {
+    ENSURE_ULONG_ZERO(ResultLength);
+
     NTSTATUS ret = Old_NtQueryValueKey(KeyHandle, ValueName,
         KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
-    LOQ("poSl", "KeyHandle", KeyHandle, "ValueName", ValueName,
-        "KeyValueInformation", Length, KeyValueInformation,
-        "KeyValueInformationClass", KeyValueInformationClass);
+    if(NT_SUCCESS(ret) &&
+            *ResultLength >= sizeof(ULONG) * 3) {
+        ULONG Type, DataLength = 0; UCHAR *Data = NULL;
+
+        // someday add support for Name and NameLength, if there's use for it
+
+        Type = ((KEY_VALUE_PARTIAL_INFORMATION *) KeyValueInformation)->Type;
+        if(KeyValueInformationClass == KeyValueFullInformation) {
+            KEY_VALUE_FULL_INFORMATION *p =
+                (KEY_VALUE_FULL_INFORMATION *) KeyValueInformation;
+            DataLength = p->DataLength;
+            Data = (UCHAR *) KeyValueInformation + p->DataOffset;
+        }
+        else if(KeyValueInformationClass == KeyValuePartialInformation) {
+            KEY_VALUE_PARTIAL_INFORMATION *p =
+                (KEY_VALUE_PARTIAL_INFORMATION *) KeyValueInformation;
+            DataLength = p->DataLength;
+            Data = p->Data;
+        }
+
+        if(Type == REG_DWORD || Type == REG_DWORD_LITTLE_ENDIAN) {
+            LOQ("polL", "KeyHandle", KeyHandle, "ValueName", ValueName,
+                "Type", Type, "Information", Data);
+        }
+        else if(Type == REG_EXPAND_SZ || Type == REG_SZ) {
+            LOQ("polu", "KeyHandle", KeyHandle, "ValueName", ValueName,
+                "Type", Type, "Information", Data);
+        }
+        else {
+            LOQ("polS", "KeyHandle", KeyHandle, "ValueName", ValueName,
+                "Type", Type, "Information", DataLength, Data);
+        }
+    }
+    else {
+        LOQ("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
+    }
+
     return ret;
 }
 
