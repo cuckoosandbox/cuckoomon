@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 #include "misc.h"
+#include "ignore.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "process";
@@ -81,7 +82,12 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
+        unsigned long pid = pid_from_process_handle(*ProcessHandle);
+        // check if this pid is protected
+        if(is_protected_pid(pid)) {
+            return STATUS_ACCESS_DENIED;
+        }
+        pipe("PID:%d", pid);
     }
     return ret;
 }

@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "hooks.h"
 #include "log.h"
+#include "pipe.h"
+#include "ignore.h"
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
@@ -252,6 +254,13 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
     if(dwReason == DLL_PROCESS_ATTACH) {
         // make sure advapi32 is loaded
         LoadLibrary("advapi32");
+
+        // obtain all protected pids
+        unsigned long pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
+        pipe2(pids, &length, "GETPID");
+        for (int i = 0; i < length / sizeof(pids[0]); i++) {
+            add_protected_pid(pids[i]);
+        }
 
         log_init();
         set_hooks();
