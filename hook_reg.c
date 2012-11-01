@@ -21,281 +21,246 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
-#include "pipe.h"
 
 static IS_SUCCESS_LONGREG();
 static const char *module_name = "registry";
 
-HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,
-    __out       PHANDLE KeyHandle,
-    __in        ACCESS_MASK DesiredAccess,
-    __in        POBJECT_ATTRIBUTES ObjectAttributes,
-    __reserved  ULONG TitleIndex,
-    __in_opt    PUNICODE_STRING Class,
-    __in        ULONG CreateOptions,
-    __out_opt   PULONG Disposition
+HOOKDEF(LONG, WINAPI, RegOpenKeyExA,
+  __in        HKEY hKey,
+  __in_opt    LPCTSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
 ) {
-    NTSTATUS ret = Old_NtCreateKey(KeyHandle, DesiredAccess, ObjectAttributes,
-        TitleIndex, Class, CreateOptions, Disposition);
-    LOQ("PlOo", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
-        "ObjectAttributes", ObjectAttributes, "Class", Class);
+    LONG ret = Old_RegOpenKeyExA(hKey, lpSubKey, ulOptions, samDesired,
+        phkResult);
+    LOQ("psP", "Registry", hKey, "SubKey", lpSubKey, "Handle", phkResult);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtOpenKey,
-    __out  PHANDLE KeyHandle,
-    __in   ACCESS_MASK DesiredAccess,
-    __in   POBJECT_ATTRIBUTES ObjectAttributes
+HOOKDEF(LONG, WINAPI, RegOpenKeyExW,
+  __in        HKEY hKey,
+  __in_opt    LPWSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
 ) {
-    NTSTATUS ret = Old_NtOpenKey(KeyHandle, DesiredAccess, ObjectAttributes);
-    LOQ("PlO", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
-        "ObjectAttributes", ObjectAttributes);
+    LONG ret = Old_RegOpenKeyExW(hKey, lpSubKey, ulOptions, samDesired,
+        phkResult);
+    LOQ("puP", "Registry", hKey, "SubKey", lpSubKey, "Handle", phkResult);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtOpenKeyEx,
-    __out  PHANDLE KeyHandle,
-    __in   ACCESS_MASK DesiredAccess,
-    __in   POBJECT_ATTRIBUTES ObjectAttributes,
-    __in   ULONG OpenOptions
+HOOKDEF(LONG, WINAPI, RegCreateKeyExA,
+  __in        HKEY hKey,
+  __in        LPCTSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPTSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
 ) {
-    NTSTATUS ret = Old_NtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes,
-        OpenOptions);
-    LOQ("PlO", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
-        "ObjectAttributes", ObjectAttributes);
+    LONG ret = Old_RegCreateKeyExA(hKey, lpSubKey, Reserved, lpClass,
+        dwOptions, samDesired, lpSecurityAttributes, phkResult,
+        lpdwDisposition);
+    LOQ("psslP", "Registry", hKey, "SubKey", lpSubKey, "Class", lpClass,
+        "Access", samDesired, "Handle", phkResult);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtRenameKey,
-    __in  HANDLE KeyHandle,
-    __in  PUNICODE_STRING NewName
+HOOKDEF(LONG, WINAPI, RegCreateKeyExW,
+  __in        HKEY hKey,
+  __in        LPWSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPWSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
 ) {
-    NTSTATUS ret = Old_NtRenameKey(KeyHandle, NewName);
-    LOQ("po", "KeyHandle", KeyHandle, "NewName", NewName);
+    LONG ret = Old_RegCreateKeyExW(hKey, lpSubKey, Reserved, lpClass,
+        dwOptions, samDesired, lpSecurityAttributes, phkResult,
+        lpdwDisposition);
+    LOQ("puulP", "Registry", hKey, "SubKey", lpSubKey, "Class", lpClass,
+        "Access", samDesired, "Handle", phkResult);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtReplaceKey,
-    __in  POBJECT_ATTRIBUTES NewHiveFileName,
-    __in  HANDLE KeyHandle,
-    __in  POBJECT_ATTRIBUTES BackupHiveFileName
+HOOKDEF(LONG, WINAPI, RegDeleteKeyA,
+  __in  HKEY hKey,
+  __in  LPCTSTR lpSubKey
 ) {
-    NTSTATUS ret = Old_NtReplaceKey(NewHiveFileName, KeyHandle,
-        BackupHiveFileName);
-    LOQ("pOO", "KeyHandle", KeyHandle, "NewHiveFileName", NewHiveFileName,
-        "BackupHiveFileName", BackupHiveFileName);
+    LONG ret = Old_RegDeleteKeyA(hKey, lpSubKey);
+    LOQ("ps", "Handle", hKey, "SubKey", lpSubKey);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtEnumerateKey,
-    __in       HANDLE KeyHandle,
-    __in       ULONG Index,
-    __in       KEY_INFORMATION_CLASS KeyInformationClass,
-    __out_opt  PVOID KeyInformation,
-    __in       ULONG Length,
-    __out      PULONG ResultLength
+HOOKDEF(LONG, WINAPI, RegDeleteKeyW,
+  __in  HKEY hKey,
+  __in  LPWSTR lpSubKey
 ) {
-    NTSTATUS ret = Old_NtEnumerateKey(KeyHandle, Index, KeyInformationClass,
-        KeyInformation, Length, ResultLength);
-    LOQ("pl", "KeyHandle", KeyHandle, "Index", Index);
+    LONG ret = Old_RegDeleteKeyW(hKey, lpSubKey);
+    LOQ("pu", "Handle", hKey, "SubKey", lpSubKey);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtEnumerateValueKey,
-    __in       HANDLE KeyHandle,
-    __in       ULONG Index,
-    __in       KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
-    __out_opt  PVOID KeyValueInformation,
-    __in       ULONG Length,
-    __out      PULONG ResultLength
+HOOKDEF(LONG, WINAPI, RegEnumKeyW,
+  __in   HKEY hKey,
+  __in   DWORD dwIndex,
+  __out  LPWSTR lpName,
+  __in   DWORD cchName
 ) {
-    NTSTATUS ret = Old_NtEnumerateValueKey(KeyHandle, Index,
-        KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
-    LOQ("pll", "KeyHandle", KeyHandle, "Index", Index,
-        "KeyValueInformationClass", KeyValueInformationClass);
+    LONG ret = Old_RegEnumKeyW(hKey, dwIndex, lpName, cchName);
+    LOQ("plu", "Handle", hKey, "Index", dwIndex, "Name", lpName);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
-    __in      HANDLE KeyHandle,
-    __in      PUNICODE_STRING ValueName,
-    __in_opt  ULONG TitleIndex,
-    __in      ULONG Type,
-    __in_opt  PVOID Data,
-    __in      ULONG DataSize
+HOOKDEF(LONG, WINAPI, RegEnumKeyExA,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPTSTR lpName,
+  __inout      LPDWORD lpcName,
+  __reserved   LPDWORD lpReserved,
+  __inout      LPTSTR lpClass,
+  __inout_opt  LPDWORD lpcClass,
+  __out_opt    PFILETIME lpftLastWriteTime
 ) {
-    NTSTATUS ret = Old_NtSetValueKey(KeyHandle, ValueName, TitleIndex,
-        Type, Data, DataSize);
-    if(NT_SUCCESS(ret) && Data != NULL) {
-        if(Type == REG_DWORD || Type == REG_DWORD_LITTLE_ENDIAN) {
-            LOQ("polL", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Buffer", Data);
-        }
-        else if(Type == REG_EXPAND_SZ || Type == REG_SZ) {
-            LOQ("polu", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Buffer", Data);
-        }
-        else {
-            LOQ("polU", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Buffer", DataSize, Data);
-        }
-    }
-    else {
-        LOQ("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
-            "Type", Type);
-    }
+    LONG ret = Old_RegEnumKeyExA(hKey, dwIndex, lpName, lpcName, lpReserved,
+        lpClass, lpcClass, lpftLastWriteTime);
+    LOQ("plss", "Handle", hKey, "Index", dwIndex, "Name", lpName,
+        "Class", lpClass);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
-    __in       HANDLE KeyHandle,
-    __in       PUNICODE_STRING ValueName,
-    __in       KEY_VALUE_INFORMATION_CLASS KeyValueInformationClass,
-    __out_opt  PVOID KeyValueInformation,
-    __in       ULONG Length,
-    __out      PULONG ResultLength
+HOOKDEF(LONG, WINAPI, RegEnumKeyExW,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPWSTR lpName,
+  __inout      LPDWORD lpcName,
+  __reserved   LPDWORD lpReserved,
+  __inout      LPWSTR lpClass,
+  __inout_opt  LPDWORD lpcClass,
+  __out_opt    PFILETIME lpftLastWriteTime
 ) {
-    ENSURE_ULONG_ZERO(ResultLength);
-
-    NTSTATUS ret = Old_NtQueryValueKey(KeyHandle, ValueName,
-        KeyValueInformationClass, KeyValueInformation, Length, ResultLength);
-    if(NT_SUCCESS(ret) &&
-            *ResultLength >= sizeof(ULONG) * 3) {
-        ULONG Type, DataLength = 0; UCHAR *Data = NULL;
-
-        // someday add support for Name and NameLength, if there's use for it
-
-        Type = ((KEY_VALUE_PARTIAL_INFORMATION *) KeyValueInformation)->Type;
-        if(KeyValueInformationClass == KeyValueFullInformation) {
-            KEY_VALUE_FULL_INFORMATION *p =
-                (KEY_VALUE_FULL_INFORMATION *) KeyValueInformation;
-            DataLength = p->DataLength;
-            Data = (UCHAR *) KeyValueInformation + p->DataOffset;
-        }
-        else if(KeyValueInformationClass == KeyValuePartialInformation) {
-            KEY_VALUE_PARTIAL_INFORMATION *p =
-                (KEY_VALUE_PARTIAL_INFORMATION *) KeyValueInformation;
-            DataLength = p->DataLength;
-            Data = p->Data;
-        }
-
-        if(Type == REG_DWORD || Type == REG_DWORD_LITTLE_ENDIAN) {
-            LOQ("polL", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Information", Data);
-        }
-        else if(Type == REG_EXPAND_SZ || Type == REG_SZ) {
-            LOQ("polu", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Information", Data);
-        }
-        else {
-            LOQ("polS", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Information", DataLength, Data);
-        }
-    }
-    else {
-        LOQ("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
-    }
-
+    LONG ret = Old_RegEnumKeyExW(hKey, dwIndex, lpName, lpcName, lpReserved,
+        lpClass, lpcClass, lpftLastWriteTime);
+    LOQ("pluu", "Handle", hKey, "Index", dwIndex, "Name", lpName,
+        "Class", lpClass);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtQueryMultipleValueKey,
-    __in       HANDLE KeyHandle,
-    __inout    PKEY_VALUE_ENTRY ValueEntries,
-    __in       ULONG EntryCount,
-    __out      PVOID ValueBuffer,
-    __inout    PULONG BufferLength,
-    __out_opt  PULONG RequiredBufferLength
+HOOKDEF(LONG, WINAPI, RegEnumValueA,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPTSTR lpValueName,
+  __inout      LPDWORD lpcchValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
 ) {
-    NTSTATUS ret = Old_NtQueryMultipleValueKey(KeyHandle, ValueEntries,
-        EntryCount, ValueBuffer, BufferLength, RequiredBufferLength);
-    LOQ("poS", "KeyHandle", KeyHandle, "ValueName", ValueEntries->ValueName,
-        "ValueBuffer", *BufferLength, ValueBuffer);
+    LONG ret = Old_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName,
+        lpReserved, lpType, lpData, lpcbData);
+    LOQ("plsB", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
+        "Data", lpcbData, lpData);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtDeleteKey,
-    __in  HANDLE KeyHandle
+HOOKDEF(LONG, WINAPI, RegEnumValueW,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPWSTR lpValueName,
+  __inout      LPDWORD lpcchValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
 ) {
-    NTSTATUS ret = Old_NtDeleteKey(KeyHandle);
-    LOQ("p", "KeyHandle", KeyHandle);
+    LONG ret = Old_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName,
+        lpReserved, lpType, lpData, lpcbData);
+    LOQ("pluB", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
+        "Data", lpcbData, lpData);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtDeleteValueKey,
-    __in  HANDLE KeyHandle,
-    __in  PUNICODE_STRING ValueName
+HOOKDEF(LONG, WINAPI, RegSetValueExA,
+  __in        HKEY hKey,
+  __in_opt    LPCTSTR lpValueName,
+  __reserved  DWORD Reserved,
+  __in        DWORD dwType,
+  __in        const BYTE *lpData,
+  __in        DWORD cbData
 ) {
-    NTSTATUS ret = Old_NtDeleteValueKey(KeyHandle, ValueName);
-    LOQ("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
+    LONG ret = Old_RegSetValueExA(hKey, lpValueName, Reserved, dwType, lpData,
+        cbData);
+    LOQ("pslb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
+        "Buffer", cbData, lpData);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtLoadKey,
-    __in  POBJECT_ATTRIBUTES TargetKey,
-    __in  POBJECT_ATTRIBUTES SourceFile
+HOOKDEF(LONG, WINAPI, RegSetValueExW,
+  __in        HKEY hKey,
+  __in_opt    LPWSTR lpValueName,
+  __reserved  DWORD Reserved,
+  __in        DWORD dwType,
+  __in        const BYTE *lpData,
+  __in        DWORD cbData
 ) {
-    NTSTATUS ret = Old_NtLoadKey(TargetKey, SourceFile);
-    LOQ("OO", "TargetKey", TargetKey, "SourceFile", SourceFile);
+    LONG ret = Old_RegSetValueExW(hKey, lpValueName, Reserved, dwType, lpData,
+        cbData);
+    LOQ("pulb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
+        "Buffer", cbData, lpData);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtLoadKey2,
-    __in  POBJECT_ATTRIBUTES TargetKey,
-    __in  POBJECT_ATTRIBUTES SourceFile,
-    __in  ULONG Flags
+HOOKDEF(LONG, WINAPI, RegQueryValueExA,
+  __in         HKEY hKey,
+  __in_opt     LPCTSTR lpValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
 ) {
-    NTSTATUS ret = Old_NtLoadKey2(TargetKey, SourceFile, Flags);
-    LOQ("OOl", "TargetKey", TargetKey, "SourceFile", SourceFile,
-        "Flags", Flags);
+    LONG ret = Old_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType,
+        lpData, lpcbData);
+    LOQ("psLB", "Handle", hKey, "ValueName", lpValueName,
+        "Type", lpType, "Buffer", lpcbData, lpData);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtLoadKeyEx,
-    __in      POBJECT_ATTRIBUTES TargetKey,
-    __in      POBJECT_ATTRIBUTES SourceFile,
-    __in      ULONG Flags,
-    __in_opt  HANDLE TrustClassKey
+HOOKDEF(LONG, WINAPI, RegQueryValueExW,
+  __in         HKEY hKey,
+  __in_opt     LPWSTR lpValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
 ) {
-    NTSTATUS ret = Old_NtLoadKeyEx(TargetKey, SourceFile, Flags,
-        TrustClassKey);
-    LOQ("pOOl", "TrustClassKey", TrustClassKey, "TargetKey", TargetKey,
-        "SourceFile", SourceFile, "Flags", Flags);
+    LONG ret = Old_RegQueryValueExW(hKey, lpValueName, lpReserved, lpType,
+        lpData, lpcbData);
+    LOQ("luLB", "Handle", hKey, "ValueName", lpValueName,
+        "Type", lpType, "Buffer", lpcbData, lpData);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtQueryKey,
-    __in       HANDLE KeyHandle,
-    __in       KEY_INFORMATION_CLASS KeyInformationClass,
-    __out_opt  PVOID KeyInformation,
-    __in       ULONG Length,
-    __out      PULONG ResultLength
+HOOKDEF(LONG, WINAPI, RegDeleteValueA,
+  __in      HKEY hKey,
+  __in_opt  LPCTSTR lpValueName
 ) {
-    NTSTATUS ret = Old_NtQueryKey(KeyHandle, KeyInformationClass,
-        KeyInformation, Length, ResultLength);
-    LOQ("pSl", "KeyHandle", KeyHandle,
-        "KeyInformation", Length, KeyInformation,
-        "KeyInformationClass", KeyInformationClass);
+    LONG ret = Old_RegDeleteValueA(hKey, lpValueName);
+    LOQ("ps", "Handle", hKey, "ValueName", lpValueName);
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtSaveKey,
-    __in  HANDLE KeyHandle,
-    __in  HANDLE FileHandle
+HOOKDEF(LONG, WINAPI, RegDeleteValueW,
+  __in      HKEY hKey,
+  __in_opt  LPWSTR lpValueName
 ) {
-    NTSTATUS ret = Old_NtSaveKey(KeyHandle, FileHandle);
-    LOQ("pp", "KeyHandle", KeyHandle, "FileHandle", FileHandle);
-    return ret;
-}
-
-HOOKDEF(NTSTATUS, WINAPI, NtSaveKeyEx,
-    __in  HANDLE KeyHandle,
-    __in  HANDLE FileHandle,
-    __in  ULONG Format
-) {
-    NTSTATUS ret = Old_NtSaveKeyEx(KeyHandle, FileHandle, Format);
-    LOQ("ppl", "KeyHandle", KeyHandle, "FileHandle", FileHandle,
-        "Format", Format);
+    LONG ret = Old_RegDeleteValueW(hKey, lpValueName);
+    LOQ("pu", "Handle", hKey, "ValueName", lpValueName);
     return ret;
 }
 
@@ -352,5 +317,13 @@ HOOKDEF(LONG, WINAPI, RegQueryInfoKeyW,
         "MaxClassLength", lpcMaxClassLen, "ValueCount", lpcValues,
         "MaxValueNameLength", lpcMaxValueNameLen,
         "MaxValueLength", lpcMaxValueLen);
+    return ret;
+}
+
+HOOKDEF(LONG, WINAPI, RegCloseKey,
+    __in    HKEY hKey
+) {
+    LONG ret = Old_RegCloseKey(hKey);
+    LOQ("p", "Handle", hKey);
     return ret;
 }

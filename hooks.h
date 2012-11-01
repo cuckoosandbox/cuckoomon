@@ -209,6 +209,191 @@ extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
 // Registry Hooks
 //
 
+extern HOOKDEF(LONG, WINAPI, RegOpenKeyExA,
+  __in        HKEY hKey,
+  __in_opt    LPCTSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
+);
+
+extern HOOKDEF(LONG, WINAPI, RegOpenKeyExW,
+  __in        HKEY hKey,
+  __in_opt    LPWSTR lpSubKey,
+  __reserved  DWORD ulOptions,
+  __in        REGSAM samDesired,
+  __out       PHKEY phkResult
+);
+
+extern HOOKDEF(LONG, WINAPI, RegCreateKeyExA,
+  __in        HKEY hKey,
+  __in        LPCTSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPTSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
+);
+
+extern HOOKDEF(LONG, WINAPI, RegCreateKeyExW,
+  __in        HKEY hKey,
+  __in        LPWSTR lpSubKey,
+  __reserved  DWORD Reserved,
+  __in_opt    LPWSTR lpClass,
+  __in        DWORD dwOptions,
+  __in        REGSAM samDesired,
+  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+  __out       PHKEY phkResult,
+  __out_opt   LPDWORD lpdwDisposition
+);
+
+extern HOOKDEF(LONG, WINAPI, RegDeleteKeyA,
+  __in  HKEY hKey,
+  __in  LPCTSTR lpSubKey
+);
+
+extern HOOKDEF(LONG, WINAPI, RegDeleteKeyW,
+  __in  HKEY hKey,
+  __in  LPWSTR lpSubKey
+);
+
+extern HOOKDEF(LONG, WINAPI, RegEnumKeyW,
+  __in   HKEY hKey,
+  __in   DWORD dwIndex,
+  __out  LPWSTR lpName,
+  __in   DWORD cchName
+);
+
+extern HOOKDEF(LONG, WINAPI, RegEnumKeyExA,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPTSTR lpName,
+  __inout      LPDWORD lpcName,
+  __reserved   LPDWORD lpReserved,
+  __inout      LPTSTR lpClass,
+  __inout_opt  LPDWORD lpcClass,
+  __out_opt    PFILETIME lpftLastWriteTime
+);
+
+extern HOOKDEF(LONG, WINAPI, RegEnumKeyExW,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPWSTR lpName,
+  __inout      LPDWORD lpcName,
+  __reserved   LPDWORD lpReserved,
+  __inout      LPWSTR lpClass,
+  __inout_opt  LPDWORD lpcClass,
+  __out_opt    PFILETIME lpftLastWriteTime
+);
+
+extern HOOKDEF(LONG, WINAPI, RegEnumValueA,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPTSTR lpValueName,
+  __inout      LPDWORD lpcchValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
+);
+
+extern HOOKDEF(LONG, WINAPI, RegEnumValueW,
+  __in         HKEY hKey,
+  __in         DWORD dwIndex,
+  __out        LPWSTR lpValueName,
+  __inout      LPDWORD lpcchValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
+);
+
+extern HOOKDEF(LONG, WINAPI, RegSetValueExA,
+  __in        HKEY hKey,
+  __in_opt    LPCTSTR lpValueName,
+  __reserved  DWORD Reserved,
+  __in        DWORD dwType,
+  __in        const BYTE *lpData,
+  __in        DWORD cbData
+);
+
+extern HOOKDEF(LONG, WINAPI, RegSetValueExW,
+  __in        HKEY hKey,
+  __in_opt    LPWSTR lpValueName,
+  __reserved  DWORD Reserved,
+  __in        DWORD dwType,
+  __in        const BYTE *lpData,
+  __in        DWORD cbData
+);
+
+extern HOOKDEF(LONG, WINAPI, RegQueryValueExA,
+  __in         HKEY hKey,
+  __in_opt     LPCTSTR lpValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
+);
+
+extern HOOKDEF(LONG, WINAPI, RegQueryValueExW,
+  __in         HKEY hKey,
+  __in_opt     LPWSTR lpValueName,
+  __reserved   LPDWORD lpReserved,
+  __out_opt    LPDWORD lpType,
+  __out_opt    LPBYTE lpData,
+  __inout_opt  LPDWORD lpcbData
+);
+
+extern HOOKDEF(LONG, WINAPI, RegDeleteValueA,
+  __in      HKEY hKey,
+  __in_opt  LPCTSTR lpValueName
+);
+
+extern HOOKDEF(LONG, WINAPI, RegDeleteValueW,
+  __in      HKEY hKey,
+  __in_opt  LPWSTR lpValueName
+);
+
+extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyA,
+    _In_         HKEY hKey,
+    _Out_opt_    LPTSTR lpClass,
+    _Inout_opt_  LPDWORD lpcClass,
+    _Reserved_   LPDWORD lpReserved,
+    _Out_opt_    LPDWORD lpcSubKeys,
+    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
+    _Out_opt_    LPDWORD lpcMaxClassLen,
+    _Out_opt_    LPDWORD lpcValues,
+    _Out_opt_    LPDWORD lpcMaxValueNameLen,
+    _Out_opt_    LPDWORD lpcMaxValueLen,
+    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
+    _Out_opt_    PFILETIME lpftLastWriteTime
+);
+
+extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyW,
+    _In_         HKEY hKey,
+    _Out_opt_    LPWSTR lpClass,
+    _Inout_opt_  LPDWORD lpcClass,
+    _Reserved_   LPDWORD lpReserved,
+    _Out_opt_    LPDWORD lpcSubKeys,
+    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
+    _Out_opt_    LPDWORD lpcMaxClassLen,
+    _Out_opt_    LPDWORD lpcValues,
+    _Out_opt_    LPDWORD lpcMaxValueNameLen,
+    _Out_opt_    LPDWORD lpcMaxValueLen,
+    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
+    _Out_opt_    PFILETIME lpftLastWriteTime
+);
+
+extern HOOKDEF(LONG, WINAPI, RegCloseKey,
+    __in    HKEY hKey
+);
+
+//
+// Native Registry Hooks
+//
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,
     __out       PHANDLE KeyHandle,
     __in        ACCESS_MASK DesiredAccess,
@@ -332,36 +517,6 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtSaveKeyEx,
     __in  HANDLE KeyHandle,
     __in  HANDLE FileHandle,
     __in  ULONG Format
-);
-
-extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyA,
-    _In_         HKEY hKey,
-    _Out_opt_    LPTSTR lpClass,
-    _Inout_opt_  LPDWORD lpcClass,
-    _Reserved_   LPDWORD lpReserved,
-    _Out_opt_    LPDWORD lpcSubKeys,
-    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
-    _Out_opt_    LPDWORD lpcMaxClassLen,
-    _Out_opt_    LPDWORD lpcValues,
-    _Out_opt_    LPDWORD lpcMaxValueNameLen,
-    _Out_opt_    LPDWORD lpcMaxValueLen,
-    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
-    _Out_opt_    PFILETIME lpftLastWriteTime
-);
-
-extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyW,
-    _In_         HKEY hKey,
-    _Out_opt_    LPWSTR lpClass,
-    _Inout_opt_  LPDWORD lpcClass,
-    _Reserved_   LPDWORD lpReserved,
-    _Out_opt_    LPDWORD lpcSubKeys,
-    _Out_opt_    LPDWORD lpcMaxSubKeyLen,
-    _Out_opt_    LPDWORD lpcMaxClassLen,
-    _Out_opt_    LPDWORD lpcValues,
-    _Out_opt_    LPDWORD lpcMaxValueNameLen,
-    _Out_opt_    LPDWORD lpcMaxValueLen,
-    _Out_opt_    LPDWORD lpcbSecurityDescriptor,
-    _Out_opt_    PFILETIME lpftLastWriteTime
 );
 
 //

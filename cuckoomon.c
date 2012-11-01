@@ -93,6 +93,43 @@ static hook_t g_hooks[] = {
     // ascii *and* unicode APIs of those functions.
     //
 
+    HOOK(advapi32, RegOpenKeyExA),
+    HOOK(advapi32, RegOpenKeyExW),
+
+    HOOK(advapi32, RegCreateKeyExA),
+    HOOK(advapi32, RegCreateKeyExW),
+
+    // Note that RegDeleteKeyEx() is available for 64bit XP/Vista+
+    HOOK(advapi32, RegDeleteKeyA),
+    HOOK(advapi32, RegDeleteKeyW),
+
+    // RegEnumKeyA() calls RegEnumKeyExA(), but RegEnumKeyW() does *not*
+    // call RegEnumKeyExW()
+    HOOK(advapi32, RegEnumKeyW),
+    HOOK(advapi32, RegEnumKeyExA),
+    HOOK(advapi32, RegEnumKeyExW),
+
+    HOOK(advapi32, RegEnumValueA),
+    HOOK(advapi32, RegEnumValueW),
+
+    HOOK(advapi32, RegSetValueExA),
+    HOOK(advapi32, RegSetValueExW),
+
+    HOOK(advapi32, RegQueryValueExA),
+    HOOK(advapi32, RegQueryValueExW),
+
+    HOOK(advapi32, RegDeleteValueA),
+    HOOK(advapi32, RegDeleteValueW),
+
+    HOOK(advapi32, RegQueryInfoKeyA),
+    HOOK(advapi32, RegQueryInfoKeyW),
+
+    HOOK(advapi32, RegCloseKey),
+
+    //
+    // Native Registry Hooks
+    //
+
     HOOK(ntdll, NtCreateKey),
     HOOK(ntdll, NtOpenKey),
     HOOK(ntdll, NtOpenKeyEx),
@@ -111,8 +148,6 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtQueryKey),
     HOOK(ntdll, NtSaveKey),
     HOOK(ntdll, NtSaveKeyEx),
-    HOOK(advapi32, RegQueryInfoKeyA),
-    HOOK(advapi32, RegQueryInfoKeyW),
 
     //
     // Window Hooks
