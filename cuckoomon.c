@@ -288,7 +288,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         // make sure advapi32 is loaded
         LoadLibrary("advapi32");
 
-        log_init();
+        log_init(0);
         set_hooks();
     }
     else if(dwReason == DLL_PROCESS_DETACH) {

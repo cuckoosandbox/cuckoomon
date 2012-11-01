@@ -360,7 +360,7 @@ void loq(const char *fmt, ...)
     LeaveCriticalSection(&g_mutex);
 }
 
-void log_init()
+void log_init(int debug)
 {
     InitializeCriticalSection(&g_mutex);
     GetModuleFileNameW(NULL, g_module_name_buf, sizeof(g_module_name_buf));
@@ -376,9 +376,14 @@ void log_init()
     mkdir("C:\\cuckoo");
     mkdir("C:\\cuckoo\\logs");
 
-    char fname[256];
-    sprintf(fname, "C:\\cuckoo\\logs\\%d.csv", GetCurrentProcessId());
-    g_fp = fopen(fname, "w");
+    if(debug != 0) {
+        g_fp = stderr;
+    }
+    else {
+        char fname[256];
+        sprintf(fname, "C:\\cuckoo\\logs\\%d.csv", GetCurrentProcessId());
+        g_fp = fopen(fname, "w");
+    }
 }
 
 void log_free()
