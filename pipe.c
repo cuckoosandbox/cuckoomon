@@ -136,7 +136,8 @@ int pipe(const char *fmt, ...)
         _pipe_sprintf(buf, fmt, args);
         va_end(args);
 
-        return CallNamedPipe(PIPE_NAME, buf, len, NULL, 0, NULL, 0);
+        return CallNamedPipe(PIPE_NAME, buf, len, buf, len,
+            (unsigned int *) &len, 0);
     }
     return -1;
 }
