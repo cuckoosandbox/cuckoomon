@@ -27,12 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "process";
 
-static void notify_pipe(DWORD process_id)
-{
-    char buf[32] = {}; int len = sizeof(buf);
-    pipe_write_read(buf, &len, "PID:%d", process_id);
-}
-
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
     __in        ACCESS_MASK DesiredAccess,
@@ -49,7 +43,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe(pid_from_process_handle(*ProcessHandle));
+        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -71,7 +65,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe(pid_from_process_handle(*ProcessHandle));
+        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -87,7 +81,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        notify_pipe(pid_from_process_handle(*ProcessHandle));
+        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -152,7 +146,7 @@ HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
         bInheritHandles, dwCreationFlags | CREATE_SUSPENDED, lpEnvironment,
         lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
     if(ret != FALSE) {
-        notify_pipe(lpProcessInformation->dwProcessId);
+        pipe("PID:%d", lpProcessInformation->dwProcessId);
 
         // if the CREATE_SUSPENDED flag was not set, then we have to resume
         // the main thread ourself

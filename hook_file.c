@@ -45,9 +45,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
     LOQ("PlOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition);
-    if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
-        pipe_write("FILE:%.*S", ObjectAttributes->ObjectName->Length >> 1,
-            ObjectAttributes->ObjectName->Buffer);
+    if(NT_SUCCESS(ret) && DesiredAccess & (GENERIC_WRITE |
+            FILE_GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA |
+            STANDARD_RIGHTS_WRITE)) {
+        pipe("FILE_NEW:%O", ObjectAttributes);
     }
     return ret;
 }
@@ -64,9 +65,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
         IoStatusBlock, ShareAccess, OpenOptions);
     LOQ("PlO", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
-    if(NT_SUCCESS(ret) && DesiredAccess & GENERIC_WRITE) {
-        pipe_write("FILE:%.*S", ObjectAttributes->ObjectName->Length >> 1,
-            ObjectAttributes->ObjectName->Buffer);
+    if(NT_SUCCESS(ret) && DesiredAccess & (GENERIC_WRITE |
+            FILE_GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA |
+            STANDARD_RIGHTS_WRITE)) {
+        pipe("FILE_NEW:%O", ObjectAttributes);
     }
     return ret;
 }
@@ -110,6 +112,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteFile,
 HOOKDEF(NTSTATUS, WINAPI, NtDeleteFile,
     __in  POBJECT_ATTRIBUTES ObjectAttributes
 ) {
+    pipe("FILE_DEL:%O", ObjectAttributes);
+
     NTSTATUS ret = Old_NtDeleteFile(ObjectAttributes);
     LOQ("O", "FileName", ObjectAttributes);
     return ret;
@@ -253,12 +257,21 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
 ) {
     IS_SUCCESS_BOOL();
 
+    int log_new = 1;
+
+    // if the new filename is null, then this function call is to delete the
+    // existing file
+    if(lpNewFileName == NULL) {
+        pipe("FILE_DEL:%Z", lpExistingFileName);
+        log_new = 0;
+    }
+
     BOOL ret = Old_MoveFileWithProgressW(lpExistingFileName, lpNewFileName,
         lpProgressRoutine, lpData, dwFlags);
     LOQ("uu", "ExistingFileName", lpExistingFileName,
         "NewFileName", lpNewFileName);
-    if(ret != FALSE) {
-        pipe_write("FILE:%S", lpNewFileName);
+    if(ret != FALSE && log_new != 0) {
+        pipe("FILE_NEW:%Z", lpNewFileName);
     }
     return ret;
 }
@@ -323,36 +336,29 @@ HOOKDEF(BOOL, WINAPI, CopyFileW,
     return ret;
 }
 
+HOOKDEF(BOOL, WINAPI, CopyFileExW,
+  _In_      LPWSTR lpExistingFileName,
+  _In_      LPWSTR lpNewFileName,
+  _In_opt_  LPPROGRESS_ROUTINE lpProgressRoutine,
+  _In_opt_  LPVOID lpData,
+  _In_opt_  LPBOOL pbCancel,
+  _In_      DWORD dwCopyFlags
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_CopyFileExW(lpExistingFileName, lpNewFileName,
+        lpProgressRoutine, lpData, pbCancel, dwCopyFlags);
+    LOQ("uul", "ExistingFileName", lpExistingFileName,
+        "NewFileName", lpNewFileName, "CopyFlags", dwCopyFlags);
+    return ret;
+}
+
 HOOKDEF(BOOL, WINAPI, DeleteFileA,
     __in  LPCSTR lpFileName
 ) {
     IS_SUCCESS_BOOL();
 
-    if(lpFileName != NULL) {
-        // first obtain the filename
-        const char *pcszFileName = lpFileName;
-        for (const char *p = pcszFileName = lpFileName; *p != 0; p++) {
-            if(*p == '/' || *p == '\\') {
-                pcszFileName = p + 1;
-            }
-        }
-
-        // generate an unique path
-        char fname[MAX_PATH];
-        do {
-            snprintf(fname, ARRAYSIZE(fname), "C:\\cuckoo\\files\\%ld",
-                random());
-            // for now we assume that the only error we'll get is the
-            // ERROR_ALREADY_EXISTS error
-        } while (CreateDirectoryA(fname, NULL) == FALSE);
-
-        // append the filename
-        snprintf(fname + strlen(fname), ARRAYSIZE(fname) - strlen(fname),
-            "\\%s.bin", pcszFileName);
-
-        // copy the file
-        CopyFileA(lpFileName, fname, TRUE);
-    }
+    pipe("FILE_DEL:%z", lpFileName);
 
     BOOL ret = Old_DeleteFileA(lpFileName);
     LOQ("s", "FileName", lpFileName);
@@ -364,31 +370,7 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
 ) {
     IS_SUCCESS_BOOL();
 
-    if(lpFileName != NULL) {
-        // first obtain the filename
-        const wchar_t *pwszFileName = lpFileName;
-        for (const wchar_t *p = pwszFileName = lpFileName; *p != 0; p++) {
-            if(*p == '/' || *p == '\\') {
-                pwszFileName = p + 1;
-            }
-        }
-
-        // generate an unique path
-        wchar_t fname[MAX_PATH];
-        do {
-            snwprintf(fname, ARRAYSIZE(fname), L"C:\\cuckoo\\files\\%u",
-                random());
-            // for now we assume that the only error we'll get is the
-            // ERROR_ALREADY_EXISTS error
-        } while (CreateDirectoryW(fname, NULL) == FALSE);
-
-        // append the filename
-        snwprintf(fname + lstrlenW(fname), ARRAYSIZE(fname) - lstrlenW(fname),
-            L"\\%s.bin", pwszFileName);
-
-        // copy the file
-        CopyFileW(lpFileName, fname, TRUE);
-    }
+    pipe("FILE_DEL:%Z", lpFileName);
 
     BOOL ret = Old_DeleteFileW(lpFileName);
     LOQ("u", "FileName", lpFileName);

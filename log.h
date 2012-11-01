@@ -88,3 +88,5 @@ void log_free();
 
 #define ENSURE_ULONG(param) \
     ULONG _##param = 0; if(param == NULL) param = &_##param;
+#define ENSURE_ULONG_ZERO(param) \
+    ENSURE_ULONG(param) else *param = 0

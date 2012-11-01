@@ -392,6 +392,24 @@ int hook_api(hook_t *h, int type)
     // check if this is a valid hook type
     if(type >= 0 && type < ARRAYSIZE(hook_types)) {
 
+        // determine whether we're running under win7, if so, we might have to
+        // follow a short relative jmp and an indirect jump before reaching
+        // the real address
+        OSVERSIONINFO os_info = {sizeof(OSVERSIONINFO)};
+        if(GetVersionEx(&os_info) && os_info.dwMajorVersion == 6 &&
+                os_info.dwMinorVersion == 1) {
+            // windows 7 has a DLL called kernelbase.dll which basically acts
+            // as a layer between the program and kernel32 (and related?) it
+            // allows easy hotpatching of a set of functions which is why
+            // there's a short relative jump and an indirect jump. we want to
+            // resolve the address of the real function, so we follow these
+            // two jumps.
+            if(!memcmp(addr, "\xeb\x05", 2) &&
+                    !memcmp(addr + 7, "\xff\x25", 2)) {
+                addr = **(unsigned char ***)(addr + 9);
+            }
+        }
+
         DWORD old_protect;
 
         // make the address writable
