@@ -910,11 +910,6 @@ extern HOOKDEF(BOOL, WINAPI, DeleteService,
 // Special Hooks
 //
 
-extern HOOKDEF2(NTSTATUS, WINAPI, NtResumeThread,
-    __in        HANDLE ThreadHandle,
-    __out_opt   PULONG SuspendCount
-);
-
 extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,
     __in_opt    ULONG Flags,

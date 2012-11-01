@@ -44,7 +44,6 @@ static hook_t g_hooks[] = {
     // In other words, do *NOT* place "special" hooks behind "normal" hooks.
     //
 
-    HOOK2(ntdll, NtResumeThread, TRUE),
     HOOK2(ntdll, LdrLoadDll, TRUE),
     HOOK2(kernel32, CreateProcessInternalW, TRUE),
 

@@ -9,7 +9,7 @@ DISTORM3OBJ = $(DISTORM3:.c=.o)
 HOOKS = $(wildcard hook_*.c)
 HOOKSOBJ = $(HOOKS:.c=.o)
 
-CUCKOO = hooking.o log.o special.o pipe.o misc.o cuckoomon.o
+CUCKOO = hooking.o log.o pipe.o misc.o cuckoomon.o
 
 default: cuckoomon.dll
 
