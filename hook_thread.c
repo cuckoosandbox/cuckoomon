@@ -37,7 +37,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
     __in      PINITIAL_TEB InitialTeb,
     __in      BOOLEAN CreateSuspended
 ) {
-    pipe2(NULL, NULL, "PID:%d", pid_from_process_handle(ProcessHandle));
+    pipe("PID:%d", pid_from_process_handle(ProcessHandle));
 
     NTSTATUS ret = Old_NtCreateThread(ThreadHandle, DesiredAccess,
         ObjectAttributes, ProcessHandle, ClientId, ThreadContext,
@@ -58,7 +58,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenThread,
     LOQ("PlO", "ThreadHandle", ThreadHandle, "DesiredAccess", DesiredAccess,
         "ObjectAttributes", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe2(NULL, NULL, "PID:%d", ClientId->UniqueProcess);
+        pipe("PID:%d", ClientId->UniqueProcess);
     }
     return ret;
 }
@@ -79,7 +79,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
     NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
     LOQ("p", "ThreadHandle", ThreadHandle);
 
-    pipe2(NULL, NULL, "PID:%d", pid_from_thread_handle(ThreadHandle));
+    pipe("PID:%d", pid_from_thread_handle(ThreadHandle));
     return ret;
 }
 
@@ -143,7 +143,7 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
 ) {
     IS_SUCCESS_HANDLE();
 
-    pipe2(NULL, NULL, "PID:%d", pid_from_process_handle(hProcess));
+    pipe("PID:%d", pid_from_process_handle(hProcess));
 
     HANDLE ret = Old_CreateRemoteThread(hProcess, lpThreadAttributes,
         dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,

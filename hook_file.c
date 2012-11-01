@@ -112,7 +112,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteFile,
 HOOKDEF(NTSTATUS, WINAPI, NtDeleteFile,
     __in  POBJECT_ATTRIBUTES ObjectAttributes
 ) {
-    pipe2(NULL, NULL, "FILE_DEL:%O", ObjectAttributes);
+    pipe("FILE_DEL:%O", ObjectAttributes);
 
     NTSTATUS ret = Old_NtDeleteFile(ObjectAttributes);
     LOQ("O", "FileName", ObjectAttributes);
@@ -262,7 +262,7 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
     // if the new filename is null, then this function call is to delete the
     // existing file
     if(lpNewFileName == NULL) {
-        pipe2(NULL, NULL, "FILE_DEL:%Z", lpExistingFileName);
+        pipe("FILE_DEL:%Z", lpExistingFileName);
         log_new = 0;
     }
 
@@ -358,7 +358,7 @@ HOOKDEF(BOOL, WINAPI, DeleteFileA,
 ) {
     IS_SUCCESS_BOOL();
 
-    pipe2(NULL, NULL, "FILE_DEL:%z", lpFileName);
+    pipe("FILE_DEL:%z", lpFileName);
 
     BOOL ret = Old_DeleteFileA(lpFileName);
     LOQ("s", "FileName", lpFileName);
@@ -370,7 +370,7 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
 ) {
     IS_SUCCESS_BOOL();
 
-    pipe2(NULL, NULL, "FILE_DEL:%Z", lpFileName);
+    pipe("FILE_DEL:%Z", lpFileName);
 
     BOOL ret = Old_DeleteFileW(lpFileName);
     LOQ("u", "FileName", lpFileName);
