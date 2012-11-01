@@ -122,7 +122,7 @@ static void log_wstring(const wchar_t *str, int len, int quotes)
         if(*str == '"') {
             log_bytes("\"", 1);
         }
-        log_wchar(*str++);
+        log_wchar(*(unsigned short *) str++);
     }
     if(quotes) log_bytes("\"", 1);
 }

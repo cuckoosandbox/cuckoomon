@@ -55,7 +55,7 @@ static int _pipe_ascii(char **out, const char *s, int len)
 {
     int ret = 0;
     while (len-- != 0) {
-        ret += _pipe_utf8x(out, *s++);
+        ret += _pipe_utf8x(out, *(unsigned char *) s++);
     }
     return ret;
 }
@@ -64,7 +64,7 @@ static int _pipe_unicode(char **out, const wchar_t *s, int len)
 {
     int ret = 0;
     while (len-- != 0) {
-        ret += _pipe_utf8x(out, *s++);
+        ret += _pipe_utf8x(out, *(unsigned short *) s++);
     }
     return ret;
 }
