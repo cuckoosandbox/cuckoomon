@@ -37,6 +37,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // O  -> (OBJECT_ATTRIBUTES *) -> wrapper around a unicode string
 // a  -> (int, char **) -> array of string
 // A  -> (int, wchar_t **) -> array of unicode strings
+// r  -> (Type, int, char *) type as defined for Registry operations
+// R  -> (Type, int, wchar_t *) type as defined for Registry operations
+//       type r is for ascii functions, R for unicode (Nt* are unicode)
 //
 // Each of these format specifiers are prefixed with a zero-terminated key
 // value, e.g.

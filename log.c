@@ -347,6 +347,37 @@ void loq(const char *fmt, ...)
             }
             log_bytes("]", 1);
         }
+        else if(key == 'r' || key == 'R') {
+            unsigned long type = va_arg(args, unsigned long);
+            unsigned long size = va_arg(args, unsigned long);
+            unsigned char *data = va_arg(args, unsigned char *);
+
+            if(data == NULL) {
+                log_string("<None>", -1, 0);
+            }
+            else if(type == REG_DWORD || type == REG_DWORD_LITTLE_ENDIAN) {
+                unsigned int value = *(unsigned int *) data;
+                log_printf("%d", value);
+            }
+            else if(type == REG_DWORD_BIG_ENDIAN) {
+                unsigned int value = *(unsigned int *) data;
+                log_printf("%d", htonl(value));
+            }
+            else if(type == REG_EXPAND_SZ || type == REG_SZ) {
+                // ascii strings
+                if(key == 'r') {
+                    log_string((const char *) data, -1, 0);
+                }
+                // unicode strings
+                else {
+                    log_wstring((const wchar_t *) data, -1, 0);
+                }
+            }
+            // something like REG_BINARY
+            else {
+                log_string((const char *) data, size, 0);
+            }
+        }
         log_bytes("\"", 1);
     }
 

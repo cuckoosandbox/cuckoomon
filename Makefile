@@ -2,6 +2,7 @@ CC = gcc
 CFLAGS = -Wall -std=c99 -s -O2
 DLL = -shared
 DIRS = -Idistorm3.2-package/include
+LIBS = -lws2_32
 
 DISTORM3 = $(wildcard distorm3.2-package/src/*.c)
 DISTORM3OBJ = $(DISTORM3:.c=.o)
@@ -17,7 +18,7 @@ default: cuckoomon.dll
 	$(CC) $(CFLAGS) $(DIRS) -c $^ -o $@
 
 cuckoomon.dll: $(CUCKOO) $(HOOKSOBJ) $(DISTORM3OBJ)
-	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^
+	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^ $(LIBS)
 
 clean:
 	rm $(CUCKOO) $(HOOKSOBJ) $(DISTORM3OBJ) cuckoomon.dll
