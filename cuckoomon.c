@@ -256,7 +256,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         LoadLibrary("advapi32");
 
         // obtain all protected pids
-        unsigned long pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
+        int pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
         pipe2(pids, &length, "GETPID");
         for (int i = 0; i < length / sizeof(pids[0]); i++) {
             add_protected_pid(pids[i]);
