@@ -9,6 +9,7 @@
 // S  -> (int, wchar_t *) -> unicode string with length
 // o  -> (UNICODE_STRING *) -> unicode string
 // O  -> (OBJECT_ATTRIBUTES *) -> wrapper around unicode string
+// d  -> (int) -> integer
 //
 
 int pipe(const char *fmt, ...);
