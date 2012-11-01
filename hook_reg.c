@@ -164,8 +164,14 @@ HOOKDEF(LONG, WINAPI, RegEnumValueA,
 ) {
     LONG ret = Old_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName,
         lpReserved, lpType, lpData, lpcbData);
-    LOQ("plsB", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
-        "Data", lpcbData, lpData);
+    if(lpType != NULL && lpData != NULL && lpcbData != NULL) {
+        LOQ("plsr", "Handle", hKey, "Index", dwIndex,
+            "ValueName", lpValueName, "Data", *lpType, *lpcbData, lpData);
+    }
+    else {
+        LOQ("plsLL", "Handle", hKey, "Index", dwIndex,
+            "ValueName", lpValueName, "Type", lpType, "DataLength", lpcbData);
+    }
     return ret;
 }
 
@@ -181,8 +187,14 @@ HOOKDEF(LONG, WINAPI, RegEnumValueW,
 ) {
     LONG ret = Old_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName,
         lpReserved, lpType, lpData, lpcbData);
-    LOQ("pluB", "Handle", hKey, "Index", dwIndex, "ValueName", lpValueName,
-        "Data", lpcbData, lpData);
+    if(lpType != NULL && lpData != NULL && lpcbData != NULL) {
+        LOQ("pluR", "Handle", hKey, "Index", dwIndex,
+            "ValueName", lpValueName, "Data", *lpType, *lpcbData, lpData);
+    }
+    else {
+        LOQ("pluLL", "Handle", hKey, "Index", dwIndex,
+            "ValueName", lpValueName, "Type", lpType, "DataLength", lpcbData);
+    }
     return ret;
 }
 
@@ -196,8 +208,8 @@ HOOKDEF(LONG, WINAPI, RegSetValueExA,
 ) {
     LONG ret = Old_RegSetValueExA(hKey, lpValueName, Reserved, dwType, lpData,
         cbData);
-    LOQ("pslb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
-        "Buffer", cbData, lpData);
+    LOQ("pslr", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
+        "Buffer", dwType, cbData, lpData);
     return ret;
 }
 
@@ -211,8 +223,8 @@ HOOKDEF(LONG, WINAPI, RegSetValueExW,
 ) {
     LONG ret = Old_RegSetValueExW(hKey, lpValueName, Reserved, dwType, lpData,
         cbData);
-    LOQ("pulb", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
-        "Buffer", cbData, lpData);
+    LOQ("pulR", "Handle", hKey, "ValueName", lpValueName, "Type", dwType,
+        "Buffer", dwType, cbData, lpData);
     return ret;
 }
 
@@ -226,8 +238,14 @@ HOOKDEF(LONG, WINAPI, RegQueryValueExA,
 ) {
     LONG ret = Old_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType,
         lpData, lpcbData);
-    LOQ("psLB", "Handle", hKey, "ValueName", lpValueName,
-        "Type", lpType, "Buffer", lpcbData, lpData);
+    if(lpType != NULL && lpData != NULL && lpcbData != NULL) {
+        LOQ("psr", "Handle", hKey, "ValueName", lpValueName,
+            "Data", *lpType, *lpcbData, lpData);
+    }
+    else {
+        LOQ("psLL", "Handle", hKey, "ValueName", lpValueName,
+            "Type", lpType, "DataLength", lpcbData);
+    }
     return ret;
 }
 
@@ -241,8 +259,14 @@ HOOKDEF(LONG, WINAPI, RegQueryValueExW,
 ) {
     LONG ret = Old_RegQueryValueExW(hKey, lpValueName, lpReserved, lpType,
         lpData, lpcbData);
-    LOQ("luLB", "Handle", hKey, "ValueName", lpValueName,
-        "Type", lpType, "Buffer", lpcbData, lpData);
+    if(lpType != NULL && lpData != NULL && lpcbData != NULL) {
+        LOQ("puR", "Handle", hKey, "ValueName", lpValueName,
+            "Data", *lpType, *lpcbData, lpData);
+    }
+    else {
+        LOQ("puLL", "Handle", hKey, "ValueName", lpValueName,
+            "Type", lpType, "DataLength", lpcbData);
+    }
     return ret;
 }
 

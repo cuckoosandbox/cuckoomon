@@ -126,19 +126,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
 ) {
     NTSTATUS ret = Old_NtSetValueKey(KeyHandle, ValueName, TitleIndex,
         Type, Data, DataSize);
-    if(NT_SUCCESS(ret) && Data != NULL) {
-        if(Type == REG_DWORD || Type == REG_DWORD_LITTLE_ENDIAN) {
-            LOQ("polL", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Buffer", Data);
-        }
-        else if(Type == REG_EXPAND_SZ || Type == REG_SZ) {
-            LOQ("polu", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Buffer", Data);
-        }
-        else {
-            LOQ("polU", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Buffer", DataSize, Data);
-        }
+    if(NT_SUCCESS(ret)) {
+        LOQ("polR", "KeyHandle", KeyHandle, "ValueName", ValueName,
+            "Type", Type, "Buffer", Type, DataSize, Data);
     }
     else {
         LOQ("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
@@ -179,18 +169,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
             Data = p->Data;
         }
 
-        if(Type == REG_DWORD || Type == REG_DWORD_LITTLE_ENDIAN) {
-            LOQ("polL", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Information", Data);
-        }
-        else if(Type == REG_EXPAND_SZ || Type == REG_SZ) {
-            LOQ("polu", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Information", Data);
-        }
-        else {
-            LOQ("polS", "KeyHandle", KeyHandle, "ValueName", ValueName,
-                "Type", Type, "Information", DataLength, Data);
-        }
+        LOQ("polR", "KeyHandle", KeyHandle, "ValueName", ValueName,
+            "Type", Type, "Information", Type, DataLength, Data);
     }
     else {
         LOQ("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
