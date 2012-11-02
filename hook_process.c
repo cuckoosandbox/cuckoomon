@@ -125,38 +125,6 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
     return ret;
 }
 
-HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
-    __in_opt    LPVOID lpUnknown1,
-    __in_opt    LPWSTR lpApplicationName,
-    __inout_opt LPWSTR lpCommandLine,
-    __in_opt    LPSECURITY_ATTRIBUTES lpProcessAttributes,
-    __in_opt    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    __in        BOOL bInheritHandles,
-    __in        DWORD dwCreationFlags,
-    __in_opt    LPVOID lpEnvironment,
-    __in_opt    LPWSTR lpCurrentDirectory,
-    __in        LPSTARTUPINFO lpStartupInfo,
-    __out       LPPROCESS_INFORMATION lpProcessInformation,
-    __in_opt    LPVOID lpUnknown2
-) {
-    IS_SUCCESS_BOOL();
-
-    BOOL ret = Old2_CreateProcessInternalW(lpUnknown1, lpApplicationName,
-        lpCommandLine, lpProcessAttributes, lpThreadAttributes,
-        bInheritHandles, dwCreationFlags | CREATE_SUSPENDED, lpEnvironment,
-        lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
-    if(ret != FALSE) {
-        pipe("PID:%d", lpProcessInformation->dwProcessId);
-
-        // if the CREATE_SUSPENDED flag was not set, then we have to resume
-        // the main thread ourself
-        if((dwCreationFlags & CREATE_SUSPENDED) == 0) {
-            ResumeThread(lpProcessInformation->hThread);
-        }
-    }
-    return ret;
-}
-
 HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     __in_opt    LPVOID lpUnknown1,
     __in_opt    LPWSTR lpApplicationName,
