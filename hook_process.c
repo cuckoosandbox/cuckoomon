@@ -88,8 +88,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
 
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
-    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
-        "FileName", ObjectAttributes);
+    LOQ("PlP", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+        // looks hacky, is indeed hacky.. UniqueProcess is the first value in
+        // CLIENT_ID, so it's correct like this.. (although still hacky)
+        "ProcessIdentifier", &ClientId->UniqueProcess);
     if(NT_SUCCESS(ret)) {
         // let's do an extra check here, because the msdn documentation is
         // so vague..
