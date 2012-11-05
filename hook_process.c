@@ -77,14 +77,23 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     __in      POBJECT_ATTRIBUTES ObjectAttributes,
     __in_opt  PCLIENT_ID ClientId
 ) {
+    // although the documentation on msdn is a bit vague, this seems correct
+    // for both XP and Vista (the ClientId->UniqueProcess part, that is)
+    if(ClientId != NULL && is_protected_pid((int) ClientId->UniqueProcess)) {
+        return STATUS_ACCESS_DENIED;
+    }
+
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
+        // let's do an extra check here, because the msdn documentation is
+        // so vague..
         unsigned long pid = pid_from_process_handle(*ProcessHandle);
         // check if this pid is protected
         if(is_protected_pid(pid)) {
+            CloseHandle(*ProcessHandle);
             return STATUS_ACCESS_DENIED;
         }
         pipe("PID:%d", pid);
