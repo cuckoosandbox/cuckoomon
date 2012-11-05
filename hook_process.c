@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 #include "misc.h"
+#include "ignore.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "process";
@@ -76,12 +77,31 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     __in      POBJECT_ATTRIBUTES ObjectAttributes,
     __in_opt  PCLIENT_ID ClientId
 ) {
+    // although the documentation on msdn is a bit vague, this seems correct
+    // for both XP and Vista (the ClientId->UniqueProcess part, that is)
+    if(ClientId != NULL && is_protected_pid((int) ClientId->UniqueProcess)) {
+        NTSTATUS ret = STATUS_ACCESS_DENIED;
+        LOQ("plO", "ProcessHandle", NULL, "DesiredAccess", DesiredAccess,
+            "ProcessIdentifier", ClientId->UniqueProcess);
+        return STATUS_ACCESS_DENIED;
+    }
+
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
-    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
-        "FileName", ObjectAttributes);
+    LOQ("PlP", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+        // looks hacky, is indeed hacky.. UniqueProcess is the first value in
+        // CLIENT_ID, so it's correct like this.. (although still hacky)
+        "ProcessIdentifier", &ClientId->UniqueProcess);
     if(NT_SUCCESS(ret)) {
-        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
+        // let's do an extra check here, because the msdn documentation is
+        // so vague..
+        unsigned long pid = pid_from_process_handle(*ProcessHandle);
+        // check if this pid is protected
+        if(is_protected_pid(pid)) {
+            CloseHandle(*ProcessHandle);
+            return STATUS_ACCESS_DENIED;
+        }
+        pipe("PID:%d", pid);
     }
     return ret;
 }
