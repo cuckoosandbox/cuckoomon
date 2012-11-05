@@ -1,7 +1,7 @@
 
 TESTS = test-log.exe test-lde.exe test-hooking.exe test-apihooks.exe \
 	test-ldlib.exe test-del.exe test-lasterr.exe test-dns.exe test-dir.exe \
-	create-file.exe
+	create-file.exe open-protected-pid.exe
 
 # please build all the object files using the main Makefile (in the parent
 # directory)
