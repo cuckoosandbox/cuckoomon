@@ -86,11 +86,11 @@ int main()
     InitializeObjectAttributes(&obj_dir, &dir_fname,
         OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
 
+    // open the directory
     NTSTATUS ret = pZwCreateFile(&dir_handle, FILE_TRAVERSE, &obj_dir,
         &io_dir, NULL, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_OPEN,
         FILE_DIRECTORY_FILE, NULL, 0);
 
-    // open the directory
     if(NT_SUCCESS(ret)) {
         InitializeObjectAttributes(&obj_file, &file_fname,
             OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, dir_handle, NULL);
@@ -123,6 +123,7 @@ int main()
     InitializeObjectAttributes(&obj_file, &file_fname,
         OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
 
+    // open the file with DELETE access rights
     ret = pZwCreateFile(&file_handle, DELETE, &obj_file, &io_file, NULL,
         FILE_ATTRIBUTE_NORMAL, 0, FILE_OPEN, 0, NULL, 0);
     if(NT_SUCCESS(ret)) {
