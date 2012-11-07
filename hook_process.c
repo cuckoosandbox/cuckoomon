@@ -172,7 +172,8 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ProcessHandle", lpProcessInformation->hProcess,
         "ThreadHandle", lpProcessInformation->hThread);
     if(ret != FALSE) {
-        pipe("PID:%d", lpProcessInformation->dwProcessId);
+        pipe("PIDTID:%d,%d", lpProcessInformation->dwProcessId,
+            lpProcessInformation->dwThreadId);
 
         // if the CREATE_SUSPENDED flag was not set, then we have to resume
         // the main thread ourself
