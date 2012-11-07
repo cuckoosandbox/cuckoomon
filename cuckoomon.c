@@ -257,7 +257,11 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         // make sure advapi32 is loaded
         LoadLibrary("advapi32");
 
+        // initialize the log file
         log_init();
+
+        // initialize all hooks
+        set_hooks();
 
         // notify analyzer.py that we've loaded
         char name[64];
@@ -267,9 +271,6 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
             SetEvent(event_handle);
             CloseHandle(event_handle);
         }
-
-        // initialize all hooks
-        set_hooks();
     }
     else if(dwReason == DLL_PROCESS_DETACH) {
         log_free();
