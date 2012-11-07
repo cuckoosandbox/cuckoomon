@@ -159,11 +159,9 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
     __out       LPPROCESS_INFORMATION lpProcessInformation,
     __in_opt    LPVOID lpUnknown2
 ) {
-    IS_SUCCESS_BOOL();
-
     BOOL ret = Old_CreateProcessInternalW(lpUnknown1, lpApplicationName,
         lpCommandLine, lpProcessAttributes, lpThreadAttributes,
-        bInheritHandles, dwCreationFlags | CREATE_SUSPENDED, lpEnvironment,
+        bInheritHandles, dwCreationFlags, lpEnvironment,
         lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
     LOQ("uu3l2p", "ApplicationName", lpApplicationName,
         "CommandLine", lpCommandLine, "CreationFlags", dwCreationFlags,
@@ -171,16 +169,6 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         "ThreadId", lpProcessInformation->dwThreadId,
         "ProcessHandle", lpProcessInformation->hProcess,
         "ThreadHandle", lpProcessInformation->hThread);
-    if(ret != FALSE) {
-        pipe("PIDTID:%d,%d", lpProcessInformation->dwProcessId,
-            lpProcessInformation->dwThreadId);
-
-        // if the CREATE_SUSPENDED flag was not set, then we have to resume
-        // the main thread ourself
-        if((dwCreationFlags & CREATE_SUSPENDED) == 0) {
-            ResumeThread(lpProcessInformation->hThread);
-        }
-    }
     return ret;
 }
 
@@ -279,5 +267,15 @@ HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
     BOOL ret = Old_VirtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType);
     LOQ("ppll", "ProcessHandle", hProcess, "Address", lpAddress,
         "Size", dwSize, "FreeType", dwFreeType);
+    return ret;
+}
+
+HOOKDEF(int, CDECL, system,
+    const char *command
+) {
+    IS_SUCCESS_INTM1();
+
+    int ret = Old_system(command);
+    LOQ("s", "Command", command);
     return ret;
 }

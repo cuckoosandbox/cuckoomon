@@ -179,3 +179,31 @@ HOOKDEF(NTSTATUS, WINAPI, NtClose,
     LOQ("p", "Handle", Handle);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, WriteConsoleA,
+    _In_        HANDLE hConsoleOutput,
+    _In_        const VOID *lpBuffer,
+    _In_        DWORD nNumberOfCharsToWrite,
+    _Out_       LPDWORD lpNumberOfCharsWritten,
+    _Reserved_  LPVOID lpReseverd
+) {
+    BOOL ret = Old_WriteConsoleA(hConsoleOutput, lpBuffer,
+        nNumberOfCharsToWrite, lpNumberOfCharsWritten, lpReseverd);
+    LOQ("pS", "ConsoleHandle", hConsoleOutput,
+        "Buffer", nNumberOfCharsToWrite, lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, WriteConsoleW,
+    _In_        HANDLE hConsoleOutput,
+    _In_        const VOID *lpBuffer,
+    _In_        DWORD nNumberOfCharsToWrite,
+    _Out_       LPDWORD lpNumberOfCharsWritten,
+    _Reserved_  LPVOID lpReseverd
+) {
+    BOOL ret = Old_WriteConsoleW(hConsoleOutput, lpBuffer,
+        nNumberOfCharsToWrite, lpNumberOfCharsWritten, lpReseverd);
+    LOQ("pU", "ConsoleHandle", hConsoleOutput,
+        "Buffer", nNumberOfCharsToWrite, lpBuffer);
+    return ret;
+}

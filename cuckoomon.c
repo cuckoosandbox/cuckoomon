@@ -46,8 +46,8 @@ static hook_t g_hooks[] = {
     // In other words, do *NOT* place "special" hooks behind "normal" hooks.
     //
 
-    HOOK2(ntdll, NtResumeThread, TRUE),
     HOOK2(ntdll, LdrLoadDll, TRUE),
+    HOOK2(kernel32, CreateProcessInternalW, TRUE),
 
     //
     // File Hooks
@@ -188,6 +188,8 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, VirtualProtectEx),
     HOOK(kernel32, VirtualFreeEx),
 
+    HOOK(msvcrt, system),
+
     //
     // Thread Hooks
     //
@@ -219,6 +221,8 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, IsDebuggerPresent),
     HOOK(advapi32, LookupPrivilegeValueW),
     HOOK(ntdll, NtClose),
+    HOOK(kernel32, WriteConsoleA),
+    HOOK(kernel32, WriteConsoleW),
 
     //
     // Network Hooks
@@ -297,8 +301,20 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
             add_protected_pid(pids[i]);
         }
 
+        // initialize the log file
         log_init(0);
+
+        // initialize all hooks
         set_hooks();
+
+        // notify analyzer.py that we've loaded
+        char name[64];
+        sprintf(name, "CuckooEvent%d", GetCurrentProcessId());
+        HANDLE event_handle = OpenEvent(EVENT_ALL_ACCESS, FALSE, name);
+        if(event_handle != NULL) {
+            SetEvent(event_handle);
+            CloseHandle(event_handle);
+        }
     }
     else if(dwReason == DLL_PROCESS_DETACH) {
         log_free();
