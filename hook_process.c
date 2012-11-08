@@ -44,7 +44,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
+        pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -66,7 +66,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe("PID:%d", pid_from_process_handle(*ProcessHandle));
+        pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
     }
     return ret;
 }
@@ -101,7 +101,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
             CloseHandle(*ProcessHandle);
             return STATUS_ACCESS_DENIED;
         }
-        pipe("PID:%d", pid);
+        pipe("PROCESS:%d", pid);
     }
     return ret;
 }
