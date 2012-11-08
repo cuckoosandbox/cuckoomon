@@ -27,6 +27,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "filesystem";
 
+#define DUMP_FILE_MASK (GENERIC_WRITE | FILE_GENERIC_WRITE | \
+    FILE_WRITE_DATA | FILE_APPEND_DATA | STANDARD_RIGHTS_WRITE | \
+    STANDARD_RIGHTS_ALL)
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
   __out     PHANDLE FileHandle,
   __in      ACCESS_MASK DesiredAccess,
@@ -43,11 +47,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
     NTSTATUS ret = Old_NtCreateFile(FileHandle, DesiredAccess,
         ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes,
         ShareAccess, CreateDisposition, CreateOptions, EaBuffer, EaLength);
-    LOQ("PlOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
-        "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition);
-    if(NT_SUCCESS(ret) && DesiredAccess & (GENERIC_WRITE |
-            FILE_GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA |
-            STANDARD_RIGHTS_WRITE)) {
+    LOQ("PpOll", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition,
+        "ShareAccess", ShareAccess);
+    if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
         pipe("FILE_NEW:%O", ObjectAttributes);
     }
     return ret;
@@ -63,11 +66,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
 ) {
     NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
         IoStatusBlock, ShareAccess, OpenOptions);
-    LOQ("PlO", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
-        "FileName", ObjectAttributes);
-    if(NT_SUCCESS(ret) && DesiredAccess & (GENERIC_WRITE |
-            FILE_GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA |
-            STANDARD_RIGHTS_WRITE)) {
+    LOQ("PpOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
+        "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
+    if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
         pipe("FILE_NEW:%O", ObjectAttributes);
     }
     return ret;
