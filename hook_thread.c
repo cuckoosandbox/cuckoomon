@@ -164,3 +164,30 @@ HOOKDEF(VOID, WINAPI, ExitThread,
     LOQ("l", "ExitCode", dwExitCode);
     Old_ExitThread(dwExitCode);
 }
+
+HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
+    IN HANDLE ProcessHandle,
+    IN PSECURITY_DESCRIPTOR SecurityDescriptor OPTIONAL,
+    IN BOOLEAN CreateSuspended,
+    IN ULONG StackZeroBits,
+    IN OUT PULONG StackReserved,
+    IN OUT PULONG StackCommit,
+    IN PVOID StartAddress,
+    IN PVOID StartParameter OPTIONAL,
+    OUT PHANDLE ThreadHandle,
+    OUT PCLIENT_ID ClientId
+) {
+    ENSURE_CLIENT_ID(ClientId);
+
+    NTSTATUS ret = Old_RtlCreateUserThread(ProcessHandle, SecurityDescriptor,
+        CreateSuspended, StackZeroBits, StackReserved, StackCommit,
+        StartAddress, StartParameter, ThreadHandle, ClientId);
+    LOQ("plppPl", "ProcessHandle", ProcessHandle,
+        "CreateSuspended", CreateSuspended, "StartAddress", StartAddress,
+        "StartParameter", StartParameter, "ThreadHandle", ThreadHandle,
+        "ThreadIdentifier", ClientId->UniqueThread);
+    if(NT_SUCCESS(ret)) {
+        pipe("PROCESS:0,%d", ClientId->UniqueThread);
+    }
+    return ret;
+}

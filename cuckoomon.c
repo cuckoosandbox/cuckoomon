@@ -204,6 +204,7 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, CreateThread),
     HOOK(kernel32, CreateRemoteThread),
     HOOK(kernel32, ExitThread),
+    HOOK(ntdll, RtlCreateUserThread),
 
     //
     // Misc Hooks

@@ -776,6 +776,19 @@ extern HOOKDEF(VOID, WINAPI, ExitThread,
   __in  DWORD dwExitCode
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
+    IN HANDLE ProcessHandle,
+    IN PSECURITY_DESCRIPTOR SecurityDescriptor OPTIONAL,
+    IN BOOLEAN CreateSuspended,
+    IN ULONG StackZeroBits,
+    IN OUT PULONG StackReserved,
+    IN OUT PULONG StackCommit,
+    IN PVOID StartAddress,
+    IN PVOID StartParameter OPTIONAL,
+    OUT PHANDLE ThreadHandle,
+    OUT PCLIENT_ID ClientId
+);
+
 //
 // Misc Hooks
 //
