@@ -10,6 +10,7 @@
 // o  -> (UNICODE_STRING *) -> unicode string
 // O  -> (OBJECT_ATTRIBUTES *) -> wrapper around unicode string
 // d  -> (int) -> integer
+// x  -> (int) -> hexadecimal integer
 //
 
 int pipe(const char *fmt, ...);
