@@ -17,12 +17,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
+#include <stddef.h>
 #include <windows.h>
 #include "hooking.h"
 #include "distorm.h"
 #include "mnemonics.h"
 #include "ntapi.h"
 #include "distorm.h"
+
+// this number can be changed if required to do so
+#define TLS_HOOK_INFO 0x44
+
+// do not change this number
+#define TLS_LAST_ERROR 0x34
+
+typedef struct _hook_info_t {
+    unsigned int depth_count;
+
+    unsigned int hook_count;
+    unsigned int ret_hook;
+
+    unsigned int last_error;
+    unsigned int ret_last_error;
+
+    // in case of an exception, this is the state of all registers upon
+    // execution of our hook
+    unsigned int eax;
+    unsigned int ecx;
+    unsigned int edx;
+    unsigned int ebx;
+    unsigned int esp;
+    unsigned int ebp;
+    unsigned int esi;
+    unsigned int edi;
+} hook_info_t;
+
+static void ensure_valid_hook_info();
 
 // length disassembler engine
 int lde(void *addr)
@@ -38,49 +68,88 @@ int lde(void *addr)
     return ret == DECRES_SUCCESS ? instructions[0].size : 0;
 }
 
-// create a `callgate' at the given address, that is, we are going to replace
+// create a trampoline at the given address, that is, we are going to replace
 // the original instructions at this particular address. So, in order to
 // call the original function from our hook, we have to execute the original
 // instructions *before* jumping into addr+offset, where offset is the length
-// which totals the size of the instructions which we place in the `gate'.
-// returns 0 on failure, or a positive integer defining the size of the gate
-// NOTE: gate represents the real memory where the callgate will be placed
-// copying it to another location will result into failure
-int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
+// which totals the size of the instructions which we place in the `tramp'.
+// returns 0 on failure, or a positive integer defining the size of the tramp
+// NOTE: tramp represents the memory address where the trampoline will be
+// placed, copying it to another memory address will result into failure
+int hook_create_trampoline(unsigned char *addr, int len, unsigned char *tramp)
 {
-    const unsigned char *base = gate;
+    const unsigned char *base = tramp;
 
     // after the original function has returned, we have to make a backup of
     // the Last Error Code, so what we do is the following (we use the same
-    // method below in the pre-gate.) We store the current return address in
-    // fs:[0x50], we overwrite it with a return address in our gate. When we
-    // reach the gate, then we make a backup of the Last Error Code and jmp
-    // to the real return address.
+    // method below in the pre-tramp.) We store the current return address in
+    // info->ret_last_error, then we overwrite the return address with a
+    // return address in our trampoline. When we reach the trampoline, we make
+    // a backup of the Last Error Code and jmp to the real return address.
 
     unsigned char pre_backup[] = {
-        // cmp dword fs:[0x44], 1 (check if we are already inside a hook, the
-        // cmp dword fs:[0x54], 0 (check if we are already inside a hook, the
-        // next few instructions only apply to the first hook)
-        0x64, 0x83, 0x3d, 0x54, 0x00, 0x00, 0x00, 0x00,
-        // jg $+18 (if we are already inside a hook, then we don't want to
-        // replace the return address, so jump over the next few instructions)
-        0x7f, 0x18,
-        // inc dword fs:[0x54] (increase the hook count, why not zoidberg?)
-        0x64, 0xff, 0x05, 0x54, 0x00, 0x00, 0x00,
-        // push dword [esp] (obtain the current return address)
-        0xff, 0x34, 0xe4,
-        // pop dword fs:[0x50] (store the return address in the TIB)
-        0x64, 0x8f, 0x05, 0x50, 0x00, 0x00, 0x00,
-        // mov dword [esp], new_return_address (overwrite the return address)
-        0xc7, 0x04, 0xe4, 0x00, 0x00, 0x00, 0x00,
+        // push eax
+        0x50,
+        // mov eax, fs:[TLS_HOOK_INFO]
+        0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // test eax, eax
+        0x85, 0xc0,
+        // jnz $+0d
+        0x75, 0x0d,
+            // pushad
+            0x60,
+            // call ensure_valid_hook_info
+            0xe8, 0x00, 0x00, 0x00, 0x00,
+            // popad
+            0x61,
+            // mov eax, fs:[TLS_HOOK_INFO]
+            0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // cmp dword [eax+hook_info_t.hook_count], 0
+        0x83, 0x78, offsetof(hook_info_t, hook_count), 0x00,
+        // jg $+11
+        0x7f, 0x11,
+            // inc dword [eax+hook_info_t.hook_count]
+            0xff, 0x40, offsetof(hook_info_t, hook_count),
+            // push dword [esp+4]
+            0xff, 0x74, 0xe4, 0x04,
+            // pop dword [eax+hook_info_t.ret_last_error]
+            0x8f, 0x40, offsetof(hook_info_t, ret_last_error),
+            // mov dword [esp+4], new_return_address
+            0xc7, 0x44, 0xe4, 0x04, 0x00, 0x00, 0x00, 0x00,
+        // pop eax
+        0x58,
     };
 
-    memcpy(gate, pre_backup, sizeof(pre_backup));
-    gate += sizeof(pre_backup);
+    // the function returns here after executing, backup the Last Error Code
+    unsigned char post_backup[] = {
+        // push eax
+        0x50,
+        // mov eax, fs:[TLS_HOOK_INFO]
+        0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // dec dword [eax+hook_info_t.hook_count]
+        0xff, 0x48, offsetof(hook_info_t, hook_count),
+        // push dword fs:[TLS_LAST_ERROR]
+        0x64, 0xff, 0x35, TLS_LAST_ERROR, 0x00, 0x00, 0x00,
+        // pop dword [eax+hook_info_t.last_error]
+        0x8f, 0x40, offsetof(hook_info_t, last_error),
+        // mov eax, dword [eax+hook_info_t.ret_last_error]
+        0x8b, 0x40, offsetof(hook_info_t, ret_last_error),
+        // xchg eax, dword [esp]
+        0x87, 0x04, 0xe4,
+        // retn
+        0xc3,
+    };
 
-    unsigned char **pre_backup_addr = (unsigned char **)(gate - 4);
+    *(unsigned int *)(pre_backup + 13) =
+        (unsigned char *) &ensure_valid_hook_info - tramp - 12 - 5;
 
-    // our gate should be atleast contain enough bytes to fit the given length
+    memcpy(tramp, pre_backup, sizeof(pre_backup));
+    tramp += sizeof(pre_backup);
+
+    unsigned char **pre_backup_addr = (unsigned char **)(tramp - 5);
+
+    // our trampoline should contain at least enough bytes to fit the given
+    // length
     while (len > 0) {
 
         // obtain the length of this instruction
@@ -97,7 +166,7 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
         // check the type of instruction at this particular address, if it's
         // a jump or a call instruction, then we have to calculate some fancy
         // addresses, otherwise we can simply copy the instruction to our
-        // gate
+        // trampoline
 
         // it's a (conditional) jump or call with 32bit relative offset
         if(*addr == 0xe9 || *addr == 0xe8 || (*addr == 0x0f &&
@@ -105,9 +174,9 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 
             // copy the jmp or call instruction (conditional jumps are two
             // bytes, the rest is one byte)
-            *gate++ += *addr++;
+            *tramp++ += *addr++;
             if(addr[-1] != 0xe9 && addr[-1] != 0xe8) {
-                *gate++ += *addr++;
+                *tramp++ += *addr++;
             }
 
             // when a jmp/call is performed, then the relative offset +
@@ -119,18 +188,18 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
                 (unsigned long) addr;
             addr += 4;
 
-            // gate is already filled with the opcode itself (the jump
+            // trampoline is already filled with the opcode itself (the jump
             // instruction), now we will actually jump to the location by
             // calculating the relative offset which points to the real
             // address (this is the reverse operation of the one to calculate
             // the absolute address of a jump)
-            *(unsigned long *) gate = jmp_addr - (unsigned long) gate - 4;
-            gate += 4;
+            *(unsigned long *) tramp = jmp_addr - (unsigned long) tramp - 4;
+            tramp += 4;
 
             // because an unconditional jump denotes the end of a basic block
             // we will return failure if we have not yet processed enough room
             // to store our hook code
-            if(gate[-5] == 0xe9 && len > 0) return 0;
+            if(tramp[-5] == 0xe9 && len > 0) return 0;
         }
         // (conditional) jump with 8bit relative offset
         else if(*addr == 0xeb || (*addr >= 0x70 && *addr < 0x80)) {
@@ -145,10 +214,10 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
                 *(signed char *)(addr + 1);
 
             // the chance is *fairly* high that we will not be able to perform
-            // a jump from the gate to the original function, so instead we
-            // will use 32bit relative offset jumps
+            // a jump from the trampoline to the original function, so instead
+            // we will use 32bit relative offset jumps
             if(*addr == 0xeb) {
-                *gate++ = 0xe9;
+                *tramp++ = 0xe9;
             }
             else {
                 // hex representation of the two types of 32bit jumps
@@ -156,13 +225,13 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
                 // 32bit relative conditional jumps: 0f 80..90
                 // so we will simply add 0x10 to the opcode of 8bit relative
                 // offset jump to obtain the 32bit relative offset jump opcode
-                *gate++ = 0x0f;
-                *gate++ = *addr + 0x10;
+                *tramp++ = 0x0f;
+                *tramp++ = *addr + 0x10;
             }
 
             // calculate the correct relative offset address
-            *(unsigned long *) gate = jmp_addr - (unsigned long) gate - 4;
-            gate += 4;
+            *(unsigned long *) tramp = jmp_addr - (unsigned long) tramp - 4;
+            tramp += 4;
 
             // again, end of basic block, check for length
             if(*addr == 0xeb && len > 0) {
@@ -178,43 +247,32 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
             return 0;
         }
         else {
-            // copy the instruction directly to the gate
+            // copy the instruction directly to the trampoline
             while (length-- != 0) {
-                *gate++ = *addr++;
+                *tramp++ = *addr++;
             }
         }
     }
 
-    // append a jump from the gate to the original function
-    *gate++ = 0xe9;
-    *(unsigned long *) gate = (unsigned long) addr - (unsigned long) gate - 4;
-    gate += 4;
+    // append a jump from the trampoline to the original function
+    *tramp++ = 0xe9;
+    *(unsigned int *) tramp =
+        (unsigned int) addr - (unsigned int) tramp - 4;
+    tramp += 4;
 
     // return address is the next instruction after the jmp
-    *pre_backup_addr = gate;
+    *pre_backup_addr = tramp;
 
-    // the function returns here after executing, backup the Last Error Code
-    unsigned char post_backup[] = {
-        // dec dword fs:[0x54] (decrease the hook count)
-        0x64, 0xff, 0x0d, 0x54, 0x00, 0x00, 0x00,
-        // push dword fs:[0x34]
-        0x64, 0xff, 0x35, 0x34, 0x00, 0x00, 0x00,
-        // pop dword fs:[0x4c]
-        0x64, 0x8f, 0x05, 0x4c, 0x00, 0x00, 0x00,
-        // jmp dword fs:[0x50] (jmp to the real return address)
-        0x64, 0xff, 0x25, 0x50, 0x00, 0x00, 0x00,
-    };
+    memcpy(tramp, post_backup, sizeof(post_backup));
+    tramp += sizeof(post_backup);
 
-    memcpy(gate, post_backup, sizeof(post_backup));
-    gate += sizeof(post_backup);
-
-    // return the length of this gate
-    return gate - base;
+    // return the length of this trampoline
+    return tramp - base;
 }
 
-// this function constructs the so-called pre-gate, this pre-gate determines
-// if a hook should really be executed. An example will be the easiest;
-// imagine we have a hook on CreateProcessInternalW() and on
+// this function constructs the so-called pre-trampoline, this pre-trampoline
+// determines if a hook should really be executed. An example will be the
+// easiest; imagine we have a hook on CreateProcessInternalW() and on
 // NtCreateProcessEx() (this is actually the case currently), now, if all goes
 // well, a call to CreateProcess() will call CreateProcessInternalW() followed
 // by a call to NtCreateProcessEx(). Because we already hook the higher-level
@@ -224,49 +282,111 @@ int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate)
 // engine "once inside a hook, don't hook further API calls" by setting the
 // allow_hook_recursion flag to false. The example above is what happens when
 // the hook recursion is not allowed.
-void hook_create_pre_gate(hook_t *h)
+void hook_create_pre_tramp(hook_t *h)
 {
-    // we store the depth count in fs:[0x44] and a temporary return address in
-    // fs:[0x48] (we have to store it somewhere, so TIB is the best place..)
+    unsigned char pre_tramp[] = {
+        // push eax
+        0x50,
+        // mov eax, fs:[TLS_HOOK_INFO]
+        0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // test eax, eax
+        0x85, 0xc0,
+        // jnz $+0d
+        0x75, 0x0d,
+            // pushad
+            0x60,
+            // call ensure_valid_hook_info
+            0xe8, 0x00, 0x00, 0x00, 0x00,
+            // popad
+            0x61,
+            // mov eax, fs:[TLS_HOOK_INFO]
+            0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // cmp dword [eax+hook_info_t.depth_count], 0
+        0x83, 0x78, offsetof(hook_info_t, depth_count), 0x00,
+        // jle $+6
+        0x7e, 0x06,
+            // pop eax
+            0x58,
+            // jmp h->tramp
+            0xe9, 0x00, 0x00, 0x00, 0x00,
+        // inc dword [eax+hook_info_t.depth_count]
+        0xff, 0x40, offsetof(hook_info_t, depth_count),
+        // push dword [esp+4]
+        0xff, 0x74, 0xe4, 0x04,
+        // pop dword [eax+hook_info_t.ret_hook]
+        0x8f, 0x40, offsetof(hook_info_t, ret_hook),
+        // mov dword [esp+4], new_return_address
+        0xc7, 0x44, 0xe4, 0x04, 0x00, 0x00, 0x00, 0x00,
+        // pop eax
+        0x58,
+        // jmp h->store_exc
+        0xe9, 0x00, 0x00, 0x00, 0x00,
 
-    unsigned char sc[] = {
-        // cmp dword fs:[0x44], 0 (check if we are already inside a hook)
-        0x64, 0x83, 0x3d, 0x44, 0x00, 0x00, 0x00, 0x00,
-        // jle $+5 (jump over the following 32bit relative offset jump if we
-        // are note already inside a hook)
-        0x7e, 0x05,
-        // jmp h->gate (we do not hook this call, jump to the gate)
-        0xe9, 0x00, 0x00, 0x00, 0x00,
-        // inc dword fs:[0x44] (increase the hook count)
-        0x64, 0xff, 0x05, 0x44, 0x00, 0x00, 0x00,
-        // we temporarily store the current return address in fs:[0x48]
-        // because we have to alter it, in order to return to this pre-gate
-        // so we can decrement the hook count
-        // push dword [esp] (obtain the current return address)
-        0xff, 0x34, 0xe4,
-        // pop dword fs:[0x48] (store the return address in the TIB)
-        0x64, 0x8f, 0x05, 0x48, 0x00, 0x00, 0x00,
-        // mov dword [esp], new_return_address (overwrite the return address)
-        0xc7, 0x04, 0xe4, 0x00, 0x00, 0x00, 0x00,
-        // jmp h->new_func (we hook this call, jump to the new function)
-        0xe9, 0x00, 0x00, 0x00, 0x00,
-        // this is where the new_return_address is located..
-        // dec dword fs:[0x44] (decrease the hook count)
-        0x64, 0xff, 0x0d, 0x44, 0x00, 0x00, 0x00,
-        // push dword fs:[0x4c] (restore the Last Error Code)
-        0x64, 0xff, 0x35, 0x4c, 0x00, 0x00, 0x00,
+        // push eax
+        0x50,
+        // mov eax, fs:[TLS_HOOK_INFO]
+        0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // dec dword [eax+hook_info_t.depth_count]
+        0xff, 0x48, offsetof(hook_info_t, depth_count),
+        // push dword [eax+hook_info_t.last_error]
+        0xff, 0x70, offsetof(hook_info_t, last_error),
         // pop dword fs:[0x34]
         0x64, 0x8f, 0x05, 0x34, 0x00, 0x00, 0x00,
-        // jmp dword fs:[0x48] (jmp to the real return address)
-        0x64, 0xff, 0x25, 0x48, 0x00, 0x00, 0x00,
+        // mov eax, dword [eax+hook_info_t.ret_hook]
+        0x8b, 0x40, offsetof(hook_info_t, ret_hook),
+        // xchg eax, dword [esp]
+        0x87, 0x04, 0xe4,
+        // retn
+        0xc3,
     };
 
-    *(unsigned long *)(sc + 11) = h->gate - h->pre_gate - 10 - 5;
-    *(unsigned long *)(sc + 35) = (unsigned long) h->pre_gate + 44;
-    *(unsigned long *)(sc + 40) =
-        (unsigned char *) h->new_func - h->pre_gate - 39 - 5;
+    *(unsigned int *)(pre_tramp + 13) =
+        (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
+    *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
+    *(unsigned int *)(pre_tramp + 50) = (unsigned int) h->pre_tramp + 60;
+    *(unsigned int *)(pre_tramp + 56) =
+        (unsigned char *) h->store_exc - h->pre_tramp - 55 - 5;
 
-    memcpy(h->pre_gate, sc, sizeof(sc));
+    memcpy(h->pre_tramp, pre_tramp, sizeof(pre_tramp));
+}
+
+static void hook_store_exception_info(hook_t *h)
+{
+    unsigned char store_exception[] = {
+        // push eax
+        0x50,
+        // mov eax, fs:[TLS_HOOK_INFO]
+        0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+        // xchg ebx, dword [esp]
+        0x87, 0x1c, 0xe4,
+        // mov dword [eax+hook_info_t.eax], ebx
+        0x89, 0x58, offsetof(hook_info_t, eax),
+        // xchg ebx, dword [esp]
+        0x87, 0x1c, 0xe4,
+        // mov dword [eax+hook_info_t.ecx], ecx
+        0x89, 0x48, offsetof(hook_info_t, ecx),
+        // mov dword [eax+hook_info_t.edx], edx
+        0x89, 0x50, offsetof(hook_info_t, edx),
+        // mov dword [eax+hook_info_t.ebx], ebx
+        0x89, 0x58, offsetof(hook_info_t, ebx),
+        // mov dword [eax+hook_info_t.esp], esp
+        0x89, 0x60, offsetof(hook_info_t, esp),
+        // mov dword [eax+hook_info_t.ebp], ebp
+        0x89, 0x68, offsetof(hook_info_t, ebp),
+        // mov dword [eax+hook_info_t.esi], esi
+        0x89, 0x70, offsetof(hook_info_t, esi),
+        // mov dword [eax+hook_info_t.edi], edi
+        0x89, 0x78, offsetof(hook_info_t, edi),
+        // pop eax
+        0x58,
+        // jmp h->new_func
+        0xe9, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    unsigned int offset = sizeof(store_exception) - 5;
+    *(unsigned int *)(store_exception + offset + 1) =
+            (unsigned char *) h->new_func - h->store_exc - offset - 5;
+    memcpy(h->store_exc, store_exception, sizeof(store_exception));
 }
 
 static int hook_api_jmp_direct(hook_t *h, unsigned char *from,
@@ -510,24 +630,28 @@ int hook_api(hook_t *h, int type)
         if(VirtualProtect(addr, hook_types[type].len, PAGE_EXECUTE_READWRITE,
                 &old_protect)) {
 
-            if(hook_create_callgate(addr, hook_types[type].len, h->gate)) {
+            if(hook_create_trampoline(addr, hook_types[type].len, h->tramp)) {
+
+                hook_store_exception_info(h);
 
                 // if allow hook recursion is *not* set, then we have to
-                // create a pre-gate
+                // create a pre-trampoline
                 if(h->allow_hook_recursion == 0) {
-                    hook_create_pre_gate(h);
+                    hook_create_pre_tramp(h);
 
-                    // insert the hook (jump from the api to the pre-gate)
-                    ret = hook_types[type].hook(h, addr, h->pre_gate);
+                    // insert the hook (jump from the api to the
+                    // pre-trampoline)
+                    ret = hook_types[type].hook(h, addr, h->pre_tramp);
                 }
                 else {
-                    // insert the hook (jump from the api to the new function)
-                    ret = hook_types[type].hook(h, addr, h->new_func);
+                    // insert the hook (jump from the api to the store
+                    // exception function which will jump to the new function)
+                    ret = hook_types[type].hook(h, addr, h->store_exc);
                 }
 
-                // if successful, assign the gate address to *old_func
-                if(ret == 0) {
-                    *h->old_func = h->gate;
+                // if successful, assign the trampoline address to *old_func
+                if(ret != 0) {
+                    *h->old_func = h->tramp;
 
                     // successful hook is successful
                     h->is_hooked = 1;
@@ -543,24 +667,47 @@ int hook_api(hook_t *h, int type)
     return ret;
 }
 
+static hook_info_t *hook_info()
+{
+    hook_info_t *ret;
+    __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (0x44));
+    return ret;
+}
+
+static void ensure_valid_hook_info()
+{
+    if(hook_info() == NULL) {
+        hook_info_t *info = (hook_info_t *) calloc(1, sizeof(hook_info_t));
+        __asm__("movl %0, %%fs:(%1)" :: "r" (info), "r" (0x44));
+    }
+}
+
 void hook_enable()
 {
-    __asm__("decl %%fs:(%0)" :: "r" (0x44));
+    ensure_valid_hook_info();
+    hook_info()->depth_count--;
 }
 
 void hook_disable()
 {
-    __asm__("incl %%fs:(%0)" :: "r" (0x44));
+    ensure_valid_hook_info();
+    hook_info()->depth_count++;
+}
+
+int hook_is_inside()
+{
+    ensure_valid_hook_info();
+    return hook_info()->depth_count || hook_info()->hook_count;
 }
 
 unsigned int hook_get_last_error()
 {
-    unsigned int lasterr;
-    __asm__("movl %%fs:(%1), %0" : "=r" (lasterr) : "r" (0x4c));
-    return lasterr;
+    ensure_valid_hook_info();
+    return hook_info()->last_error;
 }
 
 void hook_set_last_error(unsigned int errcode)
 {
-    __asm__("movl %1, %%fs:(%0)" :: "r" (0x4c), "r" (errcode));
+    ensure_valid_hook_info();
+    hook_info()->last_error = errcode;
 }

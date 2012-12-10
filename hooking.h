@@ -32,25 +32,29 @@ typedef struct _hook_t {
     void **old_func;
 
     // allow hook recursion on this hook?
-    // (see comments @ hook_create_pre_gate)
+    // (see comments @ hook_create_pre_trampoline)
     int allow_hook_recursion;
 
     // this hook has been performed
     int is_hooked;
 
-    unsigned char gate[128];
-    unsigned char pre_gate[128];
+    unsigned char tramp[128];
+    unsigned char pre_tramp[128];
+    unsigned char store_exc[128];
     unsigned char hook_data[32];
 } hook_t;
 
 int lde(void *addr);
 
-int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate);
+int hook_create_trampoline(unsigned char *addr, int len,
+    unsigned char *tramp);
 
 int hook_api(hook_t *h, int type);
 
 void hook_enable();
 void hook_disable();
+
+int hook_is_inside();
 
 unsigned int hook_get_last_error();
 void hook_set_last_error(unsigned int errcode);
