@@ -46,7 +46,7 @@ int main()
 
     // create and check callgates
     for (int i = 0; i < COUNT && functions[i * SIZE] != 0; i++) {
-        int len = hook_create_callgate(&functions[i * SIZE],
+        int len = hook_create_trampoline(&functions[i * SIZE],
             g_function_lengths[i], &gates[i * SIZE]);
         if(memcmp(&gates[i * SIZE], gate_solutions[i], SIZE)) {
             printf("%dth gate is invalid!\n", i);
@@ -69,7 +69,7 @@ int main()
     hook->old_func = &old_addr;
 
     hook_api(hook, HOOK_JMP_DIRECT);
-    if(memcmp(functions, "\xe9\x3b\x00\x00\x00\x40", 6) || memcmp(hook->gate,
+    if(memcmp(functions, "\xe9\x3b\x00\x00\x00\x40", 6) || memcmp(hook->tramp,
             "\x55\x89\xe5\x83\xec\x40\xe9\xe7\xdf\xff\xff", 11)) {
         printf("Invalid first hook!\n");
         return 0;
