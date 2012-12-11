@@ -53,8 +53,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
             time_skipped.QuadPart += -DelayInterval->QuadPart;
 
             // notify how much we've skipped
-            LOQ("ls", "Milliseconds", -DelayInterval->QuadPart / 10000,
-                "Status", "Skipped");
+            unsigned long milli = -DelayInterval->QuadPart / 10000;
+            LOQ("ls", "Milliseconds", milli, "Status", "Skipped");
             return ret;
         }
         else {
