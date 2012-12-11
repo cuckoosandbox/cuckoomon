@@ -1091,6 +1091,14 @@ extern HOOKDEF(void, WINAPI, GetSystemTime,
     __out  LPSYSTEMTIME lpSystemTime
 );
 
+extern HOOKDEF(DWORD, WINAPI, GetTickCount,
+    void
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtQuerySystemTime,
+    _Out_  PLARGE_INTEGER SystemTime
+);
+
 //
 // Special Hooks
 //

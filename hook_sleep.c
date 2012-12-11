@@ -51,6 +51,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
         // check if we're still within the hardcoded limit
         if(li.QuadPart < time_start.QuadPart + MAX_SLEEP_SKIP_DIFF * 10000) {
             time_skipped.QuadPart += -DelayInterval->QuadPart;
+
+            // notify how much we've skipped
+            LOQ("ls", "Milliseconds", -DelayInterval->QuadPart / 10000,
+                "Status", "Skipped");
             return ret;
         }
         else {
@@ -93,6 +97,29 @@ HOOKDEF(void, WINAPI, GetSystemTime,
     ft.dwHighDateTime = li.HighPart;
     ft.dwLowDateTime = li.LowPart;
     FileTimeToSystemTime(&ft, lpSystemTime);
+}
+
+HOOKDEF(DWORD, WINAPI, GetTickCount,
+    void
+) {
+    IS_SUCCESS_VOID();
+
+    DWORD ret = Old_GetTickCount();
+
+    // add the time we've skipped
+    ret += time_skipped.QuadPart / 10000;
+
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtQuerySystemTime,
+    _Out_  PLARGE_INTEGER SystemTime
+) {
+    NTSTATUS ret = Old_NtQuerySystemTime(SystemTime);
+    if(NT_SUCCESS(ret)) {
+        SystemTime->QuadPart += time_skipped.QuadPart;
+    }
+    return 0;
 }
 
 void disable_sleep_skip()

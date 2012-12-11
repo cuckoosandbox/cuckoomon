@@ -265,6 +265,8 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtDelayExecution),
     HOOK(kernel32, GetLocalTime),
     HOOK(kernel32, GetSystemTime),
+    HOOK(kernel32, GetTickCount),
+    HOOK(ntdll, NtQuerySystemTime),
 };
 
 // get a random hooking technique, except for "direct jmp"
