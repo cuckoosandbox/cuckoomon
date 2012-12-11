@@ -278,7 +278,7 @@ static int hook_api_jmp_direct(hook_t *h, unsigned char *from,
 
     // store the relative address from this opcode to our hook function
     *(unsigned long *)(from + 1) = (unsigned char *) to - from - 5;
-    return 1;
+    return 0;
 }
 
 // useful for "detections" such as if(*api_addr == 0xe9)
@@ -312,7 +312,7 @@ static int hook_api_push_retn(hook_t *h, unsigned char *from,
     // retn
     from[4] = 0xc3;
 
-    return 1;
+    return 0;
 }
 
 static int hook_api_jmp_indirect(hook_t *h, unsigned char *from,
@@ -326,7 +326,7 @@ static int hook_api_jmp_indirect(hook_t *h, unsigned char *from,
 
     // the real address is stored in hook_data
     memcpy(h->hook_data, &to, sizeof(to));
-    return 1;
+    return 0;
 }
 
 static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
@@ -353,7 +353,7 @@ static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
     // store the address as double
     double addr = (double) (unsigned long) to;
     memcpy(h->hook_data, &addr, sizeof(addr));
-    return 1;
+    return 0;
 }
 
 int hook_api(hook_t *h, int type)
@@ -373,7 +373,7 @@ int hook_api(hook_t *h, int type)
 
     // is this address already hooked?
     if(h->is_hooked != 0) {
-        return 1;
+        return 0;
     }
 
     // resolve the address to hook
@@ -384,10 +384,10 @@ int hook_api(hook_t *h, int type)
             h->funcname);
     }
     if(addr == NULL) {
-        return 0;
+        return -1;
     }
 
-    int ret = 0;
+    int ret = -1;
 
     // check if this is a valid hook type
     if(type >= 0 && type < ARRAYSIZE(hook_types)) {
@@ -432,7 +432,7 @@ int hook_api(hook_t *h, int type)
                 }
 
                 // if successful, assign the gate address to *old_func
-                if(ret != 0) {
+                if(ret == 0) {
                     *h->old_func = h->gate;
 
                     // successful hook is successful
