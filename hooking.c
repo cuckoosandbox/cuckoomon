@@ -408,6 +408,17 @@ int hook_api(hook_t *h, int type)
                     !memcmp(addr + 7, "\xff\x25", 2)) {
                 addr = **(unsigned char ***)(addr + 9);
             }
+
+            // the following applies for "inlined" functions on windows 7,
+            // some functions are inlined into kernelbase.dll, rather than
+            // kernelbase.dll jumping to e.g. kernel32.dll. for these
+            // functions there is a short relative jump, followed by the
+            // inlined function.
+            if(!memcmp(addr, "\xeb\x02", 2) &&
+                    !memcmp(addr - 5, "\xcc\xcc\xcc\xcc\xcc", 5)) {
+                // step over the short jump and the relative offset
+                addr += 4;
+            }
         }
 
         DWORD old_protect;
