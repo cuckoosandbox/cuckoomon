@@ -346,7 +346,7 @@ static int hook_api_mov_eax_jmp_eax(hook_t *h, unsigned char *from,
     // jmp eax
     *from++ = 0xff;
     *from++ = 0xe0;
-    return 1;
+    return 0;
 }
 
 static int hook_api_mov_eax_push_retn(hook_t *h, unsigned char *from,
@@ -362,7 +362,7 @@ static int hook_api_mov_eax_push_retn(hook_t *h, unsigned char *from,
 
     // retn
     *from++ = 0xc3;
-    return 1;
+    return 0;
 }
 
 static int hook_api_mov_eax_indirect_jmp_eax(hook_t *h, unsigned char *from,
@@ -379,7 +379,7 @@ static int hook_api_mov_eax_indirect_jmp_eax(hook_t *h, unsigned char *from,
     // jmp eax
     *from++ = 0xff;
     *from++ = 0xe0;
-    return 1;
+    return 0;
 }
 
 static int hook_api_mov_eax_indirect_push_retn(hook_t *h, unsigned char *from,
@@ -398,7 +398,7 @@ static int hook_api_mov_eax_indirect_push_retn(hook_t *h, unsigned char *from,
 
     // retn
     *from++ = 0xc3;
-    return 1;
+    return 0;
 }
 
 #if HOOK_ENABLE_FPU
