@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 #include "ignore.h"
+#include "hook_sleep.h"
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
@@ -217,7 +218,6 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, LdrGetDllHandle),
     HOOK(ntdll, LdrGetProcedureAddress),
     HOOK(kernel32, DeviceIoControl),
-    HOOK(ntdll, NtDelayExecution),
     HOOK(user32, ExitWindowsEx),
     HOOK(kernel32, IsDebuggerPresent),
     HOOK(advapi32, LookupPrivilegeValueW),
@@ -257,6 +257,14 @@ static hook_t g_hooks[] = {
     HOOK(advapi32, StartServiceW),
     HOOK(advapi32, ControlService),
     HOOK(advapi32, DeleteService),
+
+    //
+    // Sleep Hooks
+    //
+
+    HOOK(ntdll, NtDelayExecution),
+    HOOK(kernel32, GetLocalTime),
+    HOOK(kernel32, GetSystemTime),
 };
 
 // get a random hooking technique, except for "direct jmp"
@@ -304,6 +312,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 
         // initialize the log file
         log_init(0);
+
+        // initialize the Sleep() skipping stuff
+        init_sleep_skip();
 
         // initialize all hooks
         set_hooks();

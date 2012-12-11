@@ -1075,6 +1075,23 @@ extern HOOKDEF(BOOL, WINAPI, DeleteService,
 );
 
 //
+// Sleep Hooks
+//
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
+    __in    BOOLEAN Alertable,
+    __in    PLARGE_INTEGER DelayInterval
+);
+
+extern HOOKDEF(void, WINAPI, GetLocalTime,
+    __out  LPSYSTEMTIME lpSystemTime
+);
+
+extern HOOKDEF(void, WINAPI, GetSystemTime,
+    __out  LPSYSTEMTIME lpSystemTime
+);
+
+//
 // Special Hooks
 //
 

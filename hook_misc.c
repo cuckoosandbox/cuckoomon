@@ -130,15 +130,6 @@ HOOKDEF(BOOL, WINAPI, DeviceIoControl,
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
-    __in    BOOLEAN Alertable,
-    __in    PLARGE_INTEGER DelayInterval
-) {
-    int ret = 0;
-    LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
-    return Old_NtDelayExecution(Alertable, DelayInterval);
-}
-
 HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
   __in  UINT uFlags,
   __in  DWORD dwReason
