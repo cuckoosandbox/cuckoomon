@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 #include "misc.h"
+#include "hook_sleep.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "threading";
@@ -44,6 +45,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
         InitialTeb, CreateSuspended);
     LOQ("PpO", "ThreadHandle", ThreadHandle, "ProcessHandle", ProcessHandle,
         "ObjectAttributes", ObjectAttributes);
+    if(NT_SUCCESS(ret)) {
+        disable_sleep_skip();
+    }
     return ret;
 }
 
@@ -130,6 +134,9 @@ HOOKDEF(HANDLE, WINAPI, CreateThread,
         lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
     LOQ("pplL", "StartRoutine", lpStartAddress, "Parameter", lpParameter,
         "CreationFlags", dwCreationFlags, "ThreadId", lpThreadId);
+    if(NT_SUCCESS(ret)) {
+        disable_sleep_skip();
+    }
     return ret;
 }
 
@@ -152,6 +159,9 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
     LOQ("3plL", "ProcessHandle", hProcess, "StartRoutine", lpStartAddress,
         "Parameter", lpParameter, "CreationFlags", dwCreationFlags,
         "ThreadId", lpThreadId);
+    if(NT_SUCCESS(ret)) {
+        disable_sleep_skip();
+    }
     return ret;
 }
 
@@ -188,6 +198,7 @@ HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
         "ThreadIdentifier", ClientId->UniqueThread);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:0,%d", ClientId->UniqueThread);
+        disable_sleep_skip();
     }
     return ret;
 }

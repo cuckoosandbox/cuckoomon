@@ -4,6 +4,7 @@
 #include "ntapi.h"
 #include "log.h"
 #include "pipe.h"
+#include "hook_sleep.h"
 
 void set_hooks_dll(const wchar_t *library, int len);
 
@@ -65,6 +66,8 @@ HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
         if((dwCreationFlags & CREATE_SUSPENDED) == 0) {
             ResumeThread(lpProcessInformation->hThread);
         }
+
+        disable_sleep_skip();
     }
     return ret;
 }

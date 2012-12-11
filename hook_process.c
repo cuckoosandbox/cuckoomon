@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "misc.h"
 #include "ignore.h"
+#include "hook_sleep.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "process";
@@ -45,6 +46,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
+        disable_sleep_skip();
     }
     return ret;
 }
@@ -67,6 +69,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
+        disable_sleep_skip();
     }
     return ret;
 }
