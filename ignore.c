@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <windows.h>
+#include "ntapi.h"
 #include "ignore.h"
 
 static unsigned long g_pids[MAX_PROTECTED_PIDS];
@@ -32,6 +33,63 @@ int is_protected_pid(unsigned long pid)
 {
     for (unsigned long i = 0; i < g_pid_count; i++) {
         if(pid == g_pids[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+#define S(s, f) {s, L##s, sizeof(s)-1, f}
+
+#define FLAG_NONE           0
+#define FLAG_BEGINS_WITH    1
+
+static struct _ignored_file_t {
+    const char      *ascii;
+    const wchar_t   *unicode;
+    unsigned int    length;
+    unsigned int    flags;
+} g_ignored_files[] = {
+    S("\\??\\lsarpc", FLAG_NONE),
+    S("\\??\\IDE#", FLAG_BEGINS_WITH),
+    S("\\??\\STORAGE#", FLAG_BEGINS_WITH),
+    S("\\??\\MountPointManager", FLAG_NONE),
+};
+
+int is_ignored_file_ascii(const char *fname, int length)
+{
+    struct _ignored_file_t *f = g_ignored_files;
+    for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
+        if(
+                // FLAG_NONE
+                (f->flags == FLAG_NONE &&
+                    length == f->length &&
+                    !strcmp(fname, f->ascii)) ||
+
+                // FLAG_BEGINS_WITH
+                (f->flags == FLAG_BEGINS_WITH &&
+                    length >= f->length &&
+                    !strncmp(fname, f->ascii, f->length))) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_ignored_file_unicode(const wchar_t *fname, int length)
+{
+    struct _ignored_file_t *f = g_ignored_files;
+    for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
+        if(
+                // FLAG_NONE
+                (f->flags == FLAG_NONE &&
+                    length == f->length &&
+                    !wcscmp(fname, f->unicode)) ||
+
+                // FLAG_BEGINS_WITH
+                (f->flags == FLAG_BEGINS_WITH &&
+                    length >= f->length &&
+                    !wcsncmp(fname, f->unicode, f->length))) {
             return 1;
         }
     }
