@@ -6,7 +6,7 @@ TESTSEXE = $(TESTS:.c=.exe)
 # directory)
 DISTORM3 = $(wildcard ../distorm3.2-package/src/*.c)
 DISTORM3OBJ = $(DISTORM3:.c=.o)
-CUCKOOOBJ = ../log.o ../hooking.o ../misc.o
+CUCKOOOBJ = ../log.o ../hooking.o ../misc.o ../ignore.o
 
 all: $(TESTSEXE)
 
