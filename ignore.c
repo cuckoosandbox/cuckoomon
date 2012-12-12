@@ -50,7 +50,7 @@ static struct _ignored_file_t {
     unsigned int    length;
     unsigned int    flags;
 } g_ignored_files[] = {
-    S("\\??\\lsarpc", FLAG_NONE),
+    S("\\??\\PIPE\\lsarpc", FLAG_NONE),
     S("\\??\\IDE#", FLAG_BEGINS_WITH),
     S("\\??\\STORAGE#", FLAG_BEGINS_WITH),
     S("\\??\\MountPointManager", FLAG_NONE),
