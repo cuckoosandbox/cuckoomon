@@ -54,6 +54,8 @@ static struct _ignored_file_t {
     S("\\??\\IDE#", FLAG_BEGINS_WITH),
     S("\\??\\STORAGE#", FLAG_BEGINS_WITH),
     S("\\??\\MountPointManager", FLAG_NONE),
+    S("\\??\\root#", FLAG_BEGINS_WITH),
+    S("\\Device\\", FLAG_BEGINS_WITH),
 };
 
 int is_ignored_file_ascii(const char *fname, int length)
