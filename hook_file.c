@@ -258,22 +258,10 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
 ) {
     IS_SUCCESS_BOOL();
 
-    int log_new = 1;
-
-    // if the new filename is null, then this function call is to delete the
-    // existing file
-    if(lpNewFileName == NULL) {
-        pipe("FILE_DEL:%Z", lpExistingFileName);
-        log_new = 0;
-    }
-
     BOOL ret = Old_MoveFileWithProgressW(lpExistingFileName, lpNewFileName,
         lpProgressRoutine, lpData, dwFlags);
     LOQ("uu", "ExistingFileName", lpExistingFileName,
         "NewFileName", lpNewFileName);
-    if(ret != FALSE && log_new != 0) {
-        pipe("FILE_NEW:%Z", lpNewFileName);
-    }
     return ret;
 }
 
