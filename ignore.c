@@ -95,3 +95,12 @@ int is_ignored_file_unicode(const wchar_t *fname, int length)
     }
     return 0;
 }
+
+int is_ignored_file_objattr(const OBJECT_ATTRIBUTES *obj)
+{
+    if(obj != NULL && obj->ObjectName != NULL) {
+        return is_ignored_file_unicode(obj->ObjectName->Buffer,
+            obj->ObjectName->Length >> 1);
+    }
+    return 1;
+}

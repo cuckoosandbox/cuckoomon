@@ -23,3 +23,4 @@ int is_protected_pid(unsigned long pid);
 
 int is_ignored_file_ascii(const char *fname, int length);
 int is_ignored_file_unicode(const wchar_t *fname, int length);
+int is_ignored_file_objattr(const OBJECT_ATTRIBUTES *obj);

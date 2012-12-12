@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 #include "misc.h"
+#include "ignore.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "filesystem";
@@ -51,7 +52,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition,
         "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        pipe("FILE_NEW:%O", ObjectAttributes);
+        if(is_ignored_file_objattr(ObjectAttributes) == 0) {
+            pipe("FILE_NEW:%O", ObjectAttributes);
+        }
     }
     return ret;
 }
@@ -69,7 +72,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
     LOQ("PpOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        pipe("FILE_NEW:%O", ObjectAttributes);
+        if(is_ignored_file_objattr(ObjectAttributes) == 0) {
+            pipe("FILE_NEW:%O", ObjectAttributes);
+        }
     }
     return ret;
 }
