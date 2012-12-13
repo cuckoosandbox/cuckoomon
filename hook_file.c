@@ -53,7 +53,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
         if(is_ignored_file_objattr(ObjectAttributes) == 0) {
-            pipe("FILE_NEW:%O", ObjectAttributes);
+            wchar_t *str; unsigned int length;
+            ignore_file_prepend_stuff(ObjectAttributes, &str, &length);
+            pipe("FILE_NEW:%S", length, str);
         }
     }
     return ret;
@@ -73,7 +75,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
         "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
         if(is_ignored_file_objattr(ObjectAttributes) == 0) {
-            pipe("FILE_NEW:%O", ObjectAttributes);
+            wchar_t *str; unsigned int length;
+            ignore_file_prepend_stuff(ObjectAttributes, &str, &length);
+            pipe("FILE_NEW:%S", length, str);
         }
     }
     return ret;
