@@ -81,3 +81,21 @@ int wcsnicmp(const wchar_t *a, const wchar_t *b, int len)
     return 0;
 }
 
+BOOL is_directory_objattr(OBJECT_ATTRIBUTES *obj)
+{
+    static NTSTATUS (WINAPI *pNtQueryAttributesFile)(
+        _In_   POBJECT_ATTRIBUTES ObjectAttributes,
+        _Out_  PFILE_BASIC_INFORMATION FileInformation
+    );
+
+    if(pNtQueryAttributesFile == NULL) {
+        *(FARPROC *) &pNtQueryAttributesFile = GetProcAddress(
+            GetModuleHandle("ntdll"), "NtQueryAttributesFile");
+    }
+
+    FILE_BASIC_INFORMATION basic_information;
+    if(NT_SUCCESS(pNtQueryAttributesFile(obj, &basic_information))) {
+        return basic_information.FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    }
+    return FALSE;
+}

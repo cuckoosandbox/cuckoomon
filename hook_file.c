@@ -52,7 +52,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition,
         "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        if(is_ignored_file_objattr(ObjectAttributes) == 0) {
+        if(is_directory_objattr(ObjectAttributes) == 0 &&
+                is_ignored_file_objattr(ObjectAttributes) == 0) {
             wchar_t *str; unsigned int length;
             ignore_file_prepend_stuff(ObjectAttributes, &str, &length);
             pipe("FILE_NEW:%S", length, str);
@@ -74,7 +75,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
     LOQ("PpOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        if(is_ignored_file_objattr(ObjectAttributes) == 0) {
+        if(is_directory_objattr(ObjectAttributes) == 0 &&
+                is_ignored_file_objattr(ObjectAttributes) == 0) {
             wchar_t *str; unsigned int length;
             ignore_file_prepend_stuff(ObjectAttributes, &str, &length);
             pipe("FILE_NEW:%S", length, str);

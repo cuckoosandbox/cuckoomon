@@ -4,3 +4,5 @@ DWORD pid_from_process_handle(HANDLE process_handle);
 DWORD pid_from_thread_handle(HANDLE thread_handle);
 DWORD random();
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);
+
+BOOL is_directory_objattr(OBJECT_ATTRIBUTES *obj);
