@@ -268,6 +268,12 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, GetSystemTime),
     HOOK(kernel32, GetTickCount),
     HOOK(ntdll, NtQuerySystemTime),
+
+    //
+    // Socket Hooks
+    //
+
+    HOOK(ws2_32, WSAStartup),
 };
 
 // get a random hooking technique, except for "direct jmp"

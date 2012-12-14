@@ -1114,6 +1114,15 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtQuerySystemTime,
 );
 
 //
+// Socket Hooks
+//
+
+extern HOOKDEF(int, WINAPI, WSAStartup,
+    _In_   WORD wVersionRequested,
+    _Out_  LPWSADATA lpWSAData
+);
+
+//
 // Special Hooks
 //
 
