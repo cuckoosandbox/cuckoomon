@@ -591,6 +591,20 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     __in        BOOLEAN InJob
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
+    __out       PHANDLE ProcessHandle,
+    __out       PHANDLE ThreadHandle,
+    __in        ACCESS_MASK ProcessDesiredAccess,
+    __in        ACCESS_MASK ThreadDesiredAccess,
+    __in_opt    POBJECT_ATTRIBUTES ProcessObjectAttributes,
+    __in_opt    POBJECT_ATTRIBUTES ThreadObjectAttributes,
+    __in        ULONG ProcessFlags,
+    __in        ULONG ThreadFlags,
+    __in_opt    PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
+    __inout     PPS_CREATE_INFO CreateInfo,
+    __in_opt    PPS_ATTRIBUTE_LIST AttributeList
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     __out     PHANDLE ProcessHandle,
     __in      ACCESS_MASK DesiredAccess,

@@ -74,6 +74,43 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
+    __out       PHANDLE ProcessHandle,
+    __out       PHANDLE ThreadHandle,
+    __in        ACCESS_MASK ProcessDesiredAccess,
+    __in        ACCESS_MASK ThreadDesiredAccess,
+    __in_opt    POBJECT_ATTRIBUTES ProcessObjectAttributes,
+    __in_opt    POBJECT_ATTRIBUTES ThreadObjectAttributes,
+    __in        ULONG ProcessFlags,
+    __in        ULONG ThreadFlags,
+    __in_opt    PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
+    __inout     PPS_CREATE_INFO CreateInfo,
+    __in_opt    PPS_ATTRIBUTE_LIST AttributeList
+) {
+    RTL_USER_PROCESS_PARAMETERS _ProcessParameters = {};
+    if(ProcessParameters == NULL) ProcessParameters = &_ProcessParameters;
+
+    NTSTATUS ret = Old_NtCreateUserProcess(ProcessHandle, ThreadHandle,
+        ProcessDesiredAccess, ThreadDesiredAccess,
+        ProcessObjectAttributes, ThreadObjectAttributes,
+        ProcessFlags, ThreadFlags, ProcessParameters,
+        CreateInfo, AttributeList);
+    LOQ("PPppOOoo", "ProcessHandle", ProcessHandle,
+        "ThreadHandle", ThreadHandle,
+        "ProcessDesiredAccess", ProcessDesiredAccess,
+        "ThreadDesiredAccess", ThreadDesiredAccess,
+        "ProcessFileName", ProcessObjectAttributes,
+        "ThreadName", ThreadObjectAttributes,
+        "ImagePathName", ProcessParameters->ImagePathName,
+        "CommandLine", ProcessParameters->CommandLine);
+    if(NT_SUCCESS(ret)) {
+        pipe("PROCESS:%d,%d", pid_from_process_handle(*ProcessHandle),
+            pid_from_thread_handle(*ThreadHandle));
+        disable_sleep_skip();
+    }
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     __out     PHANDLE ProcessHandle,
     __in      ACCESS_MASK DesiredAccess,
