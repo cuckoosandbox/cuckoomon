@@ -42,7 +42,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     NTSTATUS ret = Old_NtCreateProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ParentProcess, InheritObjectTable, SectionHandle,
         DebugPort, ExceptionPort);
-    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+    LOQ("PpO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
@@ -65,7 +65,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     NTSTATUS ret = Old_NtCreateProcessEx(ProcessHandle, DesiredAccess,
         ObjectAttributes, ParentProcess, Flags, SectionHandle, DebugPort,
         ExceptionPort, InJob);
-    LOQ("PlO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+    LOQ("PpO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
@@ -84,14 +84,14 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     // for both XP and Vista (the ClientId->UniqueProcess part, that is)
     if(ClientId != NULL && is_protected_pid((int) ClientId->UniqueProcess)) {
         NTSTATUS ret = STATUS_ACCESS_DENIED;
-        LOQ("plp", "ProcessHandle", NULL, "DesiredAccess", DesiredAccess,
+        LOQ("ppp", "ProcessHandle", NULL, "DesiredAccess", DesiredAccess,
             "ProcessIdentifier", ClientId->UniqueProcess);
         return STATUS_ACCESS_DENIED;
     }
 
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
-    LOQ("PlP", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+    LOQ("PpP", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         // looks hacky, is indeed hacky.. UniqueProcess is the first value in
         // CLIENT_ID, so it's correct like this.. (although still hacky)
         "ProcessIdentifier", &ClientId->UniqueProcess);
@@ -130,7 +130,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateSection,
     NTSTATUS ret = Old_NtCreateSection(SectionHandle, DesiredAccess,
         ObjectAttributes, MaximumSize, SectionPageProtection,
         AllocationAttributes, FileHandle);
-    LOQ("PlOp", "SectionHandle", SectionHandle,
+    LOQ("PpOp", "SectionHandle", SectionHandle,
         "DesiredAccess", DesiredAccess, "ObjectAttributes", ObjectAttributes,
         "FileHandle", FileHandle);
     return ret;
@@ -143,7 +143,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
 ) {
     NTSTATUS ret = Old_NtOpenSection(SectionHandle, DesiredAccess,
         ObjectAttributes);
-    LOQ("PlO", "SectionHandle", SectionHandle, "DesiredAccess", DesiredAccess,
+    LOQ("PpO", "SectionHandle", SectionHandle, "DesiredAccess", DesiredAccess,
         "ObjectAttributes", ObjectAttributes);
     return ret;
 }
@@ -166,7 +166,7 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
         lpCommandLine, lpProcessAttributes, lpThreadAttributes,
         bInheritHandles, dwCreationFlags, lpEnvironment,
         lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
-    LOQ("uu3l2p", "ApplicationName", lpApplicationName,
+    LOQ("uupllpp", "ApplicationName", lpApplicationName,
         "CommandLine", lpCommandLine, "CreationFlags", dwCreationFlags,
         "ProcessId", lpProcessInformation->dwProcessId,
         "ThreadId", lpProcessInformation->dwThreadId,
@@ -206,7 +206,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
 ) {
     NTSTATUS ret = Old_NtAllocateVirtualMemory(ProcessHandle, BaseAddress,
         ZeroBits, RegionSize, AllocationType, Protect);
-    LOQ("pPLl", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+    LOQ("pPPp", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "RegionSize", RegionSize, "Protection", Protect);
     return ret;
 }
@@ -254,7 +254,7 @@ HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
 
     BOOL ret = Old_VirtualProtectEx(hProcess, lpAddress, dwSize, flNewProtect,
         lpflOldProtect);
-    LOQ("2p2l", "ProcessHandle", hProcess, "Address", lpAddress,
+    LOQ("pppp", "ProcessHandle", hProcess, "Address", lpAddress,
         "Size", dwSize, "Protection", flNewProtect);
     return ret;
 }
@@ -268,7 +268,7 @@ HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_VirtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType);
-    LOQ("ppll", "ProcessHandle", hProcess, "Address", lpAddress,
+    LOQ("pppl", "ProcessHandle", hProcess, "Address", lpAddress,
         "Size", dwSize, "FreeType", dwFreeType);
     return ret;
 }
