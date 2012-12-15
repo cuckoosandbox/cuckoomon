@@ -187,7 +187,9 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtAllocateVirtualMemory),
     HOOK(ntdll, NtReadVirtualMemory),
     HOOK(ntdll, NtWriteVirtualMemory),
+    HOOK(ntdll, NtProtectVirtualMemory),
     HOOK(kernel32, VirtualProtectEx),
+    HOOK(ntdll, NtFreeVirtualMemory),
     HOOK(kernel32, VirtualFreeEx),
 
     HOOK(msvcrt, system),

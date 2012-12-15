@@ -280,6 +280,22 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, NtProtectVirtualMemory,
+    IN      HANDLE ProcessHandle,
+    IN OUT  PVOID *BaseAddress,
+    IN OUT  PULONG NumberOfBytesToProtect,
+    IN      ULONG NewAccessProtection,
+    OUT     PULONG OldAccessProtection
+) {
+    NTSTATUS ret = Old_NtProtectVirtualMemory(ProcessHandle, BaseAddress,
+        NumberOfBytesToProtect, NewAccessProtection, OldAccessProtection);
+    LOQ("pPPpP", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "NumberOfBytesProtected", NumberOfBytesToProtect,
+        "NewAccessProtection", NewAccessProtection,
+        "OldAccessProtection", OldAccessProtection);
+    return ret;
+}
+
 HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
     __in   HANDLE hProcess,
     __in   LPVOID lpAddress,
@@ -293,6 +309,19 @@ HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
         lpflOldProtect);
     LOQ("pppp", "ProcessHandle", hProcess, "Address", lpAddress,
         "Size", dwSize, "Protection", flNewProtect);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtFreeVirtualMemory,
+    IN      HANDLE ProcessHandle,
+    IN      PVOID *BaseAddress,
+    IN OUT  PULONG RegionSize,
+    IN      ULONG FreeType
+) {
+    NTSTATUS ret = Old_NtFreeVirtualMemory(ProcessHandle, BaseAddress,
+        RegionSize, FreeType);
+    LOQ("pPPp", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "RegionSize", RegionSize, "FreeType", FreeType);
     return ret;
 }
 

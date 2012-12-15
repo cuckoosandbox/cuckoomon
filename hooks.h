@@ -696,12 +696,27 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __out_opt   ULONG *NumberOfBytesWritten
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtProtectVirtualMemory,
+    IN      HANDLE ProcessHandle,
+    IN OUT  PVOID *BaseAddress,
+    IN OUT  PULONG NumberOfBytesToProtect,
+    IN      ULONG NewAccessProtection,
+    OUT     PULONG OldAccessProtection
+);
+
 extern HOOKDEF(BOOL, WINAPI, VirtualProtectEx,
     __in   HANDLE hProcess,
     __in   LPVOID lpAddress,
     __in   SIZE_T dwSize,
     __in   DWORD flNewProtect,
     __out  PDWORD lpflOldProtect
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtFreeVirtualMemory,
+    IN      HANDLE ProcessHandle,
+    IN      PVOID *BaseAddress,
+    IN OUT  PULONG RegionSize,
+    IN      ULONG FreeType
 );
 
 extern HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
