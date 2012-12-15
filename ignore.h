@@ -18,6 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define MAX_PROTECTED_PIDS 32
 
+#include "ntapi.h"
+
 void add_protected_pid(unsigned long pid);
 int is_protected_pid(unsigned long pid);
 
