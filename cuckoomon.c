@@ -337,6 +337,45 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
             add_protected_pid(pids[i]);
         }
 
+        // read the config settings
+        // TODO unicode support
+        char buf[512], config_fname[MAX_PATH];
+        sprintf(config_fname, "%s\\%d.ini",
+            getenv("TEMP"), GetCurrentProcessId());
+
+        FILE *fp = fopen(config_fname, "r");
+        if(fp != NULL) {
+            while (fgets(buf, sizeof(buf), fp) != NULL) {
+                // cut off the newline
+                char *p = strchr(buf, '\r');
+                if(p != NULL) *p = 0;
+                p = strchr(buf, '\n');
+                if(p != NULL) *p = 0;
+
+                // split key=value
+                p = strchr(buf, '=');
+                if(p != NULL) {
+                    *p = 0;
+
+                    const char *key = buf, *value = p + 1;
+
+                    if(!strcmp(key, "pipe")) {
+                        snprintf(g_pipe_name, sizeof(g_pipe_name),
+                            "\\\\.\\pipe\\%s", value);
+                        printf("pipe-name: %s\n", g_pipe_name);
+                    }
+                    else if(!strcmp(key, "results")) {
+                        printf("results: %s\n", value);
+                    }
+                    else if(!strcmp(key, "analyzer")) {
+                        printf("analyzer: %s\n", value);
+                    }
+                }
+            }
+            fclose(fp);
+            DeleteFile(config_fname);
+        }
+
         // initialize the log file
         log_init(0);
 

@@ -17,4 +17,5 @@ int pipe(const char *fmt, ...);
 int pipe2(void *out, int *outlen, const char *fmt, ...);
 
 #define PIPE_MAX_TIMEOUT 10000
-#define PIPE_NAME "\\\\.\\pipe\\cuckoo"
+
+extern char g_pipe_name[MAX_PATH];
