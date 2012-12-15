@@ -323,6 +323,11 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         // make sure advapi32 is loaded
         LoadLibrary("advapi32");
 
+        // there's a small list of processes which we don't want to inject
+        if(is_ignored_process()) {
+            return TRUE;
+        }
+
         // obtain all protected pids
         int pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
         pipe2(pids, &length, "GETPIDS");

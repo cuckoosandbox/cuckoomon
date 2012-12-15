@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include "ntapi.h"
 #include "ignore.h"
+#include "misc.h"
 
 static unsigned long g_pids[MAX_PROTECTED_PIDS];
 static unsigned long g_pid_count;
@@ -118,4 +119,23 @@ void ignore_file_prepend_stuff(const OBJECT_ATTRIBUTES *obj,
             *str += 4, *length -= 4;
         }
     }
+}
+
+static wchar_t *g_ignored_processpaths[] = {
+    L"C:\\WINDOWS\\system32\\dwwin.exe",
+    L"C:\\WINDOWS\\system32\\dumprep.exe",
+    L"C:\\WINDOWS\\system32\\drwtsn32.exe",
+};
+
+int is_ignored_process()
+{
+    wchar_t process_path[MAX_PATH];
+    GetModuleFileNameW(NULL, process_path, ARRAYSIZE(process_path));
+
+    for (int i = 0; i < ARRAYSIZE(g_ignored_processpaths); i++) {
+        if(!wcsicmp(g_ignored_processpaths[i], process_path)) {
+            return 1;
+        }
+    }
+    return 0;
 }
