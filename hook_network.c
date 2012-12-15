@@ -125,7 +125,7 @@ HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlA,
     HINTERNET ret = Old_InternetOpenUrlA(hInternet, lpszUrl, lpszHeaders,
         dwHeadersLength, dwFlags, dwContext);
     if(dwHeadersLength == (DWORD) -1) dwHeadersLength = strlen(lpszHeaders);
-    LOQ("psSl", "ConnectionHandle", hInternet, "URL", lpszUrl,
+    LOQ("psSp", "ConnectionHandle", hInternet, "URL", lpszUrl,
         "Headers", dwHeadersLength, lpszHeaders, "Flags", dwFlags);
     return ret;
 }
@@ -140,7 +140,7 @@ HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlW,
 ) {
     HINTERNET ret = Old_InternetOpenUrlW(hInternet, lpszUrl, lpszHeaders,
         dwHeadersLength, dwFlags, dwContext);
-    LOQ("psSl", "ConnectionHandle", hInternet, "URL", lpszUrl,
+    LOQ("psSp", "ConnectionHandle", hInternet, "URL", lpszUrl,
         "Headers", dwHeadersLength, lpszHeaders, "Flags", dwFlags);
     return ret;
 }
