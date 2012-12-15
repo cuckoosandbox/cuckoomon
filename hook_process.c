@@ -264,6 +264,22 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
     return ret;
 }
 
+HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
+    _In_    HANDLE hProcess,
+    _In_    LPCVOID lpBaseAddress,
+    _Out_   LPVOID lpBuffer,
+    _In_    SIZE_T nSize,
+    _Out_   SIZE_T *lpNumberOfBytesRead
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer,
+        nSize, lpNumberOfBytesRead);
+    LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
+        "Buffer", lpNumberOfBytesRead, lpBuffer);
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __in        HANDLE ProcessHandle,
     __in        LPVOID BaseAddress,
@@ -277,6 +293,22 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
         NumberOfBytesToWrite, NumberOfBytesWritten);
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesWritten, Buffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
+    _In_    HANDLE hProcess,
+    _In_    LPVOID lpBaseAddress,
+    _In_    LPCVOID lpBuffer,
+    _In_    SIZE_T nSize,
+    _Out_   SIZE_T *lpNumberOfBytesWritten
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
+        nSize, lpNumberOfBytesWritten);
+    LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
+        "Buffer", lpNumberOfBytesWritten, lpBuffer);
     return ret;
 }
 

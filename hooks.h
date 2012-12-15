@@ -688,12 +688,28 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
     __out_opt   PULONG NumberOfBytesReaded
 );
 
+extern HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
+    _In_    HANDLE hProcess,
+    _In_    LPCVOID lpBaseAddress,
+    _Out_   LPVOID lpBuffer,
+    _In_    SIZE_T nSize,
+    _Out_   SIZE_T *lpNumberOfBytesRead
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __in        HANDLE ProcessHandle,
     __in        LPVOID BaseAddress,
     __in        LPCVOID Buffer,
     __in        ULONG NumberOfBytesToWrite,
     __out_opt   ULONG *NumberOfBytesWritten
+);
+
+extern HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
+    _In_    HANDLE hProcess,
+    _In_    LPVOID lpBaseAddress,
+    _In_    LPCVOID lpBuffer,
+    _In_    SIZE_T nSize,
+    _Out_   SIZE_T *lpNumberOfBytesWritten
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtProtectVirtualMemory,
