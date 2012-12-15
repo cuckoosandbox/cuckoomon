@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <windns.h>
+#include <wininet.h>
 #include "ntapi.h"
 
 //
@@ -938,6 +939,44 @@ extern HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     LPWSTR szFileName,
     DWORD dwReserved,
     LPVOID lpfnCB
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, InternetOpenA,
+    _In_  LPCTSTR lpszAgent,
+    _In_  DWORD dwAccessType,
+    _In_  LPCTSTR lpszProxyName,
+    _In_  LPCTSTR lpszProxyBypass,
+    _In_  DWORD dwFlags
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, InternetOpenW,
+    _In_  LPWSTR lpszAgent,
+    _In_  DWORD dwAccessType,
+    _In_  LPWSTR lpszProxyName,
+    _In_  LPWSTR lpszProxyBypass,
+    _In_  DWORD dwFlags
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, InternetConnectA,
+    _In_  HINTERNET hInternet,
+    _In_  LPCTSTR lpszServerName,
+    _In_  INTERNET_PORT nServerPort,
+    _In_  LPCTSTR lpszUsername,
+    _In_  LPCTSTR lpszPassword,
+    _In_  DWORD dwService,
+    _In_  DWORD dwFlags,
+    _In_  DWORD_PTR dwContext
+);
+
+extern HOOKDEF(HINTERNET, WINAPI, InternetConnectW,
+    _In_  HINTERNET hInternet,
+    _In_  LPWSTR lpszServerName,
+    _In_  INTERNET_PORT nServerPort,
+    _In_  LPWSTR lpszUsername,
+    _In_  LPWSTR lpszPassword,
+    _In_  DWORD dwService,
+    _In_  DWORD dwFlags,
+    _In_  DWORD_PTR dwContext
 );
 
 extern HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlA,

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <windows.h>
 #include <windns.h>
+#include <wininet.h>
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
@@ -42,6 +43,74 @@ HOOKDEF(HRESULT, WINAPI, URLDownloadToFileW,
     if(ret == S_OK) {
         pipe("FILE_NEW:%S", szFileName);
     }
+    return ret;
+}
+
+HOOKDEF(HINTERNET, WINAPI, InternetOpenA,
+    _In_  LPCTSTR lpszAgent,
+    _In_  DWORD dwAccessType,
+    _In_  LPCTSTR lpszProxyName,
+    _In_  LPCTSTR lpszProxyBypass,
+    _In_  DWORD dwFlags
+) {
+    HINTERNET ret = Old_InternetOpenA(lpszAgent, dwAccessType, lpszProxyName,
+        lpszProxyBypass, dwFlags);
+    LOQ("spssp", "Agent", lpszAgent, "AccessType", dwAccessType,
+        "ProxyName", lpszProxyName, "ProxyBypass", lpszProxyBypass,
+        "Flags", dwFlags);
+    return ret;
+}
+
+HOOKDEF(HINTERNET, WINAPI, InternetOpenW,
+    _In_  LPWSTR lpszAgent,
+    _In_  DWORD dwAccessType,
+    _In_  LPWSTR lpszProxyName,
+    _In_  LPWSTR lpszProxyBypass,
+    _In_  DWORD dwFlags
+) {
+    HINTERNET ret = Old_InternetOpenW(lpszAgent, dwAccessType, lpszProxyName,
+        lpszProxyBypass, dwFlags);
+    LOQ("upuup", "Agent", lpszAgent, "AccessType", dwAccessType,
+        "ProxyName", lpszProxyName, "ProxyBypass", lpszProxyBypass,
+        "Flags", dwFlags);
+    return ret;
+}
+
+HOOKDEF(HINTERNET, WINAPI, InternetConnectA,
+    _In_  HINTERNET hInternet,
+    _In_  LPCTSTR lpszServerName,
+    _In_  INTERNET_PORT nServerPort,
+    _In_  LPCTSTR lpszUsername,
+    _In_  LPCTSTR lpszPassword,
+    _In_  DWORD dwService,
+    _In_  DWORD dwFlags,
+    _In_  DWORD_PTR dwContext
+) {
+    HINTERNET ret = Old_InternetConnectA(hInternet, lpszServerName,
+        nServerPort, lpszUsername, lpszPassword, dwService, dwFlags,
+        dwContext);
+    LOQ("pslsslp", "InternetHandle", hInternet, "ServerName", lpszServerName,
+        "ServerPort", nServerPort, "Username", lpszUsername,
+        "Password", lpszPassword, "Service", dwService, "Flags", dwFlags);
+    return ret;
+}
+
+HOOKDEF(HINTERNET, WINAPI, InternetConnectW,
+    _In_  HINTERNET hInternet,
+    _In_  LPWSTR lpszServerName,
+    _In_  INTERNET_PORT nServerPort,
+    _In_  LPWSTR lpszUsername,
+    _In_  LPWSTR lpszPassword,
+    _In_  DWORD dwService,
+    _In_  DWORD dwFlags,
+    _In_  DWORD_PTR dwContext
+) {
+    HINTERNET ret = Old_InternetConnectW(hInternet, lpszServerName,
+        nServerPort, lpszUsername, lpszPassword, dwService, dwFlags,
+        dwContext);
+    LOQ("puluulp", "InternetHandle", hInternet, "ServerName", lpszServerName,
+        "ServerPort", nServerPort, "Username", lpszUsername,
+        "Password", lpszPassword, "Service", dwService, "Flags", dwFlags);
     return ret;
 }
 
