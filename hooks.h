@@ -1035,6 +1035,24 @@ extern HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
   __in  DWORD dwOptionalLength
 );
 
+extern HOOKDEF(BOOL, WINAPI, InternetReadFile,
+    _In_   HINTERNET hFile,
+    _Out_  LPVOID lpBuffer,
+    _In_   DWORD dwNumberOfBytesToRead,
+    _Out_  LPDWORD lpdwNumberOfBytesRead
+);
+
+extern HOOKDEF(BOOL, WINAPI, InternetWriteFile,
+    _In_   HINTERNET hFile,
+    _In_   LPCVOID lpBuffer,
+    _In_   DWORD dwNumberOfBytesToWrite,
+    _Out_  LPDWORD lpdwNumberOfBytesWritten
+);
+
+extern HOOKDEF(BOOL, WINAPI, InternetCloseHandle,
+    _In_  HINTERNET hInternet
+);
+
 extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
   __in         PCSTR lpstrName,
   __in         WORD wType,

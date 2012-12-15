@@ -214,6 +214,44 @@ HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
     return ret;
 }
 
+HOOKDEF(BOOL, WINAPI, InternetReadFile,
+    _In_   HINTERNET hFile,
+    _Out_  LPVOID lpBuffer,
+    _In_   DWORD dwNumberOfBytesToRead,
+    _Out_  LPDWORD lpdwNumberOfBytesRead
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_InternetReadFile(hFile, lpBuffer, dwNumberOfBytesToRead,
+        lpdwNumberOfBytesRead);
+    LOQ("pB", "InternetHandle", hFile, lpdwNumberOfBytesRead, lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, InternetWriteFile,
+    _In_   HINTERNET hFile,
+    _In_   LPCVOID lpBuffer,
+    _In_   DWORD dwNumberOfBytesToWrite,
+    _Out_  LPDWORD lpdwNumberOfBytesWritten
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_InternetWriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite,
+        lpdwNumberOfBytesWritten);
+    LOQ("pB", "InternetHandle", hFile, lpdwNumberOfBytesWritten, lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, InternetCloseHandle,
+    _In_  HINTERNET hInternet
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_InternetCloseHandle(hInternet);
+    LOQ("p", "InternetHandle", hInternet);
+    return ret;
+}
+
 HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
   __in         PCSTR lpstrName,
   __in         WORD wType,
