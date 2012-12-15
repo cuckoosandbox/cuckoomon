@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <dirent.h>
 #include "ntapi.h"
 #include "misc.h"
+#include "utf8.h"
 
 static CRITICAL_SECTION g_mutex;
 static DWORD g_pid, g_ppid;
@@ -92,25 +93,9 @@ static void log_string(const char *str, int len, int quotes)
 // utf8 encodes an utf16 wchar_t
 static void log_wchar(unsigned short c)
 {
-    if(c < 0x80) {
-        unsigned char b[] = {c & 0x7f};
-        log_bytes(b, 1);
-    }
-    else if(c < 0x800) {
-        unsigned char b[] = {
-            0xc0 + ((c >> 8) << 2) + (c >> 6),
-            0x80 + (c & 0x3f),
-        };
-        log_bytes(b, 2);
-    }
-    else {
-        unsigned char b[] = {
-            0xe0 + (c >> 12),
-            0x80 + (((c >> 8) & 0x1f) << 2) + ((c >> 6) & 0x3),
-            0x80 + (c & 0x3f),
-        };
-        log_bytes(b, 3);
-    }
+    unsigned char buf[3]; int len;
+    len = utf8_encode(c, buf);
+    log_bytes(buf, len);
 }
 
 static void log_wstring(const wchar_t *str, int len, int quotes)

@@ -20,30 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include "ntapi.h"
 #include "pipe.h"
-
-static int _pipe_utf8(unsigned short c, unsigned char *out)
-{
-    if(c < 0x80) {
-        *out = c & 0x7f;
-        return 1;
-    }
-    else if(c < 0x800) {
-        *out = 0xc0 + ((c >> 8) << 2) + (c >> 6);
-        out[1] = 0x80 + (c & 0x3f);
-        return 2;
-    }
-    else {
-        *out = 0xe0 + (c >> 12);
-        out[1] = 0x80 + (((c >> 8) & 0x1f) << 2) + ((c >> 6) & 0x3);
-        out[2] = 0x80 + (c & 0x3f);
-        return 3;
-    }
-}
+#include "utf8.h"
 
 static int _pipe_utf8x(char **out, unsigned short x)
 {
     unsigned char buf[3];
-    int len = _pipe_utf8(x, buf);
+    int len = utf8_encode(x, buf);
     if(*out != NULL) {
         memcpy(*out, buf, len);
         *out += len;
