@@ -140,7 +140,7 @@ HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlW,
 ) {
     HINTERNET ret = Old_InternetOpenUrlW(hInternet, lpszUrl, lpszHeaders,
         dwHeadersLength, dwFlags, dwContext);
-    LOQ("psSp", "ConnectionHandle", hInternet, "URL", lpszUrl,
+    LOQ("puUp", "ConnectionHandle", hInternet, "URL", lpszUrl,
         "Headers", dwHeadersLength, lpszHeaders, "Flags", dwFlags);
     return ret;
 }
