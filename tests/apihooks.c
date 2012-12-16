@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
+#include <direct.h>
 
 DWORD WINAPI dummy(LPVOID lpValue)
 {
@@ -23,6 +24,8 @@ int main()
     char buf[6];
     fread(buf, 1, 6, fp);
     fclose(fp);
+
+    _mkdir("abc");
 
     DeleteFile("test-hello");
 
