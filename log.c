@@ -25,24 +25,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "misc.h"
 #include "utf8.h"
 
+// the size of the logging buffer
+#define BUFFERSIZE 1024 * 1024
+
 static CRITICAL_SECTION g_mutex;
 static DWORD g_pid, g_ppid;
-static wchar_t g_module_name_buf[256];
+static wchar_t g_module_name_buf[MAX_PATH];
 static const wchar_t *g_module_name;
 static FILE *g_fp;
 
-static char g_buffer[4096];
+static char g_buffer[BUFFERSIZE];
 static int g_idx;
 
 //
 // Log API
 //
 
-static void log_flush()
+void log_flush()
 {
     if(g_idx != 0) {
-        g_idx -= fwrite(g_buffer, 1, g_idx, g_fp);
+        unsigned int written = fwrite(g_buffer, 1, g_idx, g_fp);
         fflush(g_fp);
+
+        // if this call didn't write the entire buffer, then we have to move
+        // around some stuff in the buffer
+        if(written < g_idx) {
+            memcpy(g_buffer, g_buffer + written, g_idx - written);
+        }
+
+        // subtract the amount of written bytes from the index
+        g_idx -= written;
     }
 }
 
@@ -50,7 +62,7 @@ static void log_bytes(const void *bytes, int len)
 {
     const unsigned char *b = (const unsigned char *) bytes;
     while (len--) {
-        if(4096 - g_idx < 4) {
+        if(BUFFERSIZE - g_idx < 4) {
             log_flush();
         }
         if(*b >= ' ' && *b < 0x7f) {
@@ -379,13 +391,15 @@ void loq(const char *fmt, ...)
 void log_init(int debug)
 {
     InitializeCriticalSection(&g_mutex);
-    GetModuleFileNameW(NULL, g_module_name_buf, sizeof(g_module_name_buf));
+    GetModuleFileNameW(NULL, g_module_name_buf, ARRAYSIZE(g_module_name_buf));
+
     // extract only the filename of the process, not the entire path
     for (const wchar_t *p = g_module_name = g_module_name_buf; *p != 0; p++) {
         if(*p == '\\' || *p == '/') {
             g_module_name = p + 1;
         }
     }
+
     g_pid = GetCurrentProcessId();
     g_ppid = parent_process_id();
 
@@ -406,6 +420,7 @@ void log_free()
 {
     DeleteCriticalSection(&g_mutex);
     if(g_fp != stderr) {
+        log_flush();
         fclose(g_fp);
     }
 }
