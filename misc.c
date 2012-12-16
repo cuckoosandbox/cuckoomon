@@ -71,10 +71,10 @@ DWORD random()
     return pRtlGenRandom(&ret, sizeof(ret)) ? ret : rand();
 }
 
-BOOL is_directory_objattr(OBJECT_ATTRIBUTES *obj)
+BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj)
 {
     static NTSTATUS (WINAPI *pNtQueryAttributesFile)(
-        _In_   POBJECT_ATTRIBUTES ObjectAttributes,
+        _In_   const OBJECT_ATTRIBUTES *ObjectAttributes,
         _Out_  PFILE_BASIC_INFORMATION FileInformation
     );
 

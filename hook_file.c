@@ -17,7 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
+#include <ctype.h>
 #include <windows.h>
+#include <shlwapi.h>
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
@@ -31,6 +33,42 @@ static const char *module_name = "filesystem";
 #define DUMP_FILE_MASK (GENERIC_WRITE | FILE_GENERIC_WRITE | \
     FILE_WRITE_DATA | FILE_APPEND_DATA | STANDARD_RIGHTS_WRITE | \
     STANDARD_RIGHTS_ALL)
+
+static void new_file(const OBJECT_ATTRIBUTES *obj)
+{
+    // don't dump directories, and don't dump ignored files
+    if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
+        const wchar_t *str = obj->ObjectName->Buffer;
+        unsigned int len = obj->ObjectName->Length;
+
+        // if it's a path including \??\ then we can send it straight away,
+        // but we strip the \??\ part
+        if(len > 4 && !wcsncmp(str, L"\\??\\", 4)) {
+            pipe("FILE_NEW:%S", len - 4, str + 4);
+        }
+        // maybe it's an absolute path (or a relative path with a harddisk,
+        // such as C:abc.txt)
+        else if(isalpha(str[0]) != 0 && str[1] == ':') {
+            pipe("FILE_NEW:%S", len, str);
+        }
+        // is it safe to assume that this is a relative path?
+        else {
+            wchar_t cur_dir[MAX_PATH];
+            GetCurrentDirectoryW(sizeof(cur_dir), cur_dir);
+
+            // we have to make sure that the filename is zero terminated..
+            wchar_t fname[len + 1];
+            memcpy(fname, str, len * sizeof(wchar_t));
+            fname[len] = 0;
+
+            // this should be large enough..
+            wchar_t path[MAX_PATH];
+            PathCombineW(path, cur_dir, fname);
+
+            pipe("FILE_NEW:%Z", path);
+        }
+    }
+}
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
   __out     PHANDLE FileHandle,
@@ -52,12 +90,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition,
         "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        if(is_directory_objattr(ObjectAttributes) == 0 &&
-                is_ignored_file_objattr(ObjectAttributes) == 0) {
-            wchar_t *str; unsigned int length;
-            ignore_file_prepend_stuff(ObjectAttributes, &str, &length);
-            pipe("FILE_NEW:%S", length, str);
-        }
+        new_file(ObjectAttributes);
     }
     return ret;
 }
@@ -75,12 +108,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
     LOQ("PpOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        if(is_directory_objattr(ObjectAttributes) == 0 &&
-                is_ignored_file_objattr(ObjectAttributes) == 0) {
-            wchar_t *str; unsigned int length;
-            ignore_file_prepend_stuff(ObjectAttributes, &str, &length);
-            pipe("FILE_NEW:%S", length, str);
-        }
+        new_file(ObjectAttributes);
     }
     return ret;
 }

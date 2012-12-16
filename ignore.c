@@ -108,19 +108,6 @@ int is_ignored_file_objattr(const OBJECT_ATTRIBUTES *obj)
     return 1;
 }
 
-void ignore_file_prepend_stuff(const OBJECT_ATTRIBUTES *obj,
-        wchar_t **str, unsigned int *length)
-{
-    if(obj != NULL && obj->ObjectName != NULL) {
-        *str = obj->ObjectName->Buffer;
-        *length = obj->ObjectName->Length >> 1;
-
-        if(*length > 4 && !wcsncmp(*str, L"\\??\\", 4)) {
-            *str += 4, *length -= 4;
-        }
-    }
-}
-
 static wchar_t *g_ignored_processpaths[] = {
     L"C:\\WINDOWS\\system32\\dwwin.exe",
     L"C:\\WINDOWS\\system32\\dumprep.exe",
