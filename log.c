@@ -363,11 +363,11 @@ void loq(const char *fmt, ...)
             else if(type == REG_EXPAND_SZ || type == REG_SZ) {
                 // ascii strings
                 if(key == 'r') {
-                    log_string((const char *) data, -1, 0);
+                    log_string((const char *) data, size, 0);
                 }
                 // unicode strings
                 else {
-                    log_wstring((const wchar_t *) data, -1, 0);
+                    log_wstring((const wchar_t *) data, size >> 1, 0);
                 }
             }
         }
