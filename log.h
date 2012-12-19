@@ -90,6 +90,8 @@ void log_free();
 #define IS_SUCCESS_INTM1() int is_success(int ret) { \
     return ret != -1; }
 
+#define ENSURE_DWORD(param) \
+    DWORD _##param = 0; if(param == NULL) param = &_##param
 #define ENSURE_ULONG(param) \
     ULONG _##param = 0; if(param == NULL) param = &_##param
 #define ENSURE_ULONG_ZERO(param) \

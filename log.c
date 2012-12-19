@@ -349,7 +349,7 @@ void loq(const char *fmt, ...)
             unsigned long size = va_arg(args, unsigned long);
             unsigned char *data = va_arg(args, unsigned char *);
 
-            if(data == NULL) {
+            if(data == NULL || type == REG_NONE) {
                 log_string("<None>", -1, 0);
             }
             else if(type == REG_DWORD || type == REG_DWORD_LITTLE_ENDIAN) {
@@ -369,10 +369,6 @@ void loq(const char *fmt, ...)
                 else {
                     log_wstring((const wchar_t *) data, -1, 0);
                 }
-            }
-            // something like REG_BINARY
-            else {
-                log_string((const char *) data, size, 0);
             }
         }
         log_bytes("\"", 1);
