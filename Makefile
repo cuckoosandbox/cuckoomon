@@ -1,3 +1,4 @@
+MAKEFLAGS = -j8
 CC = gcc
 CFLAGS = -Wall -std=c99 -s -O2
 DLL = -shared

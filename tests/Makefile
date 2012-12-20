@@ -1,3 +1,4 @@
+MAKEFLAGS = -j8
 
 TESTS = $(wildcard *.c)
 TESTSEXE = $(TESTS:.c=.exe)
