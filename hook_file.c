@@ -34,6 +34,11 @@ static const char *module_name = "filesystem";
     FILE_WRITE_DATA | FILE_APPEND_DATA | STANDARD_RIGHTS_WRITE | \
     STANDARD_RIGHTS_ALL)
 
+#define HDDVOL1 L"\\Device\\HarddiskVolume1"
+
+// length of a hardcoded unicode string
+#define UNILEN(x) (sizeof(x) / sizeof(wchar_t) - 1)
+
 static void new_file(const OBJECT_ATTRIBUTES *obj)
 {
     // don't dump directories, and don't dump ignored files
@@ -50,6 +55,12 @@ static void new_file(const OBJECT_ATTRIBUTES *obj)
         // such as C:abc.txt)
         else if(isalpha(str[0]) != 0 && str[1] == ':') {
             pipe("FILE_NEW:%S", len, str);
+        }
+        // the filename starts with \Device\HarddiskVolume1, which is
+        // basically just C:
+        else if(!wcsnicmp(str, HDDVOL1, UNILEN(HDDVOL1))) {
+            str += UNILEN(HDDVOL1), len -= UNILEN(HDDVOL1);
+            pipe("FILE_NEW:C:%S", len, str);
         }
         // is it safe to assume that this is a relative path?
         else {
