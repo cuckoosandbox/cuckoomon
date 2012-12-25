@@ -243,6 +243,18 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetInformationFile,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, NtOpenDirectoryObject,
+    __out  PHANDLE DirectoryHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
+) {
+    NTSTATUS ret = Old_NtOpenDirectoryObject(DirectoryHandle, DesiredAccess,
+        ObjectAttributes);
+    LOQ("PlO", "DirectoryHandle", DirectoryHandle,
+        "DesiredAccess", DesiredAccess, "ObjectAttributes", ObjectAttributes);
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateDirectoryObject,
     __out  PHANDLE DirectoryHandle,
     __in   ACCESS_MASK DesiredAccess,

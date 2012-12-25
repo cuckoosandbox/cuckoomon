@@ -48,3 +48,30 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenMutant,
     LOQ("PO", "Handle", MutantHandle, "MutexName", ObjectAttributes);
     return ret;
 }
+
+HOOKDEF(NTSTATUS, WINAPI, NtCreateNamedPipeFile,
+    OUT         PHANDLE NamedPipeFileHandle,
+    IN          ACCESS_MASK DesiredAccess,
+    IN          POBJECT_ATTRIBUTES ObjectAttributes,
+    OUT         PIO_STATUS_BLOCK IoStatusBlock,
+    IN          ULONG ShareAccess,
+    IN          ULONG CreateDisposition,
+    IN          ULONG CreateOptions,
+    IN          BOOLEAN WriteModeMessage,
+    IN          BOOLEAN ReadModeMessage,
+    IN          BOOLEAN NonBlocking,
+    IN          ULONG MaxInstances,
+    IN          ULONG InBufferSize,
+    IN          ULONG OutBufferSize,
+    IN          PLARGE_INTEGER DefaultTimeOut
+) {
+    NTSTATUS ret = Old_NtCreateNamedPipeFile(NamedPipeFileHandle,
+        DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess,
+        CreateDisposition, CreateOptions, WriteModeMessage, ReadModeMessage,
+        NonBlocking, MaxInstances, InBufferSize, OutBufferSize,
+        DefaultTimeOut);
+    LOQ("PpOl", "NamedPipeHandle", NamedPipeFileHandle,
+        "DesiredAccess", DesiredAccess, "PipeName", ObjectAttributes,
+        "ShareAccess", ShareAccess);
+    return ret;
+}

@@ -118,6 +118,12 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtSetInformationFile,
     __in   FILE_INFORMATION_CLASS FileInformationClass
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtOpenDirectoryObject,
+    __out  PHANDLE DirectoryHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtCreateDirectoryObject,
     __out  PHANDLE DirectoryHandle,
     __in   ACCESS_MASK DesiredAccess,
@@ -563,6 +569,23 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtOpenMutant,
     __out       PHANDLE MutantHandle,
     __in        ACCESS_MASK DesiredAccess,
     __in        POBJECT_ATTRIBUTES ObjectAttributes
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateNamedPipeFile,
+    OUT         PHANDLE NamedPipeFileHandle,
+    IN          ACCESS_MASK DesiredAccess,
+    IN          POBJECT_ATTRIBUTES ObjectAttributes,
+    OUT         PIO_STATUS_BLOCK IoStatusBlock,
+    IN          ULONG ShareAccess,
+    IN          ULONG CreateDisposition,
+    IN          ULONG CreateOptions,
+    IN          BOOLEAN WriteModeMessage,
+    IN          BOOLEAN ReadModeMessage,
+    IN          BOOLEAN NonBlocking,
+    IN          ULONG MaxInstances,
+    IN          ULONG InBufferSize,
+    IN          ULONG OutBufferSize,
+    IN          PLARGE_INTEGER DefaultTimeOut
 );
 
 //

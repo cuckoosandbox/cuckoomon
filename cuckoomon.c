@@ -63,6 +63,7 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtQueryDirectoryFile),
     HOOK(ntdll, NtQueryInformationFile),
     HOOK(ntdll, NtSetInformationFile),
+    HOOK(ntdll, NtOpenDirectoryObject),
     HOOK(ntdll, NtCreateDirectoryObject),
 
     // CreateDirectoryExA calls CreateDirectoryExW
@@ -167,6 +168,7 @@ static hook_t g_hooks[] = {
 
     HOOK(ntdll, NtCreateMutant),
     HOOK(ntdll, NtOpenMutant),
+    HOOK(ntdll, NtCreateNamedPipeFile),
 
     //
     // Process Hooks
