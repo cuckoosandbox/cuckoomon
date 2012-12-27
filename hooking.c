@@ -68,6 +68,18 @@ int lde(void *addr)
     return ret == DECRES_SUCCESS ? instructions[0].size : 0;
 }
 
+static inline unsigned int __readfsdword(unsigned int index)
+{
+    unsigned int ret;
+    __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (index));
+    return ret;
+}
+
+static inline void __writefsdword(unsigned int index, unsigned int value)
+{
+    __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
+}
+
 static int is_valid_backtrace()
 {
     return 1;
@@ -699,16 +711,14 @@ int hook_api(hook_t *h, int type)
 
 static hook_info_t *hook_info()
 {
-    hook_info_t *ret;
-    __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (0x44));
-    return ret;
+    return (hook_info_t *) __readfsdword(TLS_HOOK_INFO);
 }
 
 static void ensure_valid_hook_info()
 {
     if(hook_info() == NULL) {
         hook_info_t *info = (hook_info_t *) calloc(1, sizeof(hook_info_t));
-        __asm__("movl %0, %%fs:(%1)" :: "r" (info), "r" (0x44));
+        __writefsdword(TLS_HOOK_INFO, (unsigned int) info);
     }
 }
 
