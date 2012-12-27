@@ -650,7 +650,7 @@ int hook_api(hook_t *h, int type)
                 }
 
                 // if successful, assign the trampoline address to *old_func
-                if(ret != 0) {
+                if(ret == 0) {
                     *h->old_func = h->tramp;
 
                     // successful hook is successful
