@@ -56,6 +56,8 @@ int hook_is_inside();
 unsigned int hook_get_last_error();
 void hook_set_last_error(unsigned int errcode);
 
+#define HOOK_BACKTRACE_DEPTH 20
+
 #define HOOK_ENABLE_FPU 0
 
 enum {

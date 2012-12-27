@@ -80,8 +80,21 @@ static inline void __writefsdword(unsigned int index, unsigned int value)
     __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
 }
 
-static int is_valid_backtrace()
+static int is_valid_backtrace(unsigned int ebp)
 {
+    // http://en.wikipedia.org/wiki/Win32_Thread_Information_Block
+    unsigned int top = __readfsdword(0x04);
+    unsigned int bottom = __readfsdword(0x08);
+
+    unsigned int count = HOOK_BACKTRACE_DEPTH;
+    while (ebp >= bottom && ebp < top && count-- != 0) {
+
+        // obtain the return address and the next value of ebp
+        unsigned int addr = *(unsigned int *)(ebp + 4);
+        ebp = *(unsigned int *) ebp;
+
+        // TODO check the return address
+    }
     return 1;
 }
 
@@ -335,10 +348,14 @@ static void hook_create_pre_tramp(hook_t *h)
 
         // pushad
         0x60,
+        // push ebp
+        0x55,
         // call is_valid_backtrace
         0xe8, 0x00, 0x00, 0x00, 0x00,
         // test eax, eax
         0x85, 0xc0,
+        // pop eax
+        0x58,
         // popad
         0x61,
         // jnz $+6
@@ -382,12 +399,12 @@ static void hook_create_pre_tramp(hook_t *h)
     *(unsigned int *)(pre_tramp + 13) =
         (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
-    *(unsigned int *)(pre_tramp + 38) =
-        (unsigned char *) &is_valid_backtrace - h->pre_tramp - 37 - 5;
-    *(unsigned int *)(pre_tramp + 49) = h->tramp - h->pre_tramp - 48 - 5;
-    *(unsigned int *)(pre_tramp + 67) = (unsigned int) h->pre_tramp + 77;
-    *(unsigned int *)(pre_tramp + 73) =
-        (unsigned char *) h->store_exc - h->pre_tramp - 72 - 5;
+    *(unsigned int *)(pre_tramp + 39) =
+        (unsigned char *) &is_valid_backtrace - h->pre_tramp - 38 - 5;
+    *(unsigned int *)(pre_tramp + 51) = h->tramp - h->pre_tramp - 50 - 5;
+    *(unsigned int *)(pre_tramp + 69) = (unsigned int) h->pre_tramp + 79;
+    *(unsigned int *)(pre_tramp + 75) =
+        (unsigned char *) h->store_exc - h->pre_tramp - 74 - 5;
 
     memcpy(h->pre_tramp, pre_tramp, sizeof(pre_tramp));
 }
