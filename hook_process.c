@@ -233,6 +233,23 @@ HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, NtUnmapViewOfSection,
+    _In_      HANDLE ProcessHandle,
+    _In_opt_  PVOID BaseAddress
+) {
+    unsigned int map_size = 0; MEMORY_BASIC_INFORMATION mbi;
+    if(VirtualQueryEx(ProcessHandle, BaseAddress, &mbi,
+            sizeof(mbi)) == sizeof(mbi)) {
+        map_size = mbi.RegionSize;
+    }
+    NTSTATUS ret = Old_NtUnmapViewOfSection(ProcessHandle, BaseAddress);
+    if(NT_SUCCESS(ret)) {
+        pipe("UNMAP:%d,%x,%x", pid_from_process_handle(ProcessHandle),
+            BaseAddress, map_size);
+    }
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
     __in     HANDLE ProcessHandle,
     __inout  PVOID *BaseAddress,

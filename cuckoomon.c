@@ -186,6 +186,7 @@ static hook_t g_hooks[] = {
 
     // all variants of ShellExecute end up in ShellExecuteExW
     HOOK(shell32, ShellExecuteExW),
+    HOOK(ntdll, NtUnmapViewOfSection),
     HOOK(ntdll, NtAllocateVirtualMemory),
     HOOK(ntdll, NtReadVirtualMemory),
     HOOK(kernel32, ReadProcessMemory),

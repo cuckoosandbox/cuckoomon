@@ -695,6 +695,11 @@ extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
   __inout  SHELLEXECUTEINFOW *pExecInfo
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtUnmapViewOfSection,
+    _In_      HANDLE ProcessHandle,
+    _In_opt_  PVOID BaseAddress
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
     __in     HANDLE ProcessHandle,
     __inout  PVOID *BaseAddress,
