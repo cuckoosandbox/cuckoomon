@@ -46,9 +46,6 @@ typedef struct _hook_t {
 
 int lde(void *addr);
 
-int hook_create_trampoline(unsigned char *addr, int len,
-    unsigned char *tramp);
-
 int hook_api(hook_t *h, int type);
 
 void hook_enable();

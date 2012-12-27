@@ -68,6 +68,11 @@ int lde(void *addr)
     return ret == DECRES_SUCCESS ? instructions[0].size : 0;
 }
 
+static int is_valid_backtrace()
+{
+    return 1;
+}
+
 // create a trampoline at the given address, that is, we are going to replace
 // the original instructions at this particular address. So, in order to
 // call the original function from our hook, we have to execute the original
@@ -76,7 +81,8 @@ int lde(void *addr)
 // returns 0 on failure, or a positive integer defining the size of the tramp
 // NOTE: tramp represents the memory address where the trampoline will be
 // placed, copying it to another memory address will result into failure
-int hook_create_trampoline(unsigned char *addr, int len, unsigned char *tramp)
+static int hook_create_trampoline(unsigned char *addr, int len,
+    unsigned char *tramp)
 {
     const unsigned char *base = tramp;
 
@@ -90,6 +96,7 @@ int hook_create_trampoline(unsigned char *addr, int len, unsigned char *tramp)
     unsigned char pre_backup[] = {
         // push eax
         0x50,
+
         // mov eax, fs:[TLS_HOOK_INFO]
         0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
         // test eax, eax
@@ -104,6 +111,7 @@ int hook_create_trampoline(unsigned char *addr, int len, unsigned char *tramp)
             0x61,
             // mov eax, fs:[TLS_HOOK_INFO]
             0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+
         // cmp dword [eax+hook_info_t.hook_count], 0
         0x83, 0x78, offsetof(hook_info_t, hook_count), 0x00,
         // jg $+11
@@ -116,6 +124,7 @@ int hook_create_trampoline(unsigned char *addr, int len, unsigned char *tramp)
             0x8f, 0x40, offsetof(hook_info_t, ret_last_error),
             // mov dword [esp+4], new_return_address
             0xc7, 0x44, 0xe4, 0x04, 0x00, 0x00, 0x00, 0x00,
+
         // pop eax
         0x58,
     };
@@ -282,11 +291,12 @@ int hook_create_trampoline(unsigned char *addr, int len, unsigned char *tramp)
 // engine "once inside a hook, don't hook further API calls" by setting the
 // allow_hook_recursion flag to false. The example above is what happens when
 // the hook recursion is not allowed.
-void hook_create_pre_tramp(hook_t *h)
+static void hook_create_pre_tramp(hook_t *h)
 {
     unsigned char pre_tramp[] = {
         // push eax
         0x50,
+
         // mov eax, fs:[TLS_HOOK_INFO]
         0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
         // test eax, eax
@@ -301,6 +311,7 @@ void hook_create_pre_tramp(hook_t *h)
             0x61,
             // mov eax, fs:[TLS_HOOK_INFO]
             0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
+
         // cmp dword [eax+hook_info_t.depth_count], 0
         0x83, 0x78, offsetof(hook_info_t, depth_count), 0x00,
         // jle $+6
@@ -309,6 +320,22 @@ void hook_create_pre_tramp(hook_t *h)
             0x58,
             // jmp h->tramp
             0xe9, 0x00, 0x00, 0x00, 0x00,
+
+        // pushad
+        0x60,
+        // call is_valid_backtrace
+        0xe8, 0x00, 0x00, 0x00, 0x00,
+        // test eax, eax
+        0x85, 0xc0,
+        // popad
+        0x61,
+        // jnz $+6
+        0x75, 0x06,
+            // pop eax
+            0x58,
+            // jmp h->trap
+            0xe9, 0x00, 0x00, 0x00, 0x00,
+
         // inc dword [eax+hook_info_t.depth_count]
         0xff, 0x40, offsetof(hook_info_t, depth_count),
         // push dword [esp+4]
@@ -343,9 +370,12 @@ void hook_create_pre_tramp(hook_t *h)
     *(unsigned int *)(pre_tramp + 13) =
         (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
-    *(unsigned int *)(pre_tramp + 50) = (unsigned int) h->pre_tramp + 60;
-    *(unsigned int *)(pre_tramp + 56) =
-        (unsigned char *) h->store_exc - h->pre_tramp - 55 - 5;
+    *(unsigned int *)(pre_tramp + 38) =
+        (unsigned char *) &is_valid_backtrace - h->pre_tramp - 37 - 5;
+    *(unsigned int *)(pre_tramp + 49) = h->tramp - h->pre_tramp - 48 - 5;
+    *(unsigned int *)(pre_tramp + 67) = (unsigned int) h->pre_tramp + 77;
+    *(unsigned int *)(pre_tramp + 73) =
+        (unsigned char *) h->store_exc - h->pre_tramp - 72 - 5;
 
     memcpy(h->pre_tramp, pre_tramp, sizeof(pre_tramp));
 }
