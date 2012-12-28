@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 #include "ignore.h"
+#include "hook_file.h"
 #include "hook_sleep.h"
 #include "config.h"
 
@@ -337,6 +338,8 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         for (int i = 0; i < length / sizeof(pids[0]); i++) {
             add_protected_pid(pids[i]);
         }
+        // initialize file stuff
+        file_init();
 
         // read the config settings
         read_config();

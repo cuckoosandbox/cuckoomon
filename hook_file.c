@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "misc.h"
 #include "ignore.h"
+#include "dict.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "filesystem";
@@ -81,6 +82,62 @@ static void new_file(const OBJECT_ATTRIBUTES *obj)
     }
 }
 
+static dict_t *g_dict;
+static unsigned int g_dict_size;
+
+void file_init()
+{
+    dict_init(&g_dict, &g_dict_size);
+}
+
+static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
+{
+    unsigned int length = obj->ObjectName->Length;
+
+    void *str = dict_add(&g_dict, &g_dict_size, (unsigned int) file_handle,
+        sizeof(ULONG) + length);
+
+    memcpy(str, &obj->Attributes, sizeof(obj->Attributes));
+    memcpy(str + sizeof(obj->Attributes), obj->ObjectName->Buffer, length);
+}
+
+static void file_write(HANDLE file_handle)
+{
+    unsigned int size;
+    void *mem = dict_get(g_dict, g_dict_size, (unsigned int) file_handle,
+        &size);
+    if(mem != NULL) {
+        OBJECT_ATTRIBUTES obj = {}; UNICODE_STRING str = {};
+        obj.Length = sizeof(obj);
+        obj.ObjectName = &str;
+        memcpy(&obj.Attributes, mem, sizeof(obj.Attributes));
+        str.MaximumLength = str.Length = size / sizeof(wchar_t);
+        str.Buffer = (PWSTR)((char *) mem + sizeof(obj.Attributes));
+
+        // let's just assume the objects are correct
+        new_file(&obj);
+
+        // delete the handle from the dictionary
+        dict_del(&g_dict, &g_dict_size, (unsigned int) file_handle);
+    }
+}
+
+static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
+{
+    // check if there's any special stuff about this object, otherwise we
+    // can cache it.
+    if(obj->RootDirectory != NULL || obj->SecurityDescriptor != NULL ||
+            obj->SecurityQualityOfService != NULL) {
+
+        // cache this file
+        cache_file(file_handle, obj);
+        return;
+    }
+
+    // we can't cache this file at the moment, so we just pass it through
+    new_file(obj);
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
   __out     PHANDLE FileHandle,
   __in      ACCESS_MASK DesiredAccess,
@@ -101,7 +158,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition,
         "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        new_file(ObjectAttributes);
+        handle_new_file(*FileHandle, ObjectAttributes);
     }
     return ret;
 }
@@ -119,7 +176,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
     LOQ("PpOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        new_file(ObjectAttributes);
+        handle_new_file(*FileHandle, ObjectAttributes);
     }
     return ret;
 }
@@ -157,6 +214,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteFile,
         IoStatusBlock, Buffer, Length, ByteOffset, Key);
     LOQ("pb", "FileHandle", FileHandle,
         "Buffer", IoStatusBlock->Information, Buffer);
+    if(NT_SUCCESS(ret)) {
+        file_write(FileHandle);
+    }
     return ret;
 }
 
