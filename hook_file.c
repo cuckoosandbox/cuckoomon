@@ -40,6 +40,11 @@ static const char *module_name = "filesystem";
 // length of a hardcoded unicode string
 #define UNILEN(x) (sizeof(x) / sizeof(wchar_t) - 1)
 
+typedef struct _file_record_t {
+    unsigned int attributes;
+    wchar_t filename[0];
+} file_record_t;
+
 static void new_file(const OBJECT_ATTRIBUTES *obj)
 {
     // don't dump directories, and don't dump ignored files
@@ -94,30 +99,34 @@ static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
     unsigned int length = obj->ObjectName->Length;
 
-    void *str = dict_add(&g_dict, &g_dict_size, (unsigned int) file_handle,
-        sizeof(ULONG) + length);
+    file_record_t *r = dict_add(&g_dict, &g_dict_size,
+        (unsigned int) file_handle, sizeof(file_record_t) + length);
 
-    memcpy(str, &obj->Attributes, sizeof(obj->Attributes));
-    memcpy(str + sizeof(obj->Attributes), obj->ObjectName->Buffer, length);
+    r->attributes = obj->Attributes;
+    memcpy(r->filename, obj->ObjectName->Buffer, length);
 }
 
 static void file_write(HANDLE file_handle)
 {
     unsigned int size;
-    void *mem = dict_get(g_dict, g_dict_size, (unsigned int) file_handle,
-        &size);
-    if(mem != NULL) {
-        OBJECT_ATTRIBUTES obj = {}; UNICODE_STRING str = {};
-        obj.Length = sizeof(obj);
-        obj.ObjectName = &str;
-        memcpy(&obj.Attributes, mem, sizeof(obj.Attributes));
-        str.MaximumLength = str.Length = size / sizeof(wchar_t);
-        str.Buffer = (PWSTR)((char *) mem + sizeof(obj.Attributes));
+    file_record_t *r = dict_get(g_dict, g_dict_size,
+        (unsigned int) file_handle, &size);
+    if(r != NULL) {
+        UNICODE_STRING str = {
+            .Length         = size / sizeof(wchar_t),
+            .MaximumLength  = size / sizeof(wchar_t),
+            .Buffer         = r->filename,
+        };
+        OBJECT_ATTRIBUTES obj = {
+            .Length         = sizeof(obj),
+            .ObjectName     = &str,
+            .Attributes     = r->attributes,
+        };
 
-        // let's just assume the objects are correct
+        // we do in fact want to dump this file because it was written to
         new_file(&obj);
 
-        // delete the handle from the dictionary
+        // delete the file record from the dictionary
         dict_del(&g_dict, &g_dict_size, (unsigned int) file_handle);
     }
 }
