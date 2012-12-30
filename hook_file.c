@@ -53,45 +53,42 @@ void file_init()
     lookup_init(&g_files);
 }
 
-static void new_file(const OBJECT_ATTRIBUTES *obj)
+static void new_file(const UNICODE_STRING *obj)
 {
-    // don't dump directories, and don't dump ignored files
-    if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
-        const wchar_t *str = obj->ObjectName->Buffer;
-        unsigned int len = obj->ObjectName->Length / sizeof(wchar_t);
+    const wchar_t *str = obj->Buffer;
+    unsigned int len = obj->Length / sizeof(wchar_t);
 
-        // if it's a path including \??\ then we can send it straight away,
-        // but we strip the \??\ part
-        if(len > 4 && !wcsncmp(str, L"\\??\\", 4)) {
-            pipe("FILE_NEW:%S", len - 4, str + 4);
-        }
-        // maybe it's an absolute path (or a relative path with a harddisk,
-        // such as C:abc.txt)
-        else if(isalpha(str[0]) != 0 && str[1] == ':') {
-            pipe("FILE_NEW:%S", len, str);
-        }
-        // the filename starts with \Device\HarddiskVolume1, which is
-        // basically just C:
-        else if(!wcsnicmp(str, HDDVOL1, UNILEN(HDDVOL1))) {
-            str += UNILEN(HDDVOL1), len -= UNILEN(HDDVOL1);
-            pipe("FILE_NEW:C:%S", len, str);
-        }
-        // is it safe to assume that this is a relative path?
-        else {
-            wchar_t cur_dir[MAX_PATH];
-            GetCurrentDirectoryW(sizeof(cur_dir), cur_dir);
+    // if it's a path including \??\ then we can send it straight away,
+    // but we strip the \??\ part
+    if(len > 4 && !wcsncmp(str, L"\\??\\", 4)) {
+        pipe("FILE_NEW:%S", len - 4, str + 4);
+    }
+    // maybe it's an absolute path (or a relative path with a harddisk,
+    // such as C:abc.txt)
+    else if(isalpha(str[0]) != 0 && str[1] == ':') {
+        pipe("FILE_NEW:%S", len, str);
+    }
+    // the filename starts with \Device\HarddiskVolume1, which is
+    // basically just C:
+    else if(!wcsnicmp(str, HDDVOL1, UNILEN(HDDVOL1))) {
+        str += UNILEN(HDDVOL1), len -= UNILEN(HDDVOL1);
+        pipe("FILE_NEW:C:%S", len, str);
+    }
+    // is it safe to assume that this is a relative path?
+    else {
+        wchar_t cur_dir[MAX_PATH];
+        GetCurrentDirectoryW(sizeof(cur_dir), cur_dir);
 
-            // we have to make sure that the filename is zero terminated..
-            wchar_t fname[len + 1];
-            memcpy(fname, str, len * sizeof(wchar_t));
-            fname[len] = 0;
+        // we have to make sure that the filename is zero terminated..
+        wchar_t fname[len + 1];
+        memcpy(fname, str, len * sizeof(wchar_t));
+        fname[len] = 0;
 
-            // this should be large enough..
-            wchar_t path[MAX_PATH];
-            PathCombineW(path, cur_dir, fname);
+        // this should be large enough..
+        wchar_t path[MAX_PATH];
+        PathCombineW(path, cur_dir, fname);
 
-            pipe("FILE_NEW:%Z", path);
-        }
+        pipe("FILE_NEW:%Z", path);
     }
 }
 
@@ -118,14 +115,8 @@ static void file_write(HANDLE file_handle)
             .Buffer         = r->filename,
         };
 
-        OBJECT_ATTRIBUTES obj = {
-            .Length         = sizeof(obj),
-            .ObjectName     = &str,
-            .Attributes     = r->attributes,
-        };
-
         // we do in fact want to dump this file because it was written to
-        new_file(&obj);
+        new_file(&str);
 
         // delete the file record from the list
         lookup_del(&g_files, (unsigned int) file_handle);
@@ -146,7 +137,7 @@ static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
         }
 
         // we can't cache this file at the moment, so we just pass it through
-        new_file(obj);
+        new_file(obj->ObjectName);
     }
 }
 
