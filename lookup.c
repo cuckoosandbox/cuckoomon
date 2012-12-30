@@ -62,9 +62,7 @@ void lookup_del(lookup_t **d, unsigned int id)
     }
     for (lookup_t *t = *d, *last = NULL; t != NULL; last = t, t = t->next) {
         if(t->id == id) {
-            if(last != NULL) {
-                last->next = t->next;
-            }
+            last->next = t->next;
             free(t);
             break;
         }
