@@ -50,7 +50,7 @@ static void new_file(const OBJECT_ATTRIBUTES *obj)
     // don't dump directories, and don't dump ignored files
     if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
         const wchar_t *str = obj->ObjectName->Buffer;
-        unsigned int len = obj->ObjectName->Length;
+        unsigned int len = obj->ObjectName->Length / sizeof(wchar_t);
 
         // if it's a path including \??\ then we can send it straight away,
         // but we strip the \??\ part
