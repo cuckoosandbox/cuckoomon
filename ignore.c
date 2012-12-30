@@ -62,14 +62,13 @@ int is_ignored_file_unicode(const wchar_t *fname, int length)
 {
     struct _ignored_file_t *f = g_ignored_files;
     for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
-        switch (f->flags) {
-        case FLAG_NONE:
-            return length == f->length &&
-                !wcsnicmp(fname, f->unicode, length);
-
-        case FLAG_BEGINS_WITH:
-            return length >= f->length &&
-                !wcsnicmp(fname, f->unicode, f->length);
+        if(f->flags == FLAG_NONE && length == f->length &&
+                !wcsnicmp(fname, f->unicode, length)) {
+            return 1;
+        }
+        else if(f->flags == FLAG_BEGINS_WITH && length >= f->length &&
+                !wcsnicmp(fname, f->unicode, f->length)) {
+            return 1;
         }
     }
     return 0;
