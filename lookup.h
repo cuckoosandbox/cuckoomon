@@ -16,15 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-typedef struct _dict_t {
+typedef struct _lookup_t {
+    struct _lookup_t *next;
     unsigned int id;
     unsigned int size;
-    void *data;
-} dict_t;
+    unsigned char data[0];
+} lookup_t;
 
-void dict_init(dict_t **d, unsigned int *count);
-void *dict_add(dict_t **d, unsigned int *count, unsigned int id,
-    unsigned int size);
-void *dict_get(dict_t *d, unsigned int count, unsigned int id,
-    unsigned int *size);
-void dict_del(dict_t **d, unsigned int *count, unsigned int id);
+void lookup_init(lookup_t **d);
+void *lookup_add(lookup_t **d, unsigned int id, unsigned int size);
+void *lookup_get(lookup_t *d, unsigned int id, unsigned int *size);
+void lookup_del(lookup_t **d, unsigned int id);

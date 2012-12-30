@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "misc.h"
 #include "ignore.h"
-#include "dict.h"
+#include "lookup.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "filesystem";
@@ -42,8 +42,16 @@ static const char *module_name = "filesystem";
 
 typedef struct _file_record_t {
     unsigned int attributes;
+    unsigned int length;
     wchar_t filename[0];
 } file_record_t;
+
+static lookup_t *g_files;
+
+void file_init()
+{
+    lookup_init(&g_files);
+}
 
 static void new_file(const OBJECT_ATTRIBUTES *obj)
 {
@@ -87,36 +95,29 @@ static void new_file(const OBJECT_ATTRIBUTES *obj)
     }
 }
 
-static dict_t *g_dict;
-static unsigned int g_dict_size;
-
-void file_init()
-{
-    dict_init(&g_dict, &g_dict_size);
-}
-
 static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
-    unsigned int length = obj->ObjectName->Length;
+    file_record_t *r = lookup_add(&g_files, (unsigned int) file_handle,
+        sizeof(file_record_t) + obj->ObjectName->Length);
 
-    file_record_t *r = dict_add(&g_dict, &g_dict_size,
-        (unsigned int) file_handle, sizeof(file_record_t) + length);
+    *r = (file_record_t) {
+        .attributes = obj->Attributes,
+        .length     = obj->ObjectName->Length,
+    };
 
-    r->attributes = obj->Attributes;
-    memcpy(r->filename, obj->ObjectName->Buffer, length);
+    memcpy(r->filename, obj->ObjectName->Buffer, r->length);
 }
 
 static void file_write(HANDLE file_handle)
 {
-    unsigned int size;
-    file_record_t *r = dict_get(g_dict, g_dict_size,
-        (unsigned int) file_handle, &size);
+    file_record_t *r = lookup_get(g_files, (unsigned int) file_handle, NULL);
     if(r != NULL) {
         UNICODE_STRING str = {
-            .Length         = size / sizeof(wchar_t),
-            .MaximumLength  = size / sizeof(wchar_t),
+            .Length         = r->length,
+            .MaximumLength  = r->length,
             .Buffer         = r->filename,
         };
+
         OBJECT_ATTRIBUTES obj = {
             .Length         = sizeof(obj),
             .ObjectName     = &str,
@@ -126,25 +127,32 @@ static void file_write(HANDLE file_handle)
         // we do in fact want to dump this file because it was written to
         new_file(&obj);
 
-        // delete the file record from the dictionary
-        dict_del(&g_dict, &g_dict_size, (unsigned int) file_handle);
+        // delete the file record from the list
+        lookup_del(&g_files, (unsigned int) file_handle);
     }
 }
 
 static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
-    // check if there's any special stuff about this object, otherwise we
-    // can cache it.
-    if(obj->RootDirectory != NULL || obj->SecurityDescriptor != NULL ||
-            obj->SecurityQualityOfService != NULL) {
+    if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
 
-        // cache this file
-        cache_file(file_handle, obj);
-        return;
+        // check if there's any special stuff about this object, otherwise we
+        // can cache it.
+        if(obj->RootDirectory == NULL) {
+
+            // cache this file
+            cache_file(file_handle, obj);
+            return;
+        }
+
+        // we can't cache this file at the moment, so we just pass it through
+        new_file(obj);
     }
+}
 
-    // we can't cache this file at the moment, so we just pass it through
-    new_file(obj);
+void file_close(HANDLE file_handle)
+{
+    lookup_del(&g_files, (unsigned int) file_handle);
 }
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
