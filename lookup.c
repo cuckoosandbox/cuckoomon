@@ -54,7 +54,7 @@ void *lookup_get(lookup_t *d, unsigned int id, unsigned int *size)
 void lookup_del(lookup_t **d, unsigned int id)
 {
     // edge case; we want to delete the first entry
-    if((*d)->id == id) {
+    if(*d != NULL && (*d)->id == id) {
         lookup_t *t = (*d)->next;
         free(*d);
         *d = t;
