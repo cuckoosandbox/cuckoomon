@@ -40,13 +40,12 @@ int is_protected_pid(unsigned long pid)
     return 0;
 }
 
-#define S(s, f) {s, L##s, sizeof(s)-1, f}
+#define S(s, f) {L##s, sizeof(s)-1, f}
 
 #define FLAG_NONE           0
 #define FLAG_BEGINS_WITH    1
 
 static struct _ignored_file_t {
-    const char      *ascii;
     const wchar_t   *unicode;
     unsigned int    length;
     unsigned int    flags;
@@ -59,41 +58,18 @@ static struct _ignored_file_t {
     S("\\Device\\", FLAG_BEGINS_WITH),
 };
 
-int is_ignored_file_ascii(const char *fname, int length)
-{
-    struct _ignored_file_t *f = g_ignored_files;
-    for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
-        if(
-                // FLAG_NONE
-                (f->flags == FLAG_NONE &&
-                    length == f->length &&
-                    !strcmp(fname, f->ascii)) ||
-
-                // FLAG_BEGINS_WITH
-                (f->flags == FLAG_BEGINS_WITH &&
-                    length >= f->length &&
-                    !strncmp(fname, f->ascii, f->length))) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 int is_ignored_file_unicode(const wchar_t *fname, int length)
 {
     struct _ignored_file_t *f = g_ignored_files;
     for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
-        if(
-                // FLAG_NONE
-                (f->flags == FLAG_NONE &&
-                    length == f->length &&
-                    !wcscmp(fname, f->unicode)) ||
+        switch (f->flags) {
+        case FLAG_NONE:
+            return length == f->length &&
+                !wcsnicmp(fname, f->unicode, length);
 
-                // FLAG_BEGINS_WITH
-                (f->flags == FLAG_BEGINS_WITH &&
-                    length >= f->length &&
-                    !wcsncmp(fname, f->unicode, f->length))) {
-            return 1;
+        case FLAG_BEGINS_WITH:
+            return length >= f->length &&
+                !wcsnicmp(fname, f->unicode, f->length);
         }
     }
     return 0;
@@ -101,11 +77,8 @@ int is_ignored_file_unicode(const wchar_t *fname, int length)
 
 int is_ignored_file_objattr(const OBJECT_ATTRIBUTES *obj)
 {
-    if(obj != NULL && obj->ObjectName != NULL) {
-        return is_ignored_file_unicode(obj->ObjectName->Buffer,
-            obj->ObjectName->Length >> 1);
-    }
-    return 1;
+    return is_ignored_file_unicode(obj->ObjectName->Buffer,
+        obj->ObjectName->Length / sizeof(wchar_t));
 }
 
 static wchar_t *g_ignored_processpaths[] = {
