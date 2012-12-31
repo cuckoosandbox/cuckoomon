@@ -55,8 +55,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void loq(const char *fmt, ...);
 
-void log_init(int debug);
-void log_flush();
+void log_init(const char *dir, int debug);
 void log_free();
 
 #define LOQ(fmt, ...) loq(fmt, module_name, &__FUNCTION__[4], \
