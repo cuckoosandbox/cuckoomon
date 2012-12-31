@@ -346,7 +346,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         log_init(g_config.results, 0);
 
         // initialize the Sleep() skipping stuff
-        init_sleep_skip();
+        init_sleep_skip(g_config.first_process);
 
         // initialize all hooks
         set_hooks();

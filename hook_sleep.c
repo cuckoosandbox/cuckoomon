@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
 
 // only skip Sleep()'s the first five seconds
 #define MAX_SLEEP_SKIP_DIFF 5000
@@ -127,10 +128,15 @@ void disable_sleep_skip()
     sleep_skip_active = 0;
 }
 
-void init_sleep_skip()
+void init_sleep_skip(int first_process)
 {
     FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
     time_start.HighPart = ft.dwHighDateTime;
     time_start.LowPart = ft.dwLowDateTime;
+
+    // we don't want to skip sleep calls in child processes
+    if(first_process == 0) {
+        disable_sleep_skip();
+    }
 }
