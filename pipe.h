@@ -18,4 +18,4 @@ int pipe2(void *out, int *outlen, const char *fmt, ...);
 
 #define PIPE_MAX_TIMEOUT 10000
 
-extern char g_pipe_name[MAX_PATH];
+extern const char *g_pipe_name;

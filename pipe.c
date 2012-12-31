@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "utf8.h"
 
+const char *g_pipe_name;
+
+
 static int _pipe_utf8x(char **out, unsigned short x)
 {
     unsigned char buf[3];
