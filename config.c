@@ -45,9 +45,8 @@ void read_config()
                 const char *key = buf, *value = p + 1;
 
                 if(!strcmp(key, "pipe")) {
-                    snprintf(g_config.pipe_name,
-                        ARRAYSIZE(g_config.pipe_name),
-                        "\\\\.\\pipe\\%s", value);
+                    strncpy(g_config.pipe_name, value,
+                        ARRAYSIZE(g_config.pipe_name));
                 }
                 else if(!strcmp(key, "results")) {
                     strncpy(g_config.results, value,
