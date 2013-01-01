@@ -389,6 +389,9 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
         lpProgressRoutine, lpData, dwFlags);
     LOQ("uu", "ExistingFileName", lpExistingFileName,
         "NewFileName", lpNewFileName);
+    if(ret != FALSE) {
+        pipe("FILE_MOVE:%Z::%Z", lpExistingFileName, lpNewFileName);
+    }
     return ret;
 }
 
