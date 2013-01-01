@@ -4,12 +4,12 @@
 #include "ntapi.h"
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
-    &New_##funcname, (void **) &Old_##funcname}
+    &New_##funcname##0, (void **) &Old_##funcname##0}
 
-HOOKDEF(BOOL, WINAPI, DeleteFileW,
+HOOKDEF(BOOL, WINAPI, DeleteFileW0,
   __in  LPWSTR lpFileName
 ) {
-    BOOL ret = Old_DeleteFileW(lpFileName);
+    BOOL ret = Old_DeleteFileW0(lpFileName);
 
     printf("ret: %d, lasterr: %d, %d\n", ret, GetLastError(),
         hook_get_last_error());
@@ -27,7 +27,7 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
     return ret;
 }
 
-HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
+HOOKDEF(NTSTATUS, WINAPI, NtOpenFile0,
   __out  PHANDLE FileHandle,
   __in   ACCESS_MASK DesiredAccess,
   __in   POBJECT_ATTRIBUTES ObjectAttributes,
@@ -35,7 +35,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
   __in   ULONG ShareAccess,
   __in   ULONG OpenOptions
 ) {
-    NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
+    NTSTATUS ret = Old_NtOpenFile0(FileHandle, DesiredAccess, ObjectAttributes,
         IoStatusBlock, ShareAccess, OpenOptions);
     SetLastError(0x1338);
     printf("OMG!!! %d\n", GetLastError());

@@ -7,13 +7,13 @@ TESTSEXE = $(TESTS:.c=.exe)
 # directory)
 DISTORM3 = $(wildcard ../distorm3.2-package/src/*.c)
 DISTORM3OBJ = $(DISTORM3:.c=.o)
-CUCKOOOBJ = ../log.o ../hooking.o ../misc.o ../ignore.o ../utf8.o
+CUCKOOOBJ = $(wildcard ../objects/*.o)
 
 all: $(TESTSEXE)
 
 %.exe: %.c $(CUCKOOOBJ) $(DISTORM3OBJ)
 	gcc -Wall -std=c99 -s -I../distorm3.2-package/include -I.. -o $@ $^ \
-		-ldnsapi -lws2_32 -lwininet
+		-ldnsapi -lws2_32 -lwininet -lshlwapi
 
 clean:
 	rm $(TESTSEXE)
