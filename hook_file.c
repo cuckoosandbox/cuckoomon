@@ -79,14 +79,9 @@ static void new_file(const UNICODE_STRING *obj)
         wchar_t cur_dir[MAX_PATH];
         GetCurrentDirectoryW(sizeof(cur_dir), cur_dir);
 
-        // we have to make sure that the filename is zero terminated..
-        wchar_t fname[len + 1];
-        memcpy(fname, str, len * sizeof(wchar_t));
-        fname[len] = 0;
-
         // this should be large enough..
         wchar_t path[MAX_PATH];
-        PathCombineW(path, cur_dir, fname);
+        PathCombineW(path, cur_dir, str);
 
         pipe("FILE_NEW:%Z", path);
     }
@@ -95,7 +90,7 @@ static void new_file(const UNICODE_STRING *obj)
 static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
     file_record_t *r = lookup_add(&g_files, (unsigned int) file_handle,
-        sizeof(file_record_t) + obj->ObjectName->Length);
+        sizeof(file_record_t) + obj->ObjectName->Length + sizeof(wchar_t));
 
     *r = (file_record_t) {
         .attributes = obj->Attributes,
@@ -103,6 +98,7 @@ static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
     };
 
     memcpy(r->filename, obj->ObjectName->Buffer, r->length);
+    r->filename[r->length / sizeof(wchar_t)] = 0;
 }
 
 static void file_write(HANDLE file_handle)
@@ -111,7 +107,7 @@ static void file_write(HANDLE file_handle)
     if(r != NULL) {
         UNICODE_STRING str = {
             .Length         = r->length,
-            .MaximumLength  = r->length,
+            .MaximumLength  = r->length + sizeof(wchar_t),
             .Buffer         = r->filename,
         };
 
@@ -133,11 +129,12 @@ static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 
             // cache this file
             cache_file(file_handle, obj);
-            return;
         }
+        else {
 
-        // we can't cache this file at the moment, so we just pass it through
-        new_file(obj->ObjectName);
+            // obj->RootDirectory is not supported at the moment..
+            new_file(obj->ObjectName);
+        }
     }
 }
 
