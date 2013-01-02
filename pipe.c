@@ -126,7 +126,7 @@ int pipe(const char *fmt, ...)
         va_end(args);
 
         return CallNamedPipe(g_pipe_name, buf, len, buf, len,
-            (unsigned long *) &len, 0);
+            (unsigned long *) &len, NMPWAIT_WAIT_FOREVER);
     }
     return -1;
 }
@@ -142,7 +142,7 @@ int pipe2(void *out, int *outlen, const char *fmt, ...)
         va_end(args);
 
         return CallNamedPipe(g_pipe_name, buf, len, out, *outlen,
-            (DWORD *) outlen, 0);
+            (DWORD *) outlen, NMPWAIT_WAIT_FOREVER);
     }
     return -1;
 }
