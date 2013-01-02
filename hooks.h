@@ -1238,6 +1238,185 @@ extern HOOKDEF(int, WINAPI, WSAStartup,
     _Out_  LPWSADATA lpWSAData
 );
 
+extern HOOKDEF(struct hostent *, WSAAPI, gethostbyname,
+    __in  const char *name
+);
+
+extern HOOKDEF(SOCKET, WSAAPI, socket,
+    __in  int af,
+    __in  int type,
+    __in  int protocol
+);
+
+extern HOOKDEF(int, WSAAPI, connect,
+    __in  SOCKET s,
+    __in  const struct sockaddr *name,
+    __in  int namelen
+);
+
+extern HOOKDEF(int, WSAAPI, send,
+    __in  SOCKET s,
+    __in  const char *buf,
+    __in  int len,
+    __in  int flags
+);
+
+extern HOOKDEF(int, WSAAPI, sendto,
+    __in  SOCKET s,
+    __in  const char *buf,
+    __in  int len,
+    __in  int flags,
+    __in  const struct sockaddr *to,
+    __in  int tolen
+);
+
+extern HOOKDEF(int, WSAAPI, recv,
+    __in   SOCKET s,
+    __out  char *buf,
+    __in   int len,
+    __in   int flags
+);
+
+extern HOOKDEF(int, WSAAPI, recvfrom,
+    __in         SOCKET s,
+    __out        char *buf,
+    __in         int len,
+    __in         int flags,
+    __out        struct sockaddr *from,
+    __inout_opt  int *fromlen
+);
+
+extern HOOKDEF(SOCKET, WSAAPI, accept,
+    __in     SOCKET s,
+    __out    struct sockaddr *addr,
+    __inout  int *addrlen
+);
+
+extern HOOKDEF(int, WSAAPI, bind,
+    __in  SOCKET s,
+    __in  const struct sockaddr *name,
+    __in  int namelen
+);
+
+extern HOOKDEF(int, WSAAPI, listen,
+    __in  SOCKET s,
+    __in  int backlog
+);
+
+extern HOOKDEF(int, WSAAPI, select,
+    __in     SOCKET s,
+    __inout  fd_set *readfds,
+    __inout  fd_set *writefds,
+    __inout  fd_set *exceptfds,
+    __in     const struct timeval *timeout
+);
+
+extern HOOKDEF(int, WSAAPI, setsockopt,
+    __in  SOCKET s,
+    __in  int level,
+    __in  int optname,
+    __in  const char *optval,
+    __in  int optlen
+);
+
+extern HOOKDEF(int, WSAAPI, ioctlsocket,
+    __in     SOCKET s,
+    __in     long cmd,
+    __inout  u_long *argp
+);
+
+extern HOOKDEF(int, WSAAPI, closesocket,
+    __in  SOCKET s
+);
+
+extern HOOKDEF(int, WSAAPI, shutdown,
+    __in  SOCKET s,
+    __in  int how
+);
+
+extern HOOKDEF(int, WSAAPI, WSARecv,
+    __in     SOCKET s,
+    __inout  LPWSABUF lpBuffers,
+    __in     DWORD dwBufferCount,
+    __out    LPDWORD lpNumberOfBytesRecvd,
+    __inout  LPDWORD lpFlags,
+    __in     LPWSAOVERLAPPED lpOverlapped,
+    __in     LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
+);
+
+extern HOOKDEF(int, WSAAPI, WSARecvFrom,
+    __in     SOCKET s,
+    __inout  LPWSABUF lpBuffers,
+    __in     DWORD dwBufferCount,
+    __out    LPDWORD lpNumberOfBytesRecvd,
+    __inout  LPDWORD lpFlags,
+    __out    struct sockaddr *lpFrom,
+    __inout  LPINT lpFromlen,
+    __in     LPWSAOVERLAPPED lpOverlapped,
+    __in     LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
+);
+
+extern HOOKDEF(int, WSAAPI, WSASend,
+    __in   SOCKET s,
+    __in   LPWSABUF lpBuffers,
+    __in   DWORD dwBufferCount,
+    __out  LPDWORD lpNumberOfBytesSent,
+    __in   DWORD dwFlags,
+    __in   LPWSAOVERLAPPED lpOverlapped,
+    __in   LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
+);
+
+extern HOOKDEF(int, WSAAPI, WSASendTo,
+    __in   SOCKET s,
+    __in   LPWSABUF lpBuffers,
+    __in   DWORD dwBufferCount,
+    __out  LPDWORD lpNumberOfBytesSent,
+    __in   DWORD dwFlags,
+    __in   const struct sockaddr *lpTo,
+    __in   int iToLen,
+    __in   LPWSAOVERLAPPED lpOverlapped,
+    __in   LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
+);
+
+extern HOOKDEF(SOCKET, WSAAPI, WSASocketA,
+    __in  int af,
+    __in  int type,
+    __in  int protocol,
+    __in  LPWSAPROTOCOL_INFO lpProtocolInfo,
+    __in  GROUP g,
+    __in  DWORD dwFlags
+);
+
+extern HOOKDEF(SOCKET, WSAAPI, WSASocketW,
+    __in  int af,
+    __in  int type,
+    __in  int protocol,
+    __in  LPWSAPROTOCOL_INFO lpProtocolInfo,
+    __in  GROUP g,
+    __in  DWORD dwFlags
+);
+
+
+extern HOOKDEF(BOOL, PASCAL, ConnectEx,
+    _In_      SOCKET s,
+    _In_      const struct sockaddr *name,
+    _In_      int namelen,
+    _In_opt_  PVOID lpSendBuffer,
+    _In_      DWORD dwSendDataLength,
+    _Out_     LPDWORD lpdwBytesSent,
+    _In_      LPOVERLAPPED lpOverlapped
+);
+
+extern HOOKDEF(BOOL, PASCAL, TransmitFile,
+    SOCKET hSocket,
+    HANDLE hFile,
+    DWORD nNumberOfBytesToWrite,
+    DWORD nNumberOfBytesPerSend,
+    LPOVERLAPPED lpOverlapped,
+    LPTRANSMIT_FILE_BUFFERS lpTransmitBuffers,
+    DWORD dwFlags
+);
+
 //
 // Special Hooks
 //

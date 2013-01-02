@@ -290,6 +290,35 @@ static hook_t g_hooks[] = {
     //
 
     HOOK(ws2_32, WSAStartup),
+    HOOK(ws2_32, gethostbyname),
+    HOOK(ws2_32, socket),
+    HOOK(ws2_32, connect),
+    HOOK(ws2_32, send),
+    HOOK(ws2_32, sendto),
+    HOOK(ws2_32, recv),
+    HOOK(ws2_32, recvfrom),
+    HOOK(ws2_32, accept),
+    HOOK(ws2_32, bind),
+    HOOK(ws2_32, listen),
+    HOOK(ws2_32, select),
+    HOOK(ws2_32, setsockopt),
+    HOOK(ws2_32, ioctlsocket),
+    HOOK(ws2_32, closesocket),
+    HOOK(ws2_32, shutdown),
+
+    HOOK(ws2_32, WSARecv),
+    HOOK(ws2_32, WSARecvFrom),
+    HOOK(ws2_32, WSASend),
+    HOOK(ws2_32, WSASendTo),
+    HOOK(ws2_32, WSASocketA),
+    HOOK(ws2_32, WSASocketW),
+
+    HOOK(wsock32, connect),
+    HOOK(wsock32, send),
+    HOOK(wsock32, recv),
+
+    HOOK(mswsock, ConnectEx),
+    HOOK(mswsock, TransmitFile),
 };
 
 // get a random hooking method, except for hook_jmp_direct

@@ -289,4 +289,11 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 
 typedef void *PPS_CREATE_INFO, *PPS_ATTRIBUTE_LIST;
 
+typedef struct _TRANSMIT_FILE_BUFFERS {
+    PVOID Head;
+    DWORD HeadLength;
+    PVOID Tail;
+    DWORD TailLength;
+} TRANSMIT_FILE_BUFFERS, *LPTRANSMIT_FILE_BUFFERS;
+
 #endif
