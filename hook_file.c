@@ -46,7 +46,7 @@ typedef struct _file_record_t {
     wchar_t filename[0];
 } file_record_t;
 
-static lookup_t *g_files;
+static lookup_t g_files;
 
 void file_init()
 {
@@ -103,7 +103,7 @@ static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 
 static void file_write(HANDLE file_handle)
 {
-    file_record_t *r = lookup_get(g_files, (unsigned int) file_handle, NULL);
+    file_record_t *r = lookup_get(&g_files, (unsigned int) file_handle, NULL);
     if(r != NULL) {
         UNICODE_STRING str = {
             .Length         = r->length,

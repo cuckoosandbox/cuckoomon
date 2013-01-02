@@ -19,52 +19,79 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <windows.h>
 #include "lookup.h"
 
-void lookup_init(lookup_t **d)
+#define ENTER() EnterCriticalSection(&d->cs)
+#define LEAVE() LeaveCriticalSection(&d->cs)
+
+typedef struct _entry_t {
+    struct _entry_t *next;
+    unsigned int id;
+    unsigned int size;
+    unsigned char data[0];
+} entry_t;
+
+void lookup_init(lookup_t *d)
 {
-    *d = NULL;
+    d->root = NULL;
+    InitializeCriticalSection(&d->cs);
 }
 
-void *lookup_add(lookup_t **d, unsigned int id, unsigned int size)
+void lookup_free(lookup_t *d)
 {
-    lookup_t *t = (lookup_t *) malloc(sizeof(lookup_t) + size);
-    *t = (lookup_t) {
-        .next = *d,
+    // TODO
+}
+
+void *lookup_add(lookup_t *d, unsigned int id, unsigned int size)
+{
+    entry_t *t = (entry_t *) malloc(sizeof(entry_t) + size);
+    ENTER();
+    *t = (entry_t) {
+        .next = d->root,
         .id   = id,
         .size = size,
     };
-    *d = t;
+    d->root = t;
+    LEAVE();
     return t->data;
 }
 
 void *lookup_get(lookup_t *d, unsigned int id, unsigned int *size)
 {
-    for (; d != NULL; d = d->next) {
-        if(d->id == id) {
+    ENTER();
+    for (entry_t *p = d->root; p != NULL; p = p->next) {
+        if(p->id == id) {
             if(size != NULL) {
-                *size = d->size;
+                *size = p->size;
             }
-            return d->data;
+            void *data = p->data;
+            LEAVE();
+            return data;
         }
     }
+    LEAVE();
     return NULL;
 }
 
-void lookup_del(lookup_t **d, unsigned int id)
+void lookup_del(lookup_t *d, unsigned int id)
 {
+    ENTER();
+    entry_t *p = d->root;
     // edge case; we want to delete the first entry
-    if(*d != NULL && (*d)->id == id) {
-        lookup_t *t = (*d)->next;
-        free(*d);
-        *d = t;
+    if(p != NULL && p->id == id) {
+        entry_t *t = p->next;
+        free(d->root);
+        d->root = t;
+        LEAVE();
         return;
     }
-    for (lookup_t *t = *d, *last = NULL; t != NULL; last = t, t = t->next) {
-        if(t->id == id) {
-            last->next = t->next;
-            free(t);
+    for (entry_t *last = NULL; p != NULL; last = p, p = p->next) {
+        if(p->id == id) {
+            last->next = p->next;
+            free(p);
             break;
         }
     }
+    LEAVE();
 }
