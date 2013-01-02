@@ -338,6 +338,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         for (int i = 0; i < length / sizeof(pids[0]); i++) {
             add_protected_pid(pids[i]);
         }
+
         // initialize file stuff
         file_init();
 
