@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "hook_file.h"
 
 static IS_SUCCESS_NTSTATUS();
 static const char *module_name = "system";
@@ -168,6 +169,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtClose,
 ) {
     NTSTATUS ret = Old_NtClose(Handle);
     LOQ("p", "Handle", Handle);
+    if(NT_SUCCESS(ret)) {
+        file_close(Handle);
+    }
     return ret;
 }
 
