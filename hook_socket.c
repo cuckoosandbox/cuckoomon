@@ -131,7 +131,14 @@ HOOKDEF(int, WSAAPI, bind,
     __in  int namelen
 ) {
     int ret = Old_bind(s, name, namelen);
-    LOQ("p", "socket", s);
+    if(ret == 0) {
+        LOQ("psl", "socket", s,
+            "ip", inet_ntoa(((struct sockaddr_in *) name)->sin_addr),
+            "port", htons(((struct sockaddr_in *) name)->sin_port));
+    }
+    else {
+        LOQ("p", "socket", s);
+    }
     return ret;
 }
 
