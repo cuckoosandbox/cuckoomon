@@ -62,15 +62,14 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
             sleep_skip_active = 0;
         }
     }
-    LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
+    unsigned long milli = -DelayInterval->QuadPart / 10000;
+    LOQ("l", "Milliseconds", milli);
     return Old_NtDelayExecution(Alertable, DelayInterval);
 }
 
 HOOKDEF(void, WINAPI, GetLocalTime,
     __out  LPSYSTEMTIME lpSystemTime
 ) {
-    IS_SUCCESS_VOID();
-
     Old_GetLocalTime(lpSystemTime);
 
     LARGE_INTEGER li; FILETIME ft;
@@ -86,8 +85,6 @@ HOOKDEF(void, WINAPI, GetLocalTime,
 HOOKDEF(void, WINAPI, GetSystemTime,
     __out  LPSYSTEMTIME lpSystemTime
 ) {
-    IS_SUCCESS_VOID();
-
     Old_GetSystemTime(lpSystemTime);
 
     LARGE_INTEGER li; FILETIME ft;
@@ -103,8 +100,6 @@ HOOKDEF(void, WINAPI, GetSystemTime,
 HOOKDEF(DWORD, WINAPI, GetTickCount,
     void
 ) {
-    IS_SUCCESS_VOID();
-
     DWORD ret = Old_GetTickCount();
 
     // add the time we've skipped
