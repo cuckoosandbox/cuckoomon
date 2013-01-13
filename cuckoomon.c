@@ -322,7 +322,7 @@ static hook_t g_hooks[] = {
 };
 
 // get a random hooking method, except for hook_jmp_direct
-#define HOOKTYPE randint(HOOK_JMP_DIRECT + 1, HOOK_TECHNIQUE_MAXTYPE - 1)
+#define HOOKTYPE randint(HOOK_NOP_JMP_DIRECT, HOOK_MOV_EAX_INDIRECT_PUSH_RETN)
 
 void set_hooks_dll(const wchar_t *library, int len)
 {
@@ -335,7 +335,7 @@ void set_hooks_dll(const wchar_t *library, int len)
 
 void set_hooks()
 {
-    // the hooks contain the gates as well, so they have to be RWX
+    // the hooks contain executable code as well, so they have to be RWX
     DWORD old_protect;
     VirtualProtect(g_hooks, sizeof(g_hooks), PAGE_EXECUTE_READWRITE,
         &old_protect);
@@ -344,7 +344,12 @@ void set_hooks()
 
     // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
-        hook_api(&g_hooks[i], HOOKTYPE);
+        if(g_hooks[i].allow_hook_recursion != FALSE) {
+            hook_api(&g_hooks[i], HOOK_SPECIAL_JMP);
+        }
+        else {
+            hook_api(&g_hooks[i], HOOKTYPE);
+        }
     }
 
     hook_enable();

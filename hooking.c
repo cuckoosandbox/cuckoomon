@@ -609,6 +609,17 @@ static int hook_api_push_fpu_retn(hook_t *h, unsigned char *from,
 }
 #endif
 
+static int hook_api_special_jmp(hook_t *h, unsigned char *from,
+    unsigned char *to)
+{
+    // our largest hook in use is currently 7 bytes. so we have to make sure
+    // that this special hook (a hook that will be patched over again later)
+    // is atleast seven bytes.
+    *from++ = 0x90;
+    *from++ = 0x90;
+    return hook_api_jmp_direct(h, from, to);
+}
+
 int hook_api(hook_t *h, int type)
 {
     // table with all possible hooking types
@@ -631,6 +642,7 @@ int hook_api(hook_t *h, int type)
 #if HOOK_ENABLE_FPU
         /* HOOK_PUSH_FPU_RETN */ {&hook_api_push_fpu_retn, 11},
 #endif
+        /* HOOK_SPECIAL_JMP */ {&hook_api_special_jmp, 7},
     };
 
     // is this address already hooked?

@@ -74,6 +74,7 @@ enum {
 #if HOOK_ENABLE_FPU
     HOOK_PUSH_FPU_RETN,
 #endif
+    HOOK_SPECIAL_JMP,
     HOOK_TECHNIQUE_MAXTYPE,
 };
 
