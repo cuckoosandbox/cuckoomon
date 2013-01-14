@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mnemonics.h"
 #include "ntapi.h"
 #include "distorm.h"
+#include "ignore.h"
 
 // this number can be changed if required to do so
 #define TLS_HOOK_INFO 0x44
@@ -86,7 +87,8 @@ static inline void __writefsdword(unsigned int index, unsigned int value)
 static int is_interesting_backtrace(unsigned int ebp)
 {
     // only perform this function when the retaddr-check is enabled, otherwise
-    // return true in all cases
+    // return true in all cases (if retaddr-check is disabled, then every
+    // backtrace is interesting)
     if(g_enable_retaddr_check == 0) {
         return 1;
     }
@@ -102,9 +104,13 @@ static int is_interesting_backtrace(unsigned int ebp)
         unsigned int addr = *(unsigned int *)(ebp + 4);
         ebp = *(unsigned int *) ebp;
 
-        // TODO check the return address
+        // if this return address is *not* to be ignored, then it's
+        // interesting
+        if(is_ignored_retaddr(addr) == 0) {
+            return 1;
+        }
     }
-    return 1;
+    return 0;
 }
 
 // create a trampoline at the given address, that is, we are going to replace
