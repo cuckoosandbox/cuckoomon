@@ -21,6 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "ignore.h"
 #include "misc.h"
+#include "pipe.h"
+
+//
+// Protected Processes
+//
 
 static unsigned long g_pids[MAX_PROTECTED_PIDS];
 static unsigned long g_pid_count;
@@ -39,6 +44,10 @@ int is_protected_pid(unsigned long pid)
     }
     return 0;
 }
+
+//
+// Blacklist for Dumping Files
+//
 
 #define S(s, f) {L##s, sizeof(s)-1, f}
 
@@ -97,4 +106,43 @@ int is_ignored_process()
         }
     }
     return 0;
+}
+
+//
+// Whitelist for Return Addresses
+//
+
+// for each high 20-bits of an address, there are two bits:
+// - is this address ignored
+// - is the ignored bit initialized yet?
+static unsigned char retaddr[0x40000];
+
+void init_ignored_retaddr()
+{
+    // send the address of the retaddr buffer to analyzer.py
+    pipe("RET_INIT:%d,%x", GetCurrentProcessId(), retaddr);
+}
+
+static void ret_get_flags(unsigned int addr, unsigned int *ignored,
+    unsigned int *initialized)
+{
+    unsigned int index = addr / 0x1000;
+    unsigned char info = retaddr[index / 4] >> ((index % 4) << 1);
+    // first bit defines whether the address is ignored
+    *ignored = info & 1;
+    // second bit defines whether the ignored bit has been initialized yet
+    *initialized = (info >> 1) & 1;
+}
+
+static void ret_set_flags(unsigned int addr, unsigned int ignored)
+{
+    unsigned int index = addr / 0x1000;
+    // reset the original flags
+    retaddr[index / 4] &= ~(3 << (index % 4) << 1);
+    // set the new flags
+    retaddr[index / 4] |= (!!ignored + 2) << (index % 4) << 1;
+}
+
+int is_ignored_retaddr(unsigned int addr)
+{
 }
