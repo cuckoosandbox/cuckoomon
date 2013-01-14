@@ -28,6 +28,9 @@ struct {
 
     // is this the first process or not?
     int first_process;
+
+    // do we want to enable the retaddr check?
+    int retaddr_check;
 } g_config;
 
 void read_config();

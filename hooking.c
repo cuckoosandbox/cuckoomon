@@ -54,6 +54,9 @@ typedef struct _hook_info_t {
 
 static void ensure_valid_hook_info();
 
+// by default we enable the retaddr check
+static int g_enable_retaddr_check = 1;
+
 // length disassembler engine
 int lde(void *addr)
 {
@@ -82,6 +85,12 @@ static inline void __writefsdword(unsigned int index, unsigned int value)
 
 static int is_valid_backtrace(unsigned int ebp)
 {
+    // only perform this function when the retaddr-check is enabled, otherwise
+    // return true in all cases
+    if(g_enable_retaddr_check == 0) {
+        return 1;
+    }
+
     // http://en.wikipedia.org/wiki/Win32_Thread_Information_Block
     unsigned int top = __readfsdword(0x04);
     unsigned int bottom = __readfsdword(0x08);
@@ -779,4 +788,9 @@ void hook_set_last_error(unsigned int errcode)
 {
     ensure_valid_hook_info();
     hook_info()->last_error = errcode;
+}
+
+void hook_disable_retaddr_check()
+{
+    g_enable_retaddr_check = 0;
 }

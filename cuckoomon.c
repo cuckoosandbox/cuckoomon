@@ -386,6 +386,11 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         // initialize the Sleep() skipping stuff
         init_sleep_skip(g_config.first_process);
 
+        // disable the retaddr check if the user wants so
+        if(g_config.retaddr_check == 0) {
+            hook_disable_retaddr_check();
+        }
+
         // initialize all hooks
         set_hooks();
 
