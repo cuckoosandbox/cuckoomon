@@ -83,7 +83,7 @@ static inline void __writefsdword(unsigned int index, unsigned int value)
     __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
 }
 
-static int is_valid_backtrace(unsigned int ebp)
+static int is_interesting_backtrace(unsigned int ebp)
 {
     // only perform this function when the retaddr-check is enabled, otherwise
     // return true in all cases
@@ -359,7 +359,7 @@ static void hook_create_pre_tramp(hook_t *h)
         0x60,
         // push ebp
         0x55,
-        // call is_valid_backtrace
+        // call is_interesting_backtrace
         0xe8, 0x00, 0x00, 0x00, 0x00,
         // test eax, eax
         0x85, 0xc0,
@@ -409,7 +409,7 @@ static void hook_create_pre_tramp(hook_t *h)
         (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
     *(unsigned int *)(pre_tramp + 39) =
-        (unsigned char *) &is_valid_backtrace - h->pre_tramp - 38 - 5;
+        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 38 - 5;
     *(unsigned int *)(pre_tramp + 51) = h->tramp - h->pre_tramp - 50 - 5;
     *(unsigned int *)(pre_tramp + 69) = (unsigned int) h->pre_tramp + 79;
     *(unsigned int *)(pre_tramp + 75) =
