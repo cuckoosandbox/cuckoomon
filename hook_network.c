@@ -224,7 +224,8 @@ HOOKDEF(BOOL, WINAPI, InternetReadFile,
 
     BOOL ret = Old_InternetReadFile(hFile, lpBuffer, dwNumberOfBytesToRead,
         lpdwNumberOfBytesRead);
-    LOQ("pB", "InternetHandle", hFile, lpdwNumberOfBytesRead, lpBuffer);
+    LOQ("pB", "InternetHandle", hFile,
+        "Buffer", lpdwNumberOfBytesRead, lpBuffer);
     return ret;
 }
 
@@ -238,7 +239,8 @@ HOOKDEF(BOOL, WINAPI, InternetWriteFile,
 
     BOOL ret = Old_InternetWriteFile(hFile, lpBuffer, dwNumberOfBytesToWrite,
         lpdwNumberOfBytesWritten);
-    LOQ("pB", "InternetHandle", hFile, lpdwNumberOfBytesWritten, lpBuffer);
+    LOQ("pB", "InternetHandle", hFile,
+        "Buffer", lpdwNumberOfBytesWritten, lpBuffer);
     return ret;
 }
 
