@@ -1,3 +1,11 @@
+"""Simple utility to generate code to communicate between C and Python.
+
+This utility generates C definitions and Python definitions in order to
+send integers, strings, lists, and other custom types over a socket.
+
+"""
+import logtbl
+
 
 def read_int32(buf, offset):
     """Reads a 32bit integer from the buffer."""
@@ -61,3 +69,15 @@ def parse_fmt(funcname, fmt, *args):
         'r': read_registry,
         'R': read_registry,
     }
+
+
+def generate_c_code():
+    for index, (funcname, args) in enumerate(logtbl.table[2:]):
+        definitions = [k for k, (v, _) in enumerate(logtbl.table[2:])
+                       if v == funcname]
+        print '#define LOG_%s_%d "%s"' % (funcname,
+                                          definitions.index(index),
+                                          args[0])
+
+if __name__ == '__main__':
+    generate_c_code()
