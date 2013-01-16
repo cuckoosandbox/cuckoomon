@@ -313,7 +313,7 @@ HOOKDEF(BOOL, PASCAL, ConnectEx,
 
     BOOL ret = Old_ConnectEx(s, name, namelen, lpSendBuffer, dwSendDataLength,
         lpdwBytesSent, lpOverlapped);
-    LOQ("pB", "socket", s, lpdwBytesSent, lpSendBuffer);
+    LOQ("pB", "socket", s, "SendBuffer", lpdwBytesSent, lpSendBuffer);
     return ret;
 }
 
