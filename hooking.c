@@ -84,7 +84,9 @@ static inline void __writefsdword(unsigned int index, unsigned int value)
     __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
 }
 
-static int is_interesting_backtrace(unsigned int ebp)
+// this function is WINAPI because it has to clean up the parameters from the
+// stack itself
+static int WINAPI is_interesting_backtrace(unsigned int esp, unsigned int ebp)
 {
     // only perform this function when the retaddr-check is enabled, otherwise
     // return true in all cases (if retaddr-check is disabled, then every
@@ -97,11 +99,26 @@ static int is_interesting_backtrace(unsigned int ebp)
     unsigned int top = __readfsdword(0x04);
     unsigned int bottom = __readfsdword(0x08);
 
+    // there's a push, a pushad, and another push instruction before the stack
+    // pointer is pushed, so we have to add 10 dwords first
+    esp += 10 * sizeof(unsigned int);
+
+    // the first return address is at the address of esp
+    // check if the stack variable is valid..
+    if(esp < bottom || esp >= top) return 0;
+
+    unsigned int addr = *(unsigned int *) esp;
+
+    // if this return address is *not* to be ignored, then it's interesting
+    if(is_ignored_retaddr(addr) == 0) {
+        return 1;
+    }
+
     unsigned int count = HOOK_BACKTRACE_DEPTH;
     while (ebp >= bottom && ebp < top && count-- != 0) {
 
         // obtain the return address and the next value of ebp
-        unsigned int addr = *(unsigned int *)(ebp + 4);
+        addr = *(unsigned int *)(ebp + 4);
         ebp = *(unsigned int *) ebp;
 
         // if this return address is *not* to be ignored, then it's
@@ -365,12 +382,12 @@ static void hook_create_pre_tramp(hook_t *h)
         0x60,
         // push ebp
         0x55,
+        // push esp
+        0x54,
         // call is_interesting_backtrace
         0xe8, 0x00, 0x00, 0x00, 0x00,
         // test eax, eax
         0x85, 0xc0,
-        // pop eax
-        0x58,
         // popad
         0x61,
         // jnz $+6
@@ -414,8 +431,8 @@ static void hook_create_pre_tramp(hook_t *h)
     *(unsigned int *)(pre_tramp + 13) =
         (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
-    *(unsigned int *)(pre_tramp + 39) =
-        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 38 - 5;
+    *(unsigned int *)(pre_tramp + 40) =
+        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 39 - 5;
     *(unsigned int *)(pre_tramp + 51) = h->tramp - h->pre_tramp - 50 - 5;
     *(unsigned int *)(pre_tramp + 69) = (unsigned int) h->pre_tramp + 79;
     *(unsigned int *)(pre_tramp + 75) =
