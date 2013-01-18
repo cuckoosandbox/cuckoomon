@@ -32,4 +32,5 @@ void ignore_file_prepend_stuff(const OBJECT_ATTRIBUTES *obj,
 
 int is_ignored_process();
 
+void init_ignored_retaddr();
 int is_ignored_retaddr(unsigned int addr);

@@ -391,6 +391,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
             hook_disable_retaddr_check();
         }
 
+        // initialize return address stuff
+        init_ignored_retaddr();
+
         // initialize all hooks
         set_hooks();
 

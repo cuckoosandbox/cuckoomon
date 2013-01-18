@@ -143,6 +143,44 @@ static void ret_set_flags(unsigned int addr, unsigned int ignored)
     retaddr[index / 4] |= (!!ignored + 2) << (index % 4) << 1;
 }
 
+static void ret_check_address(unsigned int addr)
+{
+    MEMORY_BASIC_INFORMATION mbi;
+
+    // check if we can query information about this address
+    if(VirtualQuery((void *) addr, &mbi, sizeof(mbi)) != sizeof(mbi)) {
+        // we cannot query this address (i.e., it doesn't belong to a mapped
+        // memory address, and therefore it's blacklisted)
+        ret_set_flags(addr, 0);
+        return;
+    }
+
+    // get the filename of this module
+    wchar_t file_name[MAX_PATH];
+    if(GetModuleFileNameW(mbi.AllocationBase, file_name,
+            ARRAYSIZE(file_name)) == 0) {
+        // we cannot obtain the filename of this module, thus it is a
+        // dynamically allocated image map, and we blacklist it
+        ret_set_flags(addr, 0);
+        return;
+    }
+
+    // check the dll return address against a list of whitelisted dll's
+    // TODO
+
+    // this address appears to be legit
+    ret_set_flags(addr, 1);
+}
+
 int is_ignored_retaddr(unsigned int addr)
 {
+    unsigned int ignored, initialized;
+
+    ret_get_flags(addr, &ignored, &initialized);
+    if(initialized == 0) {
+        ret_check_address(addr);
+    }
+
+    ret_get_flags(addr, &ignored, &initialized);
+    return ignored;
 }
