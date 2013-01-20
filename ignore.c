@@ -127,7 +127,7 @@ static void ret_get_flags(unsigned int addr, unsigned int *ignored,
     unsigned int *initialized)
 {
     unsigned int index = addr / 0x1000;
-    unsigned char info = retaddr[index / 4] >> ((index % 4) << 1);
+    unsigned char info = retaddr[index / 4] >> (index % 4) >> 1;
     // first bit defines whether the address is ignored
     *ignored = info & 1;
     // second bit defines whether the ignored bit has been initialized yet
