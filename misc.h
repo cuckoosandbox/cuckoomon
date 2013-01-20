@@ -23,6 +23,12 @@ DWORD random();
 DWORD randint(DWORD min, DWORD max);
 BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj);
 
+// returns 0 on success, just like strcmp
+int path_compare(const wchar_t *a, const wchar_t *b, int len);
+
 // imported but for some doesn't show up when #including string.h etc
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);
 int wcsicmp(const wchar_t *a, const wchar_t *b);
+
+// length of a hardcoded unicode string
+#define UNILEN(x) (sizeof(x) / sizeof(wchar_t) - 1)

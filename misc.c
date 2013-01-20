@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <windows.h>
+#include <ctype.h>
 #include "ntapi.h"
 #include "misc.h"
 
@@ -111,4 +112,18 @@ BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj)
         return basic_information.FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
     }
     return FALSE;
+}
+
+int path_compare(const wchar_t *a, const wchar_t *b, int len)
+{
+    for (; len != 0; len--, a++, b++) {
+        if((*a == '/' || *a == '\\') && (*b == '/' || *b == '\\')) {
+            continue;
+        }
+
+        if(towlower(*a) != towlower(*b)) {
+            return towlower(*a) < towlower(*b) ? -1 : 1;
+        }
+    }
+    return 0;
 }

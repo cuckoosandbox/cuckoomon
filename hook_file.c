@@ -37,9 +37,6 @@ static const char *module_name = "filesystem";
 
 #define HDDVOL1 L"\\Device\\HarddiskVolume1"
 
-// length of a hardcoded unicode string
-#define UNILEN(x) (sizeof(x) / sizeof(wchar_t) - 1)
-
 typedef struct _file_record_t {
     unsigned int attributes;
     unsigned int length;

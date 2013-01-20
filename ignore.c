@@ -117,6 +117,29 @@ int is_ignored_process()
 // - is the ignored bit initialized yet?
 static unsigned char retaddr[0x40000];
 
+#undef S
+#define S(s, f) {L###s L".dll", sizeof(#s)+3, f}
+#define S32(s) S(s, FLAG_SYSTEM32)
+
+#define FLAG_SYSTEM32 2
+#define PATH_SYSTEM32 L"C:\\windows\\system32\\"
+#define PATH_SYSTEM32_WOW64 L"C:\\windows\\syswow64\\"
+
+static struct {
+    wchar_t *filepath;
+    unsigned int length;
+    unsigned int flags;
+} g_whitelisted_dlls[] = {
+    S32(advapi),
+    S32(kernel32),
+    S32(kernelbase),
+    S32(ntdll),
+    S32(user32),
+    S32(urlmon),
+    S32(wininet),
+    S32(wsock32),
+};
+
 void init_ignored_retaddr()
 {
     // send the address of the retaddr buffer to analyzer.py
@@ -156,9 +179,9 @@ static void ret_check_address(unsigned int addr)
     }
 
     // get the filename of this module
-    wchar_t file_name[MAX_PATH];
-    if(GetModuleFileNameW(mbi.AllocationBase, file_name,
-            ARRAYSIZE(file_name)) == 0) {
+    wchar_t file_path[MAX_PATH];
+    if(GetModuleFileNameW(mbi.AllocationBase, file_path,
+            ARRAYSIZE(file_path)) == 0) {
         // we cannot obtain the filename of this module, thus it is a
         // dynamically allocated image map, and we blacklist it
         ret_set_flags(addr, 0);
@@ -166,10 +189,39 @@ static void ret_check_address(unsigned int addr)
     }
 
     // check the dll return address against a list of whitelisted dll's
-    // TODO
+    for (int i = 0; i < ARRAYSIZE(g_whitelisted_dlls); i++) {
+        int offset = 0;
 
-    // this address appears to be legit
-    ret_set_flags(addr, 1);
+        if(g_whitelisted_dlls[i].flags & FLAG_SYSTEM32) {
+
+            // a dll inside system32 is required, so check whether the path is
+            // within system32
+            if(path_compare(file_path, PATH_SYSTEM32,
+                    UNILEN(PATH_SYSTEM32)) == 0) {
+                offset = UNILEN(PATH_SYSTEM32);
+            }
+            // or within syswow64
+            else if(path_compare(file_path, PATH_SYSTEM32_WOW64,
+                    UNILEN(PATH_SYSTEM32_WOW64)) == 0) {
+                offset = UNILEN(PATH_SYSTEM32_WOW64);
+            }
+            else {
+                continue;
+            }
+        }
+
+        // check if the module name matches
+        if(path_compare(&file_path[offset], g_whitelisted_dlls[i].filepath,
+                g_whitelisted_dlls[i].length) == 0 &&
+                file_path[offset+g_whitelisted_dlls[i].length] == 0) {
+            // this address appears to be legit
+            ret_set_flags(addr, 1);
+            return;
+        }
+    }
+
+    // this module has not been whitelisted, it is therefore interesting
+    ret_set_flags(addr, 0);
 }
 
 int is_ignored_retaddr(unsigned int addr)
