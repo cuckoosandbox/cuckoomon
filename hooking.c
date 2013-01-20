@@ -378,6 +378,9 @@ static void hook_create_pre_tramp(hook_t *h)
             // jmp h->tramp
             0xe9, 0x00, 0x00, 0x00, 0x00,
 
+        // inc dword [eax+hook_info_t.depth_count]
+        0xff, 0x40, offsetof(hook_info_t, depth_count),
+
         // pushad
         0x60,
         // push ebp
@@ -397,8 +400,6 @@ static void hook_create_pre_tramp(hook_t *h)
             // jmp h->trap
             0xe9, 0x00, 0x00, 0x00, 0x00,
 
-        // inc dword [eax+hook_info_t.depth_count]
-        0xff, 0x40, offsetof(hook_info_t, depth_count),
         // push dword [esp+4]
         0xff, 0x74, 0xe4, 0x04,
         // pop dword [eax+hook_info_t.ret_hook]
@@ -431,9 +432,9 @@ static void hook_create_pre_tramp(hook_t *h)
     *(unsigned int *)(pre_tramp + 13) =
         (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
-    *(unsigned int *)(pre_tramp + 40) =
-        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 39 - 5;
-    *(unsigned int *)(pre_tramp + 51) = h->tramp - h->pre_tramp - 50 - 5;
+    *(unsigned int *)(pre_tramp + 43) =
+        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 42 - 5;
+    *(unsigned int *)(pre_tramp + 54) = h->tramp - h->pre_tramp - 53 - 5;
     *(unsigned int *)(pre_tramp + 69) = (unsigned int) h->pre_tramp + 79;
     *(unsigned int *)(pre_tramp + 75) =
         (unsigned char *) h->store_exc - h->pre_tramp - 74 - 5;
