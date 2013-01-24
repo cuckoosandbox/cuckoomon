@@ -309,6 +309,9 @@ void log_init(unsigned int ip, unsigned short port, int debug)
         g_sock = INVALID_SOCKET;
     }
     else {
+        WSADATA wsa;
+        WSAStartup(MAKEWORD(2, 2), &wsa);
+
         g_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         struct sockaddr_in addr = {
