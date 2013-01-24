@@ -13,8 +13,9 @@ CUCKOOSRC = $(wildcard *.c)
 CUCKOOOBJ = $(CUCKOOSRC:%.c=$(OBJDIR)/%.o)
 
 LOGTBLSRC = logtbl.c
+LOGTBLOBJ = $(LOGTBLSRC:%.c=$(OBJDIR)/%.o)
 
-default: $(OBJDIR) cuckoomon.dll
+default: $(OBJDIR) $(LOGTBLSRC) cuckoomon.dll
 
 $(OBJDIR):
 	mkdir $@
@@ -25,8 +26,8 @@ $(LOGTBLSRC): netlog.py
 $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(DIRS) -c $^ -o $@
 
-cuckoomon.dll: $(CUCKOOOBJ) $(DISTORM3OBJ)
+cuckoomon.dll: $(CUCKOOOBJ) $(DISTORM3OBJ) $(LOGTBLOBJ)
 	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^ $(LIBS)
 
 clean:
-	rm $(CUCKOOOBJ) $(DISTORM3OBJ) cuckoomon.dll
+	rm $(CUCKOOOBJ) $(DISTORM3OBJ) $(LOGTBLSRC) cuckoomon.dll
