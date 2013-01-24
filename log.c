@@ -31,7 +31,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define BUFFERSIZE 1024 * 1024
 
 static CRITICAL_SECTION g_mutex;
-static FILE *g_fp;
 static int g_sock;
 static unsigned int g_starttick;
 
@@ -45,7 +44,14 @@ static int g_idx;
 void log_flush()
 {
     if(g_idx != 0) {
-        int written = send(g_sock, g_buffer, g_idx, 0);
+        int written;
+        if(g_sock == INVALID_SOCKET) {
+            written = fwrite(g_buffer, 1, g_idx, stderr);
+        }
+        else {
+            written = send(g_sock, g_buffer, g_idx, 0);
+        }
+
         // TODO add more error checking
 
         // if this call didn't write the entire buffer, then we have to move
@@ -298,7 +304,7 @@ void log_init(unsigned int ip, unsigned short port, int debug)
     InitializeCriticalSection(&g_mutex);
 
     if(debug != 0) {
-        g_fp = stderr;
+        g_sock = INVALID_SOCKET;
     }
     else {
         g_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -319,11 +325,8 @@ void log_init(unsigned int ip, unsigned short port, int debug)
 void log_free()
 {
     DeleteCriticalSection(&g_mutex);
-    if(g_fp == stderr) {
-        log_flush();
-    }
+    log_flush();
     if(g_sock != INVALID_SOCKET) {
-        log_flush();
         closesocket(g_sock);
     }
 }
