@@ -67,7 +67,7 @@ void log_flush()
 
 static void log_int8(char value)
 {
-    if(g_idx > BUFFERSIZE) {
+    if(g_idx >= BUFFERSIZE) {
         log_flush();
     }
 
@@ -106,7 +106,7 @@ static void log_string(const char *str, int length)
     // and the maximum length (which is in fact the length in characters)
     log_int32(length);
 
-    while (length != 0) {
+    while (length > 0) {
         while (g_idx < BUFFERSIZE - 3 && length-- != 0) {
             g_idx += utf8_encode(*str++, (unsigned char *) &g_buffer[g_idx]);
         }
@@ -129,7 +129,7 @@ static void log_wstring(const wchar_t *str, int length)
     // and the maximum length (which is in fact the length in characters)
     log_int32(length);
 
-    while (length != 0) {
+    while (length > 0) {
         while (g_idx < BUFFERSIZE - 3 && length-- != 0) {
             g_idx += utf8_encode(*str++, (unsigned char *) &g_buffer[g_idx]);
         }
@@ -185,6 +185,7 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
         else if(key == 'u') {
             const wchar_t *s = va_arg(args, const wchar_t *);
             if(s == NULL) s = L"";
+
             log_wstring(s, -1);
         }
         else if(key == 'U') {
@@ -291,12 +292,13 @@ void log_new_process()
 
     g_starttick = GetTickCount();
 
-    loq(0, 1, 0, "lu", GetCurrentProcessId(), module_path);
+    loq(0, 1, 0, "lu", "ProcessIdentifier", GetCurrentProcessId(),
+        "ModulePath", module_path);
 }
 
 void log_new_thread()
 {
-    loq(1, 1, 0, "l", GetCurrentProcessId());
+    loq(1, 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
 }
 
 void log_init(unsigned int ip, unsigned short port, int debug)
