@@ -5,6 +5,8 @@ send integers, strings, lists, and other custom types over a socket.
 
 """
 import logtbl
+import sys
+from struct import unpack
 
 
 def read_int32(buf, offset):
@@ -71,13 +73,14 @@ def parse_fmt(funcname, fmt, *args):
     }
 
 
-def generate_c_code():
+def generate_c_code(fname):
+    lines = ['#include <stdio.h>', '', 'const char *logtbl[] = {']
     for index, (funcname, args) in enumerate(logtbl.table[2:]):
-        definitions = [k for k, (v, _) in enumerate(logtbl.table[2:])
-                       if v == funcname]
-        print '#define LOG_%s_%d "%s"' % (funcname,
-                                          definitions.index(index),
-                                          args[0])
+        lines.append('    "%s",' % funcname)
+    lines.append('    NULL')
+    lines.append('};')
+    file(fname, 'w').write('\n'.join(lines) + '\n')
 
 if __name__ == '__main__':
-    generate_c_code()
+    if sys.argv[1] == 'c-header':
+        generate_c_code(sys.argv[2])

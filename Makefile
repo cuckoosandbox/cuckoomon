@@ -12,10 +12,15 @@ DISTORM3OBJ = $(DISTORM3:.c=.o)
 CUCKOOSRC = $(wildcard *.c)
 CUCKOOOBJ = $(CUCKOOSRC:%.c=$(OBJDIR)/%.o)
 
+LOGTBLSRC = logtbl.c
+
 default: $(OBJDIR) cuckoomon.dll
 
 $(OBJDIR):
 	mkdir $@
+
+$(LOGTBLSRC): netlog.py
+	python netlog.py c-header $@
 
 $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(DIRS) -c $^ -o $@
