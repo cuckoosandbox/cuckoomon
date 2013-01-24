@@ -62,6 +62,12 @@ void read_config()
                 else if(!strcmp(key, "retaddr-check")) {
                     g_config.retaddr_check = value[0] == '1';
                 }
+                else if(!strcmp(key, "host-ip")) {
+                    g_config.host_ip = inet_addr(value);
+                }
+                else if(!strcmp(key, "host-port")) {
+                    g_config.host_port = atoi(value);
+                }
             }
         }
         fclose(fp);

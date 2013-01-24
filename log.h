@@ -53,13 +53,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // loq("3s", "key1", "value", "key2", "value2", "key3", "value3");
 //
 
-void loq(const char *fmt, ...);
+void loq(int index, int is_success, int return_value, const char *fmt, ...);
+void log_new_process();
+void log_new_thread();
 
-void log_init(const char *dir, int debug);
+void log_init(unsigned int ip, unsigned short port, int debug);
 void log_free();
 
-#define LOQ(fmt, ...) loq(fmt, module_name, &__FUNCTION__[4], \
-    is_success(ret), ret, ##__VA_ARGS__)
+int log_resolve_index(const char *funcname, int index);
+extern const char *logtbl[];
+
+#define LOQ(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[4], 0); loq(_index, \
+    is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
+
+#define LOQ2(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[4], 1); loq(_index, \
+    is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
+
+#define LOQ3(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[4], 2); loq(_index, \
+    is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define IS_SUCCESS_NTSTATUS() int is_success(NTSTATUS ret) { \
     return NT_SUCCESS(ret); }

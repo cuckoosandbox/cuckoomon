@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_INTM1();
-static const char *module_name = "socket";
 
 HOOKDEF(int, WINAPI, WSAStartup,
     _In_   WORD wVersionRequested,

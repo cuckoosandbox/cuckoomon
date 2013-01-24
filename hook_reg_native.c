@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 
 static IS_SUCCESS_LONGREG();
-static const char *module_name = "registry";
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,
     __out       PHANDLE KeyHandle,

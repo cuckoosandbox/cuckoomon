@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_HWND();
-static const char *module_name = "windows";
 
 HOOKDEF(HWND, WINAPI, FindWindowA,
   __in_opt  LPCTSTR lpClassName,

@@ -31,6 +31,10 @@ struct {
 
     // do we want to enable the retaddr check?
     int retaddr_check;
+
+    // server ip and port
+    unsigned int host_ip;
+    unsigned short host_port;
 } g_config;
 
 void read_config();

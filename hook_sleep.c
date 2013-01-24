@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_SLEEP_SKIP_DIFF 5000
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "sleep";
 
 // skipping sleep calls is done while this variable is set to true
 static int sleep_skip_active = 1;

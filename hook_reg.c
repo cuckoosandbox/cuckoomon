@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_LONGREG();
-static const char *module_name = "registry";
 
 HOOKDEF(LONG, WINAPI, RegOpenKeyExA,
   __in        HKEY hKey,
