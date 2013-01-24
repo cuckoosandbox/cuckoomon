@@ -136,7 +136,7 @@ HOOKDEF(int, WSAAPI, bind,
             "port", htons(((struct sockaddr_in *) name)->sin_port));
     }
     else {
-        LOQ("p", "socket", s);
+        LOQ2("p", "socket", s);
     }
     return ret;
 }
