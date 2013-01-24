@@ -145,6 +145,8 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
     log_int8(index);
     log_int8(is_success);
     log_int32(return_value);
+    log_int32(GetCurrentThreadId());
+    log_int32(GetTickCount() - g_starttick);
 
     while (--count != 0 || *fmt != 0) {
 
