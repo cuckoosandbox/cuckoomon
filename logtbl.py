@@ -5,8 +5,8 @@ by hand.
 
 """
 table = [
-    ('__process__', ('',)),
-    ('__thread__', ('',)),
+    ('__process__', '__init__', ('',)),
+    ('__thread__', '__init__', ('',)),
     ('NtDeleteFile', 'filesystem', ('O', 'FileName')),
     ('CreateDirectoryW', 'filesystem', ('u', 'DirectoryName')),
     ('CreateDirectoryExW', 'filesystem', ('u', 'DirectoryName')),
