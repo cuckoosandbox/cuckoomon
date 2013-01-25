@@ -292,8 +292,9 @@ void log_new_process()
 
     g_starttick = GetTickCount();
 
-    loq(0, 1, 0, "llu", "ProcessIdentifier", GetCurrentProcessId(), 
-        "ParentProcessIdentifier", parent_process_id(), "ModulePath", module_path);
+    loq(0, 1, 0, "llu", "ProcessIdentifier", GetCurrentProcessId(),
+        "ParentProcessIdentifier", parent_process_id(),
+        "ModulePath", module_path);
 }
 
 void log_new_thread()
