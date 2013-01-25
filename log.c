@@ -326,6 +326,8 @@ void log_init(unsigned int ip, unsigned short port, int debug)
 
     log_new_process();
     log_new_thread();
+    // flushing here so host can create files / keep timestamps
+    log_flush();
 }
 
 void log_free()
