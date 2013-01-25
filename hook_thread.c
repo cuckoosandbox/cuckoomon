@@ -189,6 +189,8 @@ HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
 ) {
     ENSURE_CLIENT_ID(ClientId);
 
+    pipe("PROCESS:%d", pid_from_process_handle(ProcessHandle));
+
     NTSTATUS ret = Old_RtlCreateUserThread(ProcessHandle, SecurityDescriptor,
         CreateSuspended, StackZeroBits, StackReserved, StackCommit,
         StartAddress, StartParameter, ThreadHandle, ClientId);
@@ -197,7 +199,6 @@ HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
         "StartParameter", StartParameter, "ThreadHandle", ThreadHandle,
         "ThreadIdentifier", ClientId->UniqueThread);
     if(NT_SUCCESS(ret)) {
-        pipe("PROCESS:0,%d", ClientId->UniqueThread);
         disable_sleep_skip();
     }
     return ret;

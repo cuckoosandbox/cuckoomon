@@ -45,7 +45,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     LOQ("PpO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
+        // do *NOT* send the PROCESS: command here; the CreateRemoteThread
+        // injection technique will fail because there's no thread in this
+        // process yet. Instead we do the PROCESS: command from the
+        // NtCreateThread (or similar) function calls
         disable_sleep_skip();
     }
     return ret;
@@ -68,7 +71,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateProcessEx,
     LOQ("PpO", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        pipe("PROCESS:%d", pid_from_process_handle(*ProcessHandle));
+        // do *NOT* send the PROCESS: command from here (for more details, see
+        // the comment at NtCreateProcess)
         disable_sleep_skip();
     }
     return ret;
@@ -90,6 +94,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
     RTL_USER_PROCESS_PARAMETERS _ProcessParameters = {};
     if(ProcessParameters == NULL) ProcessParameters = &_ProcessParameters;
 
+    // TODO: this function call needs more create_suspended
     NTSTATUS ret = Old_NtCreateUserProcess(ProcessHandle, ThreadHandle,
         ProcessDesiredAccess, ThreadDesiredAccess,
         ProcessObjectAttributes, ThreadObjectAttributes,
