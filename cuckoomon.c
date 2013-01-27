@@ -393,7 +393,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         }
 
         // initialize return address stuff
-        init_ignored_retaddr();
+        init_ignored_retaddr(g_config.is_injected);
 
         // initialize all hooks
         set_hooks();

@@ -121,6 +121,10 @@ static int WINAPI is_interesting_backtrace(unsigned int esp, unsigned int ebp)
         addr = *(unsigned int *)(ebp + 4);
         ebp = *(unsigned int *) ebp;
 
+        // if we've reached the end of the backtrace, then we're not
+        // interested in this backtrace
+        if(ebp == 0 && addr == 0) break;
+
         // if this return address is *not* to be ignored, then it's
         // interesting
         if(is_ignored_retaddr(addr) == 0) {

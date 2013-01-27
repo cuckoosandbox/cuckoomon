@@ -140,10 +140,32 @@ static struct {
     S32(wsock32),
 };
 
-void init_ignored_retaddr()
+static void ret_set_flags(unsigned int addr, unsigned int ignored);
+
+void init_ignored_retaddr(int is_injected)
 {
     // send the address of the retaddr buffer to analyzer.py
     pipe("RET_INIT:%d,%x", GetCurrentProcessId(), retaddr);
+
+    // if we injected into this process, then the original image base is
+    // not interesting to us
+    if(is_injected != 0) {
+
+        // obtain the address and total size of the original image base
+        unsigned char *image = (unsigned char *) GetModuleHandle(NULL);
+        unsigned int region_size = 0;
+        MEMORY_BASIC_INFORMATION mbi;
+
+        while (VirtualQuery(image + region_size, &mbi,
+                sizeof(mbi)) == sizeof(mbi) && mbi.State != MEM_FREE) {
+            region_size += mbi.RegionSize;
+        }
+
+        // ignore this range (could be optimized, but "it works")
+        for (; region_size != 0; image++, region_size--) {
+            ret_set_flags((unsigned int) image, 1);
+        }
+    }
 }
 
 static void ret_get_flags(unsigned int addr, unsigned int *ignored,
