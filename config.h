@@ -31,6 +31,9 @@ struct {
 
     // do we want to enable the retaddr check?
     int retaddr_check;
+
+    // did we inject into the current process or not?
+    int is_injected;
 } g_config;
 
 void read_config();

@@ -62,6 +62,9 @@ void read_config()
                 else if(!strcmp(key, "retaddr-check")) {
                     g_config.retaddr_check = value[0] == '1';
                 }
+                else if(!strcmp(key, "is-injected")) {
+                    g_config.is_injected = value[0] == '1';
+                }
             }
         }
         fclose(fp);
