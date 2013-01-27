@@ -106,8 +106,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
         "ThreadDesiredAccess", ThreadDesiredAccess,
         "ProcessFileName", ProcessObjectAttributes,
         "ThreadName", ThreadObjectAttributes,
-        "ImagePathName", ProcessParameters->ImagePathName,
-        "CommandLine", ProcessParameters->CommandLine);
+        "ImagePathName", &ProcessParameters->ImagePathName,
+        "CommandLine", &ProcessParameters->CommandLine);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:%d,%d", pid_from_process_handle(*ProcessHandle),
             pid_from_thread_handle(*ThreadHandle));
