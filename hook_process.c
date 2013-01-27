@@ -146,7 +146,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
             CloseHandle(*ProcessHandle);
             return STATUS_ACCESS_DENIED;
         }
-        pipe("PROCESS:%d", pid);
+        pipe("PROCESS2:%d", pid);
     }
     return ret;
 }

@@ -189,8 +189,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryMultipleValueKey,
 ) {
     NTSTATUS ret = Old_NtQueryMultipleValueKey(KeyHandle, ValueEntries,
         EntryCount, ValueBuffer, BufferLength, RequiredBufferLength);
-    LOQ("poS", "KeyHandle", KeyHandle, "ValueName", ValueEntries->ValueName,
-        "ValueBuffer", *BufferLength, ValueBuffer);
+    LOQ("poB", "KeyHandle", KeyHandle, "ValueName", ValueEntries->ValueName,
+        "ValueBuffer", BufferLength, ValueBuffer);
     return ret;
 }
 

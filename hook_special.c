@@ -49,7 +49,7 @@ HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     //
 
     if(NT_SUCCESS(ret)) {
-        set_hooks_dll(library.Buffer, library.Length >> 1);
+        set_hooks_dll(library.Buffer, library.Length / sizeof(wchar_t));
     }
 
     return ret;
