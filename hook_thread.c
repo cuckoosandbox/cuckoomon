@@ -38,8 +38,6 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
     __in      PINITIAL_TEB InitialTeb,
     __in      BOOLEAN CreateSuspended
 ) {
-    pipe("PROCESS:%d", pid_from_process_handle(ProcessHandle));
-
     NTSTATUS ret = Old_NtCreateThread(ThreadHandle, DesiredAccess,
         ObjectAttributes, ProcessHandle, ClientId, ThreadContext,
         InitialTeb, CreateSuspended);
@@ -84,8 +82,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenThread,
     LOQ("PlO", "ThreadHandle", ThreadHandle, "DesiredAccess", DesiredAccess,
         "ObjectAttributes", ObjectAttributes);
     if(NT_SUCCESS(ret)) {
-        // TODO: are we sure that OpenThread specifies the PID?
-        pipe("PROCESS:%d", ClientId->UniqueProcess);
+        pipe("PROCESS2:%d", pid_from_thread_handle(*ThreadHandle));
     }
     return ret;
 }
@@ -105,8 +102,6 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetContextThread,
 ) {
     NTSTATUS ret = Old_NtSetContextThread(ThreadHandle, Context);
     LOQ("p", "ThreadHandle", ThreadHandle);
-
-    pipe("PROCESS:%d", pid_from_thread_handle(ThreadHandle));
     return ret;
 }
 
@@ -173,8 +168,6 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
 ) {
     IS_SUCCESS_HANDLE();
 
-    pipe("PROCESS:%d", pid_from_process_handle(hProcess));
-
     HANDLE ret = Old_CreateRemoteThread(hProcess, lpThreadAttributes,
         dwStackSize, lpStartAddress, lpParameter, dwCreationFlags,
         lpThreadId);
@@ -210,8 +203,6 @@ HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
     OUT PCLIENT_ID ClientId
 ) {
     ENSURE_CLIENT_ID(ClientId);
-
-    pipe("PROCESS:%d", pid_from_process_handle(ProcessHandle));
 
     NTSTATUS ret = Old_RtlCreateUserThread(ProcessHandle, SecurityDescriptor,
         CreateSuspended, StackZeroBits, StackReserved, StackCommit,
