@@ -79,11 +79,22 @@ HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
         pipe("PROCESS:%d,%d", lpProcessInformation->dwProcessId,
             lpProcessInformation->dwThreadId);
 
+        char event_name[64];
+        sprintf(event_name, "CuckooEvent%d",
+            lpProcessInformation->dwProcessId);
+
+        // register the event name so we can wait for the DLL to initialize
+        HANDLE event_handle = CreateEvent(NULL, FALSE, FALSE, event_name);
+
         // if the CREATE_SUSPENDED flag was not set, then we have to resume
         // the main thread ourself
         if((dwCreationFlags & CREATE_SUSPENDED) == 0) {
             ResumeThread(lpProcessInformation->hThread);
         }
+
+        // here we wait for the DLL to initialize all hooks and stuff
+        WaitForSingleObject(event_handle, 10000);
+        CloseHandle(event_handle);
 
         disable_sleep_skip();
     }
