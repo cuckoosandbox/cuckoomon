@@ -196,14 +196,14 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
         else if(key == 'b') {
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
-            (void)len;
-            log_int32((int) s);
+            log_int32(len);
+            log_int32(len);
         }
         else if(key == 'B') {
             int *len = va_arg(args, int *);
             const char *s = va_arg(args, const char *);
-            (void)len;
-            log_int32((int) s);
+            log_int32(*len);
+            log_int32(*len);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
