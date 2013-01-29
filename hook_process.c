@@ -150,9 +150,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtTerminateProcess,
     __in_opt  HANDLE ProcessHandle,
     __in      NTSTATUS ExitStatus
 ) {
-    log_flush();
     NTSTATUS ret = Old_NtTerminateProcess(ProcessHandle, ExitStatus);
     LOQ("pl", "ProcessHandle", ProcessHandle, "ExitCode", ExitStatus);
+    log_flush();
     return ret;
 }
 
