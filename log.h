@@ -58,6 +58,7 @@ void log_new_process();
 void log_new_thread();
 
 void log_init(unsigned int ip, unsigned short port, int debug);
+void log_flush();
 void log_free();
 
 int log_resolve_index(const char *funcname, int index);
