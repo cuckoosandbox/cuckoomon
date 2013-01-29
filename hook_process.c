@@ -220,7 +220,7 @@ HOOKDEF(VOID, WINAPI, ExitProcess,
 
     int ret = 0;
     LOQ("l", "ExitCode", uExitCode);
-    log_flush();
+    log_free();
     Old_ExitProcess(uExitCode);
 }
 
