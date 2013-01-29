@@ -292,14 +292,12 @@ void log_new_process()
 
     g_starttick = GetTickCount();
 
-    SYSTEMTIME st;
-    GetSystemTime(&st);
+    FILETIME st;
+    GetSystemTimeAsFileTime(&st);
 
-    char timestring[32];
-    snprintf(timestring, 32, "%d-%02d-%02d %02d:%02d:%02d,%06d", st.wYear,
-      st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-
-    loq(0, 1, 0, "sllu", "Time", timestring, "ProcessIdentifier", GetCurrentProcessId(),
+    loq(0, 1, 0, "llllu", "TimeLow", st.dwLowDateTime,
+        "TimeHigh", st.dwHighDateTime,
+        "ProcessIdentifier", GetCurrentProcessId(),
         "ParentProcessIdentifier", parent_process_id(),
         "ModulePath", module_path);
 }
