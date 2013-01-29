@@ -255,7 +255,9 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
             unsigned long size = va_arg(args, unsigned long);
             unsigned char *data = va_arg(args, unsigned char *);
 
-            if(data == NULL || type == REG_NONE) {
+            log_int32(type);
+
+            if(type == REG_NONE) {
                 log_string("", 0);
             }
             else if(type == REG_DWORD || type == REG_DWORD_LITTLE_ENDIAN) {
@@ -282,6 +284,7 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
 
     va_end(args);
 
+    log_flush();
     LeaveCriticalSection(&g_mutex);
 }
 
