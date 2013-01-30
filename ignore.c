@@ -117,28 +117,9 @@ int is_ignored_process()
 // - is the ignored bit initialized yet?
 static unsigned char retaddr[0x40000];
 
-#undef S
-#define S(s, f) {L###s L".dll", sizeof(#s)+3, f}
-#define S32(s) S(s, FLAG_SYSTEM32)
-
-#define FLAG_SYSTEM32 2
-#define PATH_SYSTEM32 L"C:\\windows\\system32\\"
-#define PATH_SYSTEM32_WOW64 L"C:\\windows\\syswow64\\"
-
-static struct {
-    wchar_t *filepath;
-    unsigned int length;
-    unsigned int flags;
-} g_whitelisted_dlls[] = {
-    S32(advapi),
-    S32(kernel32),
-    S32(kernelbase),
-    S32(ntdll),
-    S32(user32),
-    S32(urlmon),
-    S32(wininet),
-    S32(wsock32),
-};
+#define PATH_SYSTEM32           L"C:\\windows\\system32\\"
+#define PATH_SYSTEM32_WOW64     L"C:\\windows\\syswow64\\"
+#define PATH_WINSXS             L"C:\\windows\\winsxs\\"
 
 static void ret_set_flags(unsigned int addr, unsigned int ignored);
 
@@ -210,36 +191,13 @@ static void ret_check_address(unsigned int addr)
         return;
     }
 
-    // check the dll return address against a list of whitelisted dll's
-    for (int i = 0; i < ARRAYSIZE(g_whitelisted_dlls); i++) {
-        int offset = 0;
-
-        if(g_whitelisted_dlls[i].flags & FLAG_SYSTEM32) {
-
-            // a dll inside system32 is required, so check whether the path is
-            // within system32
-            if(path_compare(file_path, PATH_SYSTEM32,
-                    UNILEN(PATH_SYSTEM32)) == 0) {
-                offset = UNILEN(PATH_SYSTEM32);
-            }
-            // or within syswow64
-            else if(path_compare(file_path, PATH_SYSTEM32_WOW64,
-                    UNILEN(PATH_SYSTEM32_WOW64)) == 0) {
-                offset = UNILEN(PATH_SYSTEM32_WOW64);
-            }
-            else {
-                continue;
-            }
-        }
-
-        // check if the module name matches
-        if(path_compare(&file_path[offset], g_whitelisted_dlls[i].filepath,
-                g_whitelisted_dlls[i].length) == 0 &&
-                file_path[offset+g_whitelisted_dlls[i].length] == 0) {
-            // this address appears to be legit
-            ret_set_flags(addr, 1);
-            return;
-        }
+    // check whether the module is located in one of the whitelisted paths
+    if(path_compare(file_path, PATH_SYSTEM32, UNILEN(PATH_SYSTEM32)) == 0 ||
+            path_compare(file_path, PATH_SYSTEM32_WOW64,
+                UNILEN(PATH_SYSTEM32_WOW64)) == 0 ||
+            path_compare(file_path, PATH_WINSXS, UNILEN(PATH_WINSXS)) == 0) {
+        ret_set_flags(addr, 1);
+        return;
     }
 
     // this module has not been whitelisted, it is therefore interesting
