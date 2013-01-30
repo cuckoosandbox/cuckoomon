@@ -629,6 +629,19 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
     __in_opt    PPS_ATTRIBUTE_LIST AttributeList
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserProcess,
+    IN      PUNICODE_STRING ImagePath,
+    IN      ULONG ObjectAttributes,
+    IN OUT  PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
+    IN      PSECURITY_DESCRIPTOR ProcessSecurityDescriptor OPTIONAL,
+    IN      PSECURITY_DESCRIPTOR ThreadSecurityDescriptor OPTIONAL,
+    IN      HANDLE ParentProcess,
+    IN      BOOLEAN InheritHandles,
+    IN      HANDLE DebugPort OPTIONAL,
+    IN      HANDLE ExceptionPort OPTIONAL,
+    OUT     PRTL_USER_PROCESS_INFORMATION ProcessInformation
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     __out     PHANDLE ProcessHandle,
     __in      ACCESS_MASK DesiredAccess,
