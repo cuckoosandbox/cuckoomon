@@ -153,7 +153,8 @@ static void ret_get_flags(unsigned int addr, unsigned int *ignored,
     unsigned int *initialized)
 {
     unsigned int index = addr / 0x1000;
-    unsigned char info = retaddr[index / 4] >> (index % 4) >> 1;
+    unsigned char info = retaddr[index / 4] >> ((index % 4) * 2);
+
     // first bit defines whether the address is ignored
     *ignored = info & 1;
     // second bit defines whether the ignored bit has been initialized yet
@@ -164,9 +165,9 @@ static void ret_set_flags(unsigned int addr, unsigned int ignored)
 {
     unsigned int index = addr / 0x1000;
     // reset the original flags
-    retaddr[index / 4] &= ~(3 << (index % 4) << 1);
+    retaddr[index / 4] &= ~(3 << ((index % 4) * 2));
     // set the new flags
-    retaddr[index / 4] |= (!!ignored + 2) << (index % 4) << 1;
+    retaddr[index / 4] |= (!!ignored + 2) << ((index % 4) * 2);
 }
 
 static void ret_check_address(unsigned int addr)
