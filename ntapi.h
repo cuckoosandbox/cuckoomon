@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <windows.h>
+
 #ifndef __NTAPI_H__
 #define __NTAPI_H__
 
@@ -325,5 +327,47 @@ typedef struct _FILE_FS_VOLUME_INFORMATION {
     BOOLEAN       SupportsObjects;
     WCHAR         VolumeLabel[1];
 } FILE_FS_VOLUME_INFORMATION, *PFILE_FS_VOLUME_INFORMATION;
+
+typedef struct _SECTION_IMAGE_INFORMATION {
+    VOID*        TransferAddress;
+    ULONG32      ZeroBits;
+    UINT8        _PADDING0_[0x4];
+    UINT64       MaximumStackSize;
+    UINT64       CommittedStackSize;
+    ULONG32      SubSystemType;
+    union {
+        struct {
+            UINT16       SubSystemMinorVersion;
+            UINT16       SubSystemMajorVersion;
+        };
+        ULONG32      SubSystemVersion;
+    };
+    ULONG32      GpValue;
+    UINT16       ImageCharacteristics;
+    UINT16       DllCharacteristics;
+    UINT16       Machine;
+    UINT8        ImageContainsCode;
+    union {
+        UINT8        ImageFlags;
+        struct {
+            UINT8        ComPlusNativeReady : 1;
+            UINT8        ComPlusILOnly : 1;
+            UINT8        ImageDynamicallyRelocated : 1;
+            UINT8        ImageMappedFlat : 1;
+            UINT8        Reserved : 4;
+        };
+    };
+    ULONG32      LoaderFlags;
+    ULONG32      ImageFileSize;
+    ULONG32      CheckSum;
+} SECTION_IMAGE_INFORMATION, *PSECTION_IMAGE_INFORMATION;
+
+typedef struct _RTL_USER_PROCESS_INFORMATION {
+    ULONG Size;
+    HANDLE ProcessHandle;
+    HANDLE ThreadHandle;
+    CLIENT_ID ClientId;
+    SECTION_IMAGE_INFORMATION ImageInformation;
+} RTL_USER_PROCESS_INFORMATION, *PRTL_USER_PROCESS_INFORMATION;
 
 #endif
