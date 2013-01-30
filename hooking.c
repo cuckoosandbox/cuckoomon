@@ -103,9 +103,9 @@ static int WINAPI is_interesting_backtrace(unsigned int esp, unsigned int ebp)
     // pointer is pushed, so we have to add 10 dwords first
     esp += 10 * sizeof(unsigned int);
 
-    // the first return address is at the address of esp
-    // check if the stack variable is valid..
-    if(esp < bottom || esp >= top) return 0;
+    // the first return address is at the address of esp, check if the stack
+    // variable is valid.. if it's not, well.. that's pretty suspicious
+    if(esp < bottom || esp >= top) return 1;
 
     unsigned int addr = *(unsigned int *) esp;
 
@@ -150,7 +150,7 @@ static int hook_create_trampoline(unsigned char *addr, int len,
     // after the original function has returned, we have to make a backup of
     // the Last Error Code, so what we do is the following (we use the same
     // method below in the pre-tramp.) We store the current return address in
-    // info->ret_last_error, then we overwrite the return address with a
+    // info->ret_hook, then we overwrite the return address with a
     // return address in our trampoline. When we reach the trampoline, we make
     // a backup of the Last Error Code and jmp to the real return address.
 
@@ -397,11 +397,13 @@ static void hook_create_pre_tramp(hook_t *h)
         0x85, 0xc0,
         // popad
         0x61,
-        // jnz $+6
-        0x75, 0x06,
+        // jnz $+9
+        0x75, 0x09,
+            // dec dword [eax+hook_info_t.depth_count]
+            0xff, 0x48, offsetof(hook_info_t, depth_count),
             // pop eax
             0x58,
-            // jmp h->trap
+            // jmp h->tramp
             0xe9, 0x00, 0x00, 0x00, 0x00,
 
         // push dword [esp+4]
@@ -438,10 +440,10 @@ static void hook_create_pre_tramp(hook_t *h)
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
     *(unsigned int *)(pre_tramp + 43) =
         (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 42 - 5;
-    *(unsigned int *)(pre_tramp + 54) = h->tramp - h->pre_tramp - 53 - 5;
-    *(unsigned int *)(pre_tramp + 69) = (unsigned int) h->pre_tramp + 79;
-    *(unsigned int *)(pre_tramp + 75) =
-        (unsigned char *) h->store_exc - h->pre_tramp - 74 - 5;
+    *(unsigned int *)(pre_tramp + 57) = h->tramp - h->pre_tramp - 56 - 5;
+    *(unsigned int *)(pre_tramp + 72) = (unsigned int) h->pre_tramp + 82;
+    *(unsigned int *)(pre_tramp + 78) =
+        (unsigned char *) h->store_exc - h->pre_tramp - 77 - 5;
 
     memcpy(h->pre_tramp, pre_tramp, sizeof(pre_tramp));
 }
