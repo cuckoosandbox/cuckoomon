@@ -307,7 +307,7 @@ void loq(const char *fmt, ...)
                 log_string("", 0, 0);
             }
             else {
-                log_wstring(str->Buffer, str->Length >> 1, 0);
+                log_wstring(str->Buffer, str->Length / sizeof(wchar_t), 0);
             }
         }
         else if(key == 'O') {
@@ -316,8 +316,12 @@ void loq(const char *fmt, ...)
                 log_string("", 0, 0);
             }
             else {
-                log_wstring(obj->ObjectName->Buffer,
-                    obj->ObjectName->Length >> 1, 0);
+                wchar_t path[MAX_PATH]; int length;
+                length = path_from_object_attributes(obj, path);
+
+                length = ensure_absolute_path(path, path, length);
+
+                log_wstring(path, length, 0);
             }
         }
         else if(key == 'a') {

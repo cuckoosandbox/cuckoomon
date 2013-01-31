@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "pipe.h"
 #include "utf8.h"
+#include "misc.h"
 
 const char *g_pipe_name;
 
@@ -91,14 +92,19 @@ static int _pipe_sprintf(char *out, const char *fmt, va_list args)
             UNICODE_STRING *str = va_arg(args, UNICODE_STRING *);
             if(str == NULL) return -1;
 
-            ret += _pipe_unicode(&out, str->Buffer, str->Length >> 1);
+            ret += _pipe_unicode(&out, str->Buffer,
+                str->Length / sizeof(wchar_t));
         }
         else if(*fmt == 'O') {
             OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
             if(obj == NULL || obj->ObjectName == NULL) return -1;
 
-            ret += _pipe_unicode(&out, obj->ObjectName->Buffer,
-                obj->ObjectName->Length >> 1);
+            wchar_t path[MAX_PATH]; int length;
+            length = path_from_object_attributes(obj, path);
+
+            length = ensure_absolute_path(path, path, length);
+
+            ret += _pipe_unicode(&out, path, length);
         }
         else if(*fmt == 'd') {
             char s[32];
