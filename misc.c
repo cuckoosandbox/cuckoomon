@@ -216,3 +216,27 @@ int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path)
     path[len + obj->ObjectName->Length / sizeof(wchar_t)] = 0;
     return len + obj->ObjectName->Length / sizeof(wchar_t);
 }
+
+int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length)
+{
+    if(!wcsncmp(in, L"\\??\\", 4)) {
+        length -= 4, in += 4;
+        wcsncpy(out, in, length < MAX_PATH ? length : MAX_PATH);
+        return out[length] = 0, length;
+    }
+    else if(in[1] != ':' || (in[2] != '\\' && in[2] != '/')) {
+        wchar_t cur_dir[MAX_PATH], fname[MAX_PATH];
+        GetCurrentDirectoryW(ARRAYSIZE(cur_dir), cur_dir);
+
+        // ensure the filename is zero-terminated
+        wcsncpy(fname, in, length < MAX_PATH ? length : MAX_PATH);
+        fname[length] = 0;
+
+        PathCombineW(out, cur_dir, fname);
+        return lstrlenW(out);
+    }
+    else {
+        wcsncpy(out, in, length < MAX_PATH ? length : MAX_PATH);
+        return out[length] = 0, length;
+    }
+}
