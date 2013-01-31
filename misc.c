@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <windows.h>
 #include <ctype.h>
+#include <shlwapi.h>
 #include "ntapi.h"
 #include "misc.h"
 
@@ -126,4 +127,93 @@ int path_compare(const wchar_t *a, const wchar_t *b, int len)
         }
     }
     return 0;
+}
+
+int path_from_handle(HANDLE directory_handle, wchar_t *path)
+{
+    static NTSTATUS (WINAPI *pNtQueryVolumeInformationFile)(
+        _In_   HANDLE FileHandle,
+        _Out_  PIO_STATUS_BLOCK IoStatusBlock,
+        _Out_  PVOID FsInformation,
+        _In_   ULONG Length,
+        _In_   FS_INFORMATION_CLASS FsInformationClass
+    );
+
+    if(pNtQueryVolumeInformationFile == NULL) {
+        *(FARPROC *) &pNtQueryVolumeInformationFile = GetProcAddress(
+            GetModuleHandle("ntdll"), "NtQueryVolumeInformationFile");
+    }
+
+    static NTSTATUS (WINAPI *pNtQueryInformationFile)(
+        _In_   HANDLE FileHandle,
+        _Out_  PIO_STATUS_BLOCK IoStatusBlock,
+        _Out_  PVOID FileInformation,
+        _In_   ULONG Length,
+        _In_   FILE_INFORMATION_CLASS FileInformationClass
+    );
+
+    if(pNtQueryInformationFile == NULL) {
+        *(FARPROC *) &pNtQueryInformationFile = GetProcAddress(
+            GetModuleHandle("ntdll"), "NtQueryInformationFile");
+    }
+
+    IO_STATUS_BLOCK status = {};
+    FILE_FS_VOLUME_INFORMATION volume_information;
+
+    unsigned char buf[FILE_NAME_INFORMATION_REQUIRED_SIZE];
+    FILE_NAME_INFORMATION *name_information = (FILE_NAME_INFORMATION *) buf;
+
+    // get the volume serial number of the directory handle
+    if(NT_SUCCESS(pNtQueryVolumeInformationFile(directory_handle, &status,
+            &volume_information, sizeof(volume_information),
+            FileFsVolumeInformation))) {
+
+        unsigned long serial_number;
+
+        // enumerate all harddisks in order to find the corresponding serial
+        // number
+        wcscpy(path, L"?:\\");
+        for (char ch = 'A'; ch <= 'Z'; ch++) {
+            path[0] = ch;
+            if(GetVolumeInformationW(path, NULL, 0, &serial_number, NULL,
+                    NULL, NULL, 0) &&
+                    serial_number == volume_information.VolumeSerialNumber) {
+
+                // obtain the relative path for this filename on the given
+                // harddisk
+                if(NT_SUCCESS(pNtQueryInformationFile(directory_handle,
+                        &status, name_information,
+                        FILE_NAME_INFORMATION_REQUIRED_SIZE,
+                        FileNameInformation))) {
+
+                    int length =
+                        name_information->FileNameLength / sizeof(wchar_t);
+
+                    // NtQueryInformationFile omits the "C:" part in a
+                    // filename, apparently
+                    wcsncpy(path + 2, name_information->FileName, length);
+                    path[2 + length] = 0;
+                    return 2 + length;
+                }
+            }
+        }
+
+    }
+    return 0;
+}
+
+int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path)
+{
+    if(obj->RootDirectory == NULL) {
+        wcsncpy(path, obj->ObjectName->Buffer, obj->ObjectName->Length);
+        path[obj->ObjectName->Length / sizeof(wchar_t)] = 0;
+        return obj->ObjectName->Length / sizeof(wchar_t);
+    }
+
+    int len = path_from_handle(obj->RootDirectory, path);
+    path[len++] = '\\';
+    wcsncpy(&path[len], obj->ObjectName->Buffer,
+        obj->ObjectName->Length / sizeof(wchar_t));
+    path[len + obj->ObjectName->Length / sizeof(wchar_t)] = 0;
+    return len + obj->ObjectName->Length / sizeof(wchar_t);
 }

@@ -296,4 +296,34 @@ typedef struct _TRANSMIT_FILE_BUFFERS {
     DWORD TailLength;
 } TRANSMIT_FILE_BUFFERS, *LPTRANSMIT_FILE_BUFFERS;
 
+#define FILE_NAME_INFORMATION_REQUIRED_SIZE \
+    sizeof(FILE_NAME_INFORMATION) + sizeof(wchar_t) * MAX_PATH
+
+typedef struct _FILE_NAME_INFORMATION {
+    ULONG FileNameLength;
+    WCHAR FileName[1];
+} FILE_NAME_INFORMATION, *PFILE_NAME_INFORMATION;
+
+typedef enum  {
+    FileFsVolumeInformation       = 1,
+    FileFsLabelInformation        = 2,
+    FileFsSizeInformation         = 3,
+    FileFsDeviceInformation       = 4,
+    FileFsAttributeInformation    = 5,
+    FileFsControlInformation      = 6,
+    FileFsFullSizeInformation     = 7,
+    FileFsObjectIdInformation     = 8,
+    FileFsDriverPathInformation   = 9,
+    FileFsVolumeFlagsInformation  = 10,
+    FileFsSectorSizeInformation   = 11
+} FS_INFORMATION_CLASS;
+
+typedef struct _FILE_FS_VOLUME_INFORMATION {
+    LARGE_INTEGER VolumeCreationTime;
+    ULONG         VolumeSerialNumber;
+    ULONG         VolumeLabelLength;
+    BOOLEAN       SupportsObjects;
+    WCHAR         VolumeLabel[1];
+} FILE_FS_VOLUME_INFORMATION, *PFILE_FS_VOLUME_INFORMATION;
+
 #endif
