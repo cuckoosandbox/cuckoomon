@@ -73,30 +73,20 @@ static void new_file(const UNICODE_STRING *obj)
         str += UNILEN(HDDVOL1), len -= UNILEN(HDDVOL1);
         pipe("FILE_NEW:C:%S", len, str);
     }
-    // is it safe to assume that this is a relative path?
-    else {
-        wchar_t cur_dir[MAX_PATH];
-        GetCurrentDirectoryW(sizeof(cur_dir), cur_dir);
-
-        // this should be large enough..
-        wchar_t path[MAX_PATH];
-        PathCombineW(path, cur_dir, str);
-
-        pipe("FILE_NEW:%Z", path);
-    }
 }
 
-static void cache_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
+static void cache_file(HANDLE file_handle, const wchar_t *path,
+    unsigned int length, unsigned int attributes)
 {
     file_record_t *r = lookup_add(&g_files, (unsigned int) file_handle,
-        sizeof(file_record_t) + obj->ObjectName->Length + sizeof(wchar_t));
+        sizeof(file_record_t) + length * sizeof(wchar_t) + sizeof(wchar_t));
 
     *r = (file_record_t) {
-        .attributes = obj->Attributes,
-        .length     = obj->ObjectName->Length,
+        .attributes = attributes,
+        .length     = length * sizeof(wchar_t),
     };
 
-    memcpy(r->filename, obj->ObjectName->Buffer, r->length);
+    memcpy(r->filename, path, r->length);
     r->filename[r->length / sizeof(wchar_t)] = 0;
 }
 
@@ -122,18 +112,13 @@ static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
     if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
 
-        // check if there's any special stuff about this object, otherwise we
-        // can cache it.
-        if(obj->RootDirectory == NULL) {
+        wchar_t fname[MAX_PATH]; int length;
+        length = path_from_object_attributes(obj, fname);
 
-            // cache this file
-            cache_file(file_handle, obj);
-        }
-        else {
+        length = ensure_absolute_path(fname, fname, length);
 
-            // obj->RootDirectory is not supported at the moment..
-            new_file(obj->ObjectName);
-        }
+        // cache this file
+        cache_file(file_handle, fname, length, obj->Attributes);
     }
 }
 
@@ -485,7 +470,16 @@ HOOKDEF(BOOL, WINAPI, DeleteFileA,
 ) {
     IS_SUCCESS_BOOL();
 
-    pipe("FILE_DEL:%z", lpFileName);
+    wchar_t path[MAX_PATH];
+
+    // copy ascii to unicode string
+    for (int i = 0; lpFileName[i] != 0 && i < MAX_PATH; i++) {
+        path[i] = lpFileName[i];
+    }
+
+    ensure_absolute_path(path, path, strlen(lpFileName));
+
+    pipe("FILE_DEL:%Z", path);
 
     BOOL ret = Old_DeleteFileA(lpFileName);
     LOQ("s", "FileName", lpFileName);
@@ -497,7 +491,11 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
 ) {
     IS_SUCCESS_BOOL();
 
-    pipe("FILE_DEL:%Z", lpFileName);
+    wchar_t path[MAX_PATH];
+
+    ensure_absolute_path(path, lpFileName, lstrlenW(lpFileName));
+
+    pipe("FILE_DEL:%Z", path);
 
     BOOL ret = Old_DeleteFileW(lpFileName);
     LOQ("u", "FileName", lpFileName);

@@ -398,8 +398,12 @@ void loq(int index, const char *name,
                 log_string("", 0);
             }
             else {
-                log_wstring(obj->ObjectName->Buffer,
-                    obj->ObjectName->Length / sizeof(wchar_t));
+                wchar_t path[MAX_PATH]; int length;
+                length = path_from_object_attributes(obj, path);
+
+                length = ensure_absolute_path(path, path, length);
+
+                log_wstring(path, length);
             }
         }
         else if(key == 'a') {
