@@ -283,6 +283,15 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetInformationFile,
     __in   ULONG Length,
     __in   FILE_INFORMATION_CLASS FileInformationClass
 ) {
+    if(FileInformation != NULL && Length == sizeof(BOOLEAN) &&
+            FileInformationClass == FileDispositionInformation &&
+            *(BOOLEAN *) FileInformation != FALSE) {
+
+        wchar_t path[MAX_PATH];
+        path_from_handle(FileHandle, path);
+        pipe("FILE_DEL:%Z", path);
+    }
+
     NTSTATUS ret = Old_NtSetInformationFile(FileHandle, IoStatusBlock,
         FileInformation, Length, FileInformationClass);
     LOQ("pb", "FileHandle", FileHandle,
