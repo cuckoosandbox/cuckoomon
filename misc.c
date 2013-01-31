@@ -129,7 +129,7 @@ int path_compare(const wchar_t *a, const wchar_t *b, int len)
     return 0;
 }
 
-int path_from_handle(HANDLE directory_handle, wchar_t *path)
+int path_from_handle(HANDLE handle, wchar_t *path)
 {
     static NTSTATUS (WINAPI *pNtQueryVolumeInformationFile)(
         _In_   HANDLE FileHandle,
@@ -164,7 +164,7 @@ int path_from_handle(HANDLE directory_handle, wchar_t *path)
     FILE_NAME_INFORMATION *name_information = (FILE_NAME_INFORMATION *) buf;
 
     // get the volume serial number of the directory handle
-    if(NT_SUCCESS(pNtQueryVolumeInformationFile(directory_handle, &status,
+    if(NT_SUCCESS(pNtQueryVolumeInformationFile(handle, &status,
             &volume_information, sizeof(volume_information),
             FileFsVolumeInformation))) {
 
@@ -181,9 +181,8 @@ int path_from_handle(HANDLE directory_handle, wchar_t *path)
 
                 // obtain the relative path for this filename on the given
                 // harddisk
-                if(NT_SUCCESS(pNtQueryInformationFile(directory_handle,
-                        &status, name_information,
-                        FILE_NAME_INFORMATION_REQUIRED_SIZE,
+                if(NT_SUCCESS(pNtQueryInformationFile(handle, &status,
+                        name_information, FILE_NAME_INFORMATION_REQUIRED_SIZE,
                         FileNameInformation))) {
 
                     int length =

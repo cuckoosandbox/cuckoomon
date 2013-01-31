@@ -26,7 +26,7 @@ BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj);
 // returns 0 on success, just like strcmp
 int path_compare(const wchar_t *a, const wchar_t *b, int len);
 
-int path_from_handle(HANDLE directory_handle, wchar_t *path);
+int path_from_handle(HANDLE handle, wchar_t *path);
 int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path);
 
 // imported but for some doesn't show up when #including string.h etc
