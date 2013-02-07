@@ -276,8 +276,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtUnmapViewOfSection,
     }
     NTSTATUS ret = Old_NtUnmapViewOfSection(ProcessHandle, BaseAddress);
     if(NT_SUCCESS(ret)) {
-        pipe("RET_FREE:%d,%x,%x", pid_from_process_handle(ProcessHandle),
-            BaseAddress, map_size);
+        //pipe("RET_FREE:%d,%x,%x", pid_from_process_handle(ProcessHandle),
+            //BaseAddress, map_size);
     }
     return ret;
 }
@@ -298,8 +298,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
     LOQ("pPPp", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "RegionSize", RegionSize, "Protection", Protect);
     if(NT_SUCCESS(ret)) {
-        pipe("RET_ALLOC:%d,%x,%x", pid_from_process_handle(ProcessHandle),
-            *BaseAddress, *RegionSize);
+        //pipe("RET_ALLOC:%d,%x,%x", pid_from_process_handle(ProcessHandle),
+            //*BaseAddress, *RegionSize);
     }
     return ret;
 }
@@ -350,8 +350,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesWritten, Buffer);
     if(NT_SUCCESS(ret)) {
-        pipe("RET_INTRS:%d,%x,%x", pid_from_process_handle(ProcessHandle),
-            BaseAddress, *NumberOfBytesWritten);
+        //pipe("RET_INTRS:%d,%x,%x", pid_from_process_handle(ProcessHandle),
+            //BaseAddress, *NumberOfBytesWritten);
     }
     return ret;
 }
@@ -372,8 +372,8 @@ HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
     LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
         "Buffer", lpNumberOfBytesWritten, lpBuffer);
     if(ret != FALSE) {
-        pipe("RET_INTRS:%d,%x,%x", pid_from_process_handle(hProcess),
-            lpBaseAddress, *lpNumberOfBytesWritten);
+        //pipe("RET_INTRS:%d,%x,%x", pid_from_process_handle(hProcess),
+            //lpBaseAddress, *lpNumberOfBytesWritten);
     }
     return ret;
 }
@@ -424,8 +424,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtFreeVirtualMemory,
     LOQ("pPPp", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "RegionSize", RegionSize, "FreeType", FreeType);
     if(NT_SUCCESS(ret)) {
-        pipe("RET_FREE:%d,%x,%x", pid_from_process_handle(ProcessHandle),
-            *BaseAddress, *RegionSize);
+        //pipe("RET_FREE:%d,%x,%x", pid_from_process_handle(ProcessHandle),
+            //*BaseAddress, *RegionSize);
     }
     return ret;
 }
@@ -442,8 +442,8 @@ HOOKDEF(BOOL, WINAPI, VirtualFreeEx,
     LOQ("pppl", "ProcessHandle", hProcess, "Address", lpAddress,
         "Size", dwSize, "FreeType", dwFreeType);
     if(ret != FALSE) {
-        pipe("RET_FREE:%d,%x,%x", pid_from_process_handle(hProcess),
-            lpAddress, dwSize);
+        //pipe("RET_FREE:%d,%x,%x", pid_from_process_handle(hProcess),
+            //lpAddress, dwSize);
     }
     return ret;
 }

@@ -170,7 +170,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtClose,
     NTSTATUS ret = Old_NtClose(Handle);
     LOQ("p", "Handle", Handle);
     if(NT_SUCCESS(ret)) {
-        file_close(Handle);
+        //file_close(Handle);
     }
     return ret;
 }

@@ -388,11 +388,11 @@ static void hook_create_pre_tramp(hook_t *h)
         // pushad
         0x60,
         // push ebp
-        0x55,
+        0x90, //0x55,
         // push esp
-        0x54,
+        0x90, //0x54,
         // call is_interesting_backtrace
-        0xe8, 0x00, 0x00, 0x00, 0x00,
+        0x31, 0xc0, 0x40, 0x90, 0x90, //0xe8, 0x00, 0x00, 0x00, 0x00,
         // test eax, eax
         0x85, 0xc0,
         // popad
@@ -438,8 +438,8 @@ static void hook_create_pre_tramp(hook_t *h)
     *(unsigned int *)(pre_tramp + 13) =
         (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
     *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
-    *(unsigned int *)(pre_tramp + 43) =
-        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 42 - 5;
+    //*(unsigned int *)(pre_tramp + 43) =
+        //(unsigned char *) &is_interesting_backtrace - h->pre_tramp - 42 - 5;
     *(unsigned int *)(pre_tramp + 57) = h->tramp - h->pre_tramp - 56 - 5;
     *(unsigned int *)(pre_tramp + 72) = (unsigned int) h->pre_tramp + 82;
     *(unsigned int *)(pre_tramp + 78) =
