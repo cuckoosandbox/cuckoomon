@@ -109,7 +109,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtSuspendThread,
     __in        HANDLE ThreadHandle,
     __out_opt   ULONG *PreviousSuspendCount
 ) {
-    ENSURE_ULONG(PreviousSuspendCount);
+    ENSURE_PARAM(ULONG, PreviousSuspendCount, 0);
 
     NTSTATUS ret = Old_NtSuspendThread(ThreadHandle, PreviousSuspendCount);
     LOQ("pL", "ThreadHandle", ThreadHandle,
@@ -121,7 +121,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtResumeThread,
     __in        HANDLE ThreadHandle,
     __out_opt   ULONG *SuspendCount
 ) {
-    ENSURE_ULONG(SuspendCount);
+    ENSURE_PARAM(ULONG, SuspendCount, 0);
 
     NTSTATUS ret = Old_NtResumeThread(ThreadHandle, SuspendCount);
     LOQ("pL", "ThreadHandle", ThreadHandle, "SuspendCount", SuspendCount);
@@ -202,7 +202,7 @@ HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
     OUT PHANDLE ThreadHandle,
     OUT PCLIENT_ID ClientId
 ) {
-    ENSURE_CLIENT_ID(ClientId);
+    ENSURE_PARAM(CLIENT_ID, ClientId, {});
 
     NTSTATUS ret = Old_RtlCreateUserThread(ProcessHandle, SecurityDescriptor,
         CreateSuspended, StackZeroBits, StackReserved, StackCommit,

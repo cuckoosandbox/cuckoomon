@@ -145,7 +145,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
     __in       ULONG Length,
     __out      PULONG ResultLength
 ) {
-    ENSURE_ULONG_ZERO(ResultLength);
+    ENSURE_PARAM(ULONG, ResultLength, 0);
 
     NTSTATUS ret = Old_NtQueryValueKey(KeyHandle, ValueName,
         KeyValueInformationClass, KeyValueInformation, Length, ResultLength);

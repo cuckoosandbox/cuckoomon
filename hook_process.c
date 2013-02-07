@@ -290,6 +290,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtAllocateVirtualMemory,
     __in     ULONG AllocationType,
     __in     ULONG Protect
 ) {
+    ENSURE_PARAM(PVOID, BaseAddress, NULL);
+    ENSURE_PARAM(SIZE_T, RegionSize, 0);
+
     NTSTATUS ret = Old_NtAllocateVirtualMemory(ProcessHandle, BaseAddress,
         ZeroBits, RegionSize, AllocationType, Protect);
     LOQ("pPPp", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
@@ -308,7 +311,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
     __in        ULONG NumberOfBytesToRead,
     __out_opt   PULONG NumberOfBytesReaded
 ) {
-    ENSURE_ULONG(NumberOfBytesReaded);
+    ENSURE_PARAM(ULONG, NumberOfBytesReaded, 0);
 
     BOOL ret = Old_NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToRead, NumberOfBytesReaded);
@@ -340,7 +343,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
     __in        ULONG NumberOfBytesToWrite,
     __out_opt   ULONG *NumberOfBytesWritten
 ) {
-    ENSURE_ULONG(NumberOfBytesWritten);
+    ENSURE_PARAM(ULONG, NumberOfBytesWritten, 0);
 
     BOOL ret = Old_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToWrite, NumberOfBytesWritten);
@@ -361,6 +364,8 @@ HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
     _Out_   SIZE_T *lpNumberOfBytesWritten
 ) {
     IS_SUCCESS_BOOL();
+
+    ENSURE_PARAM(SIZE_T, lpNumberOfBytesWritten, 0);
 
     BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesWritten);
@@ -411,6 +416,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtFreeVirtualMemory,
     IN OUT  PULONG RegionSize,
     IN      ULONG FreeType
 ) {
+    ENSURE_PARAM(PVOID, BaseAddress, NULL);
+    ENSURE_PARAM(ULONG, RegionSize, 0);
+
     NTSTATUS ret = Old_NtFreeVirtualMemory(ProcessHandle, BaseAddress,
         RegionSize, FreeType);
     LOQ("pPPp", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,

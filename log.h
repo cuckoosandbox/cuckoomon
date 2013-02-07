@@ -89,11 +89,5 @@ void log_free();
 #define IS_SUCCESS_INTM1() int is_success(int ret) { \
     return ret != -1; }
 
-#define ENSURE_DWORD(param) \
-    DWORD _##param = 0; if(param == NULL) param = &_##param
-#define ENSURE_ULONG(param) \
-    ULONG _##param = 0; if(param == NULL) param = &_##param
-#define ENSURE_ULONG_ZERO(param) \
-    ENSURE_ULONG(param); else *param = 0
-#define ENSURE_CLIENT_ID(param) \
-    CLIENT_ID _##param = {}; if(param == NULL) param = &_##param
+#define ENSURE_PARAM(type, param, value) \
+    type _##param = value; if(param == NULL) param = &_##param

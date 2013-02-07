@@ -162,7 +162,8 @@ HOOKDEF(LONG, WINAPI, RegEnumValueA,
   __out_opt    LPBYTE lpData,
   __inout_opt  LPDWORD lpcbData
 ) {
-    ENSURE_DWORD(lpType);
+    ENSURE_PARAM(DWORD, lpType, 0);
+
     LONG ret = Old_RegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName,
         lpReserved, lpType, lpData, lpcbData);
     if(ret == ERROR_SUCCESS && lpType != NULL && lpData != NULL &&
@@ -187,7 +188,8 @@ HOOKDEF(LONG, WINAPI, RegEnumValueW,
   __out_opt    LPBYTE lpData,
   __inout_opt  LPDWORD lpcbData
 ) {
-    ENSURE_DWORD(lpType);
+    ENSURE_PARAM(DWORD, lpType, 0);
+
     LONG ret = Old_RegEnumValueW(hKey, dwIndex, lpValueName, lpcchValueName,
         lpReserved, lpType, lpData, lpcbData);
     if(ret == ERROR_SUCCESS && lpType != NULL && lpData != NULL &&
@@ -250,7 +252,8 @@ HOOKDEF(LONG, WINAPI, RegQueryValueExA,
   __out_opt    LPBYTE lpData,
   __inout_opt  LPDWORD lpcbData
 ) {
-    ENSURE_DWORD(lpType);
+    ENSURE_PARAM(DWORD, lpType, 0);
+
     LONG ret = Old_RegQueryValueExA(hKey, lpValueName, lpReserved, lpType,
         lpData, lpcbData);
     if(ret == ERROR_SUCCESS && lpType != NULL && lpData != NULL &&
@@ -273,7 +276,8 @@ HOOKDEF(LONG, WINAPI, RegQueryValueExW,
   __out_opt    LPBYTE lpData,
   __inout_opt  LPDWORD lpcbData
 ) {
-    ENSURE_DWORD(lpType);
+    ENSURE_PARAM(DWORD, lpType, 0);
+
     LONG ret = Old_RegQueryValueExW(hKey, lpValueName, lpReserved, lpType,
         lpData, lpcbData);
     if(ret == ERROR_SUCCESS && lpType != NULL && lpData != NULL &&
