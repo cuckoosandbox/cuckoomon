@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_HWND();
-static const char *module_name = "windows";
 
 HOOKDEF(HWND, WINAPI, FindWindowA,
   __in_opt  LPCTSTR lpClassName,
@@ -58,7 +57,7 @@ HOOKDEF(HWND, WINAPI, FindWindowExA,
         LOQ("ls", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     else {
-        LOQ("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
+        LOQ2("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     return ret;
 }
@@ -77,7 +76,7 @@ HOOKDEF(HWND, WINAPI, FindWindowExW,
         LOQ("lu", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     else {
-        LOQ("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
+        LOQ2("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     return ret;
 }

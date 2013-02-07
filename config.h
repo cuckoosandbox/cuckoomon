@@ -34,6 +34,10 @@ struct {
 
     // did we inject into the current process or not?
     int is_injected;
+
+    // server ip and port
+    unsigned int host_ip;
+    unsigned short host_port;
 } g_config;
 
 void read_config();

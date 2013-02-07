@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_INTM1();
-static const char *module_name = "socket";
 
 HOOKDEF(int, WINAPI, WSAStartup,
     _In_   WORD wVersionRequested,
@@ -137,7 +136,7 @@ HOOKDEF(int, WSAAPI, bind,
             "port", htons(((struct sockaddr_in *) name)->sin_port));
     }
     else {
-        LOQ("p", "socket", s);
+        LOQ2("p", "socket", s);
     }
     return ret;
 }

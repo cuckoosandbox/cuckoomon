@@ -383,7 +383,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         g_pipe_name = g_config.pipe_name;
 
         // initialize the log file
-        log_init(g_config.results, 0);
+        log_init(g_config.host_ip, g_config.host_port, 0);
 
         // initialize the Sleep() skipping stuff
         init_sleep_skip(g_config.first_process);

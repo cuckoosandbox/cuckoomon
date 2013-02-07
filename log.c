@@ -21,18 +21,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdarg.h>
 #include <windows.h>
 #include <dirent.h>
+#include <winsock.h>
 #include "ntapi.h"
 #include "misc.h"
 #include "utf8.h"
+#include "log.h"
 
 // the size of the logging buffer
 #define BUFFERSIZE 1024 * 1024
 
 static CRITICAL_SECTION g_mutex;
-static DWORD g_pid, g_ppid;
-static wchar_t g_module_name_buf[MAX_PATH];
-static const wchar_t *g_module_name;
-static FILE *g_fp;
+static int g_sock;
+static unsigned int g_starttick;
 
 static char g_buffer[BUFFERSIZE];
 static int g_idx;
@@ -44,8 +44,15 @@ static int g_idx;
 void log_flush()
 {
     if(g_idx != 0) {
-        unsigned int written = fwrite(g_buffer, 1, g_idx, g_fp);
-        fflush(g_fp);
+        int written;
+        if(g_sock == INVALID_SOCKET) {
+            written = fwrite(g_buffer, 1, g_idx, stderr);
+        }
+        else {
+            written = send(g_sock, g_buffer, g_idx, 0);
+        }
+
+        // TODO add more error checking
 
         // if this call didn't write the entire buffer, then we have to move
         // around some stuff in the buffer
@@ -58,158 +65,82 @@ void log_flush()
     }
 }
 
-static void log_bytes(const void *bytes, int len)
+static void log_int8(char value)
 {
-    const unsigned char *b = (const unsigned char *) bytes;
-    while (len--) {
-        if(BUFFERSIZE - g_idx < 4) {
+    if(g_idx >= BUFFERSIZE) {
+        log_flush();
+    }
+
+    g_buffer[g_idx++] = value;
+}
+
+static void log_int16(short value)
+{
+    if(g_idx + 2 >= BUFFERSIZE) {
+        log_flush();
+    }
+
+    *(short *) &g_buffer[g_idx] = value;
+    g_idx += 2;
+}
+
+static void log_int32(int value)
+{
+    if(g_idx + 4 >= BUFFERSIZE) {
+        log_flush();
+    }
+
+    *(int *) &g_buffer[g_idx] = value;
+    g_idx += 4;
+}
+
+static void log_string(const char *str, int length)
+{
+    if(length == -1) length = strlen(str);
+
+    int encoded_length = utf8_strlen_ascii(str, length);
+
+    // write the utf8 length
+    log_int32(encoded_length);
+
+    // and the maximum length (which is in fact the length in characters)
+    log_int32(length);
+
+    while (length > 0) {
+        while (g_idx < BUFFERSIZE - 3 && length-- != 0) {
+            g_idx += utf8_encode(*str++, (unsigned char *) &g_buffer[g_idx]);
+        }
+
+        if(g_idx > BUFFERSIZE - 4) {
             log_flush();
         }
-        if(*b >= ' ' && *b < 0x7f) {
-            g_buffer[g_idx++] = *b;
-        }
-        else if(*b == '\r' || *b == '\n' || *b == '\t') {
-            g_buffer[g_idx++] = '\\';
-            g_buffer[g_idx++] = '\\';
-            switch (*b) {
-            case '\r': g_buffer[g_idx++] = 'r'; break;
-            case '\n': g_buffer[g_idx++] = 'n'; break;
-            case '\t': g_buffer[g_idx++] = 't'; break;
-            }
-        }
-        else {
-            g_buffer[g_idx++] = '\\';
-            g_buffer[g_idx++] = '\\';
-            g_buffer[g_idx++] = 'x';
-            g_buffer[g_idx++] = "0123456789abcdef"[*b >> 4];
-            g_buffer[g_idx++] = "0123456789abcdef"[*b & 15];
-        }
-        b++;
     }
 }
 
-static void log_string(const char *str, int len, int quotes)
+static void log_wstring(const wchar_t *str, int length)
 {
-    if(len == -1) len = strlen(str);
+    if(length == -1) length = lstrlenW(str);
 
-    if(quotes) log_bytes("\"", 1);
-    while (len--) {
-        if(*str == '"') {
-            log_bytes("\"", 1);
-        }
-        log_bytes(str++, 1);
-    }
-    if(quotes) log_bytes("\"", 1);
-}
+    int encoded_length = utf8_strlen_unicode(str, length);
 
-// utf8 encodes an utf16 wchar_t
-static void log_wchar(unsigned short c)
-{
-    unsigned char buf[3]; int len;
-    len = utf8_encode(c, buf);
-    log_bytes(buf, len);
-}
+    // write the utf8 length
+    log_int32(encoded_length);
 
-static void log_wstring(const wchar_t *str, int len, int quotes)
-{
-    if(len == -1) len = lstrlenW(str);
+    // and the maximum length (which is in fact the length in characters)
+    log_int32(length);
 
-    if(quotes) log_bytes("\"", 1);
-    while (len--) {
-        if(*str == '"') {
-            log_bytes("\"", 1);
-        }
-        log_wchar(*(unsigned short *) str++);
-    }
-    if(quotes) log_bytes("\"", 1);
-}
-
-static void log_itoa(unsigned long value, int base, int width, int nullpad)
-{
-    char buf[32] = {0}; int i;
-
-    for (i = 30; value != 0 && i != 0; i--, value /= base, width--) {
-        buf[i] = "0123456789abcdef"[value % base];
-    }
-
-    // if value is zero
-    if(i == 30 && width == 0) {
-        buf[i--] = '0';
-    }
-
-    while (width-- > 0) {
-        buf[i--] = nullpad ? '0' : ' ';
-    }
-
-    log_string(&buf[i + 1], -1, 0);
-}
-
-static void log_printf(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-
-    while (*fmt != 0) {
-        if(*fmt != '%') {
-            log_bytes(fmt++, 1);
-            continue;
+    while (length > 0) {
+        while (g_idx < BUFFERSIZE - 3 && length-- != 0) {
+            g_idx += utf8_encode(*str++, (unsigned char *) &g_buffer[g_idx]);
         }
 
-        int done = 0, nullpad = 0, width = 0;
-
-        while (done == 0) {
-            switch (*++fmt) {
-            case '%':
-                log_bytes(fmt, 1);
-                done = 1;
-                break;
-
-            case '0':
-                nullpad = 1;
-                break;
-
-            case '1': case '2': case '3': case '4': case '5':
-            case '6': case '7': case '8': case '9':
-                width = width * 10 + *fmt - '0';
-                break;
-
-            case 'l':
-                break;
-
-            case 'd':
-                log_itoa(va_arg(args, long), 10, width, nullpad);
-                done = 1;
-                break;
-
-            case 'p':
-                log_bytes("0x", 2);
-                log_itoa(va_arg(args, long), 16, 2 * sizeof(long), 1);
-                done = 1;
-                break;
-
-            case 's':
-                log_string(va_arg(args, const char *), -1, 0);
-                done = 1;
-                break;
-
-            case 'S':
-                log_wstring(va_arg(args, const wchar_t *), -1, 0);
-                done = 1;
-                break;
-
-            default:
-                // dafuq?
-                fprintf(stderr, "invalid format specifier.. %c\n", *fmt);
-                break;
-            }
+        if(g_idx > BUFFERSIZE - 4) {
+            log_flush();
         }
-        fmt++;
     }
-
-    va_end(args);
 }
 
-void loq(const char *fmt, ...)
+void loq(int index, int is_success, int return_value, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -217,26 +148,13 @@ void loq(const char *fmt, ...)
 
     EnterCriticalSection(&g_mutex);
 
-    SYSTEMTIME st;
-    GetSystemTime(&st);
+    log_int8(index);
+    log_int8(is_success);
+    log_int32(return_value);
+    log_int32(GetCurrentThreadId());
+    log_int32(GetTickCount() - g_starttick);
 
-    g_idx = 0;
-
-    log_printf("\"%d-%02d-%02d %02d:%02d:%02d,%03d\",", st.wYear, st.wMonth,
-        st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-
-    const char *module_name = va_arg(args, const char *);
-    const char *function_name = va_arg(args, const char *);
-    int is_success = va_arg(args, int);
-    long return_value = va_arg(args, long);
-
-    // first parameter in args indicates the hooking type
-    log_printf("\"%d\",\"%S\",\"%d\",\"%d\",\"%s\",\"%s\",\"%s\",\"%p\"",
-        g_pid, g_module_name, GetCurrentThreadId(), g_ppid, module_name,
-        function_name, is_success != 0 ? "SUCCESS" : "FAILURE", return_value);
-
-    while (--count || *fmt != 0) {
-        log_bytes(",", 1);
+    while (--count != 0 || *fmt != 0) {
 
         // we have to find the next format specifier
         if(count == 0) {
@@ -250,70 +168,68 @@ void loq(const char *fmt, ...)
             key = *fmt++;
         }
 
-        // log the key
-        const char *key_str = va_arg(args, const char *);
-        log_printf("\"%s->", key_str);
+        // pop the key and omit it
+        (void) va_arg(args, const char *);
 
         // log the value
         if(key == 's') {
             const char *s = va_arg(args, const char *);
             if(s == NULL) s = "";
-            log_string(s, -1, 0);
+            log_string(s, -1);
         }
         else if(key == 'S') {
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
-            log_string(s, len, 0);
+            log_string(s, len);
         }
         else if(key == 'u') {
             const wchar_t *s = va_arg(args, const wchar_t *);
             if(s == NULL) s = L"";
-            log_wstring(s, -1, 0);
+
+            log_wstring(s, -1);
         }
         else if(key == 'U') {
             int len = va_arg(args, int);
             const wchar_t *s = va_arg(args, const wchar_t *);
-            (void)len;
-            log_wstring(s, len, 0);
+            log_wstring(s, len);
         }
         else if(key == 'b') {
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
             (void)len;
-            log_printf("%p", s);
+            log_int32((int) s);
         }
         else if(key == 'B') {
             int *len = va_arg(args, int *);
             const char *s = va_arg(args, const char *);
             (void)len;
-            log_printf("%p", s);
+            log_int32((int) s);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
-            log_printf("%d", value);
+            log_int32(value);
         }
         else if(key == 'l' || key == 'p') {
             long value = va_arg(args, long);
-            log_printf(key == 'l' ? "%ld" : "%p", value);
+            log_int32(value);
         }
         else if(key == 'L' || key == 'P') {
-            void **ptr = va_arg(args, void **);
-            log_printf(key == 'L' ? "%ld" : "%p",
-                ptr != NULL ? *ptr : NULL);
+            long *ptr = va_arg(args, long *);
+            log_int32(ptr != NULL ? *ptr : 0);
         }
         else if(key == 'o') {
             UNICODE_STRING *str = va_arg(args, UNICODE_STRING *);
             if(str == NULL) {
-                log_string("", 0, 0);
+                log_string("", 0);
             }
             else {
-                log_wstring(str->Buffer, str->Length / sizeof(wchar_t), 0);
+                log_wstring(str->Buffer, str->Length / sizeof(wchar_t));
             }
         }
         else if(key == 'O') {
             OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
             if(obj == NULL || obj->ObjectName == NULL) {
-                log_string("", 0, 0);
+                log_string("", 0);
             }
             else {
                 wchar_t path[MAX_PATH]; int length;
@@ -321,32 +237,22 @@ void loq(const char *fmt, ...)
 
                 length = ensure_absolute_path(path, path, length);
 
-                log_wstring(path, length, 0);
+                log_wstring(path, length);
             }
         }
         else if(key == 'a') {
             int argc = va_arg(args, int);
             const char **argv = va_arg(args, const char **);
-            log_bytes("[", 1);
-            while (argc--) {
-                log_string(*argv++, -1, 0);
-                if(argc != 0) {
-                    log_bytes(", ", 2);
-                }
-            }
-            log_bytes("]", 1);
+            // TODO
+            (void)argc;
+            (void)argv;
         }
         else if(key == 'A') {
             int argc = va_arg(args, int);
             const wchar_t **argv = va_arg(args, const wchar_t **);
-            log_bytes("[", 1);
-            while (argc--) {
-                log_wstring(*argv++, -1, 0);
-                if(argc != 0) {
-                    log_bytes(", ", 2);
-                }
-            }
-            log_bytes("]", 1);
+            // TODO
+            (void)argc;
+            (void)argv;
         }
         else if(key == 'r' || key == 'R') {
             unsigned long type = va_arg(args, unsigned long);
@@ -354,70 +260,98 @@ void loq(const char *fmt, ...)
             unsigned char *data = va_arg(args, unsigned char *);
 
             if(data == NULL || type == REG_NONE) {
-                log_string("<None>", -1, 0);
+                log_string("", 0);
             }
             else if(type == REG_DWORD || type == REG_DWORD_LITTLE_ENDIAN) {
                 unsigned int value = *(unsigned int *) data;
-                log_printf("%d", value);
+                log_int32(value);
             }
             else if(type == REG_DWORD_BIG_ENDIAN) {
                 unsigned int value = *(unsigned int *) data;
-                log_printf("%d", htonl(value));
+                log_int32(htonl(value));
             }
             else if(type == REG_EXPAND_SZ || type == REG_SZ) {
                 // ascii strings
                 if(key == 'r') {
-                    log_string((const char *) data, size, 0);
+                    log_string((const char *) data, size);
                 }
                 // unicode strings
                 else {
-                    log_wstring((const wchar_t *) data, size >> 1, 0);
+                    log_wstring((const wchar_t *) data,
+                        size / sizeof(wchar_t));
                 }
             }
         }
-        log_bytes("\"", 1);
     }
 
     va_end(args);
 
-    g_buffer[g_idx++] = '\n';
-
-    // make sure this entry is written to the log file
-    log_flush();
-
     LeaveCriticalSection(&g_mutex);
 }
 
-void log_init(const char *dir, int debug)
+void log_new_process()
+{
+    wchar_t module_path[MAX_PATH];
+    GetModuleFileNameW(NULL, module_path, ARRAYSIZE(module_path));
+
+    g_starttick = GetTickCount();
+
+    loq(0, 1, 0, "llu", "ProcessIdentifier", GetCurrentProcessId(),
+        "ParentProcessIdentifier", parent_process_id(),
+        "ModulePath", module_path);
+}
+
+void log_new_thread()
+{
+    loq(1, 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
+}
+
+void log_init(unsigned int ip, unsigned short port, int debug)
 {
     InitializeCriticalSection(&g_mutex);
-    GetModuleFileNameW(NULL, g_module_name_buf, ARRAYSIZE(g_module_name_buf));
-
-    // extract only the filename of the process, not the entire path
-    for (const wchar_t *p = g_module_name = g_module_name_buf; *p != 0; p++) {
-        if(*p == '\\' || *p == '/') {
-            g_module_name = p + 1;
-        }
-    }
-
-    g_pid = GetCurrentProcessId();
-    g_ppid = parent_process_id();
 
     if(debug != 0) {
-        g_fp = stderr;
+        g_sock = INVALID_SOCKET;
     }
     else {
-        char fname[256];
-        sprintf(fname, "%s\\logs\\%d.csv", dir, GetCurrentProcessId());
-        g_fp = fopen(fname, "w");
+        WSADATA wsa;
+        WSAStartup(MAKEWORD(2, 2), &wsa);
+
+        g_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+        struct sockaddr_in addr = {
+            .sin_family         = AF_INET,
+            .sin_addr.s_addr    = ip,
+            .sin_port           = htons(port),
+        };
+
+        connect(g_sock, (struct sockaddr *) &addr, sizeof(addr));
     }
+
+    log_new_process();
+    log_new_thread();
 }
 
 void log_free()
 {
     DeleteCriticalSection(&g_mutex);
-    if(g_fp != stderr) {
-        log_flush();
-        fclose(g_fp);
+    log_flush();
+    if(g_sock != INVALID_SOCKET) {
+        closesocket(g_sock);
     }
+}
+
+int log_resolve_index(const char *funcname, int index)
+{
+    for (int i = 0; logtbl[i] != NULL; i++) {
+        if(!strcmp(funcname, logtbl[i])) {
+            if(index != 0) {
+                index--;
+            }
+            else {
+                return i;
+            }
+        }
+    }
+    return -1;
 }

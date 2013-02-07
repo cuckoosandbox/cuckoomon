@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_SCHANDLE();
-static const char *module_name = "services";
 
 HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerA,
   __in_opt  LPCTSTR lpMachineName,

@@ -45,6 +45,17 @@ int utf8_length(unsigned short x)
     return utf8_encode(x, buf);
 }
 
+int utf8_strlen_ascii(const char *s, int len)
+{
+    if(len < 0) len = strlen(s);
+
+    int ret = 0;
+    while (len-- != 0) {
+        ret += utf8_length(*s++);
+    }
+    return ret;
+}
+
 int utf8_strlen_unicode(const wchar_t *s, int len)
 {
     if(len < 0) len = lstrlenW(s);

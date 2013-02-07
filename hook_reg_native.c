@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 
 static IS_SUCCESS_LONGREG();
-static const char *module_name = "registry";
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,
     __out       PHANDLE KeyHandle,
@@ -131,7 +130,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
             "Type", Type, "Buffer", Type, DataSize, Data);
     }
     else {
-        LOQ("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
+        LOQ2("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
             "Type", Type);
     }
     return ret;
@@ -173,7 +172,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
             "Type", Type, "Information", Type, DataLength, Data);
     }
     else {
-        LOQ("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
+        LOQ2("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
     }
 
     return ret;

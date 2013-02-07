@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hook_file.h"
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "system";
 
 HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
     __in  int idHook,
@@ -33,7 +32,6 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
     __in  DWORD dwThreadId
 ) {
     IS_SUCCESS_HHOOK();
-    const char *module_name = "hooking";
 
     HHOOK ret = Old_SetWindowsHookExA(idHook, lpfn, hMod, dwThreadId);
     LOQ("lppl", "HookIdentifier", idHook, "ProcedureAddress", lpfn,
@@ -48,7 +46,6 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
     __in  DWORD dwThreadId
 ) {
     IS_SUCCESS_HHOOK();
-    const char *module_name = "hooking";
 
     HHOOK ret = Old_SetWindowsHookExW(idHook, lpfn, hMod, dwThreadId);
     LOQ("lppl", "HookIdentifier", idHook, "ProcedureAddress", lpfn,
@@ -119,7 +116,6 @@ HOOKDEF(BOOL, WINAPI, DeviceIoControl,
   __inout_opt  LPOVERLAPPED lpOverlapped
 ) {
     IS_SUCCESS_BOOL();
-    const char *module_name = "device";
 
     BOOL ret = Old_DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer,
         nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned,

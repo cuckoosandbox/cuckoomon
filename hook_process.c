@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hook_sleep.h"
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "process";
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
@@ -160,7 +159,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
 
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
-    LOQ("PpP", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
+    LOQ2("PpP", "ProcessHandle", ProcessHandle,
+        "DesiredAccess", DesiredAccess,
         // looks hacky, is indeed hacky.. UniqueProcess is the first value in
         // CLIENT_ID, so it's correct like this.. (although still hacky)
         "ProcessIdentifier", &ClientId->UniqueProcess);
@@ -182,6 +182,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtTerminateProcess,
     __in_opt  HANDLE ProcessHandle,
     __in      NTSTATUS ExitStatus
 ) {
+    log_flush();
     NTSTATUS ret = Old_NtTerminateProcess(ProcessHandle, ExitStatus);
     LOQ("pl", "ProcessHandle", ProcessHandle, "ExitCode", ExitStatus);
     return ret;
@@ -251,6 +252,7 @@ HOOKDEF(VOID, WINAPI, ExitProcess,
 
     int ret = 0;
     LOQ("l", "ExitCode", uExitCode);
+    log_flush();
     Old_ExitProcess(uExitCode);
 }
 

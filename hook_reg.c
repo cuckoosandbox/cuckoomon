@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_LONGREG();
-static const char *module_name = "registry";
 
 HOOKDEF(LONG, WINAPI, RegOpenKeyExA,
   __in        HKEY hKey,
@@ -172,7 +171,7 @@ HOOKDEF(LONG, WINAPI, RegEnumValueA,
             "ValueName", lpValueName, "Data", *lpType, *lpcbData, lpData);
     }
     else {
-        LOQ("plsLL", "Handle", hKey, "Index", dwIndex,
+        LOQ2("plsLL", "Handle", hKey, "Index", dwIndex,
             "ValueName", lpValueName, "Type", lpType, "DataLength", lpcbData);
     }
     return ret;
@@ -198,7 +197,7 @@ HOOKDEF(LONG, WINAPI, RegEnumValueW,
             "ValueName", lpValueName, "Data", *lpType, *lpcbData, lpData);
     }
     else {
-        LOQ("pluLL", "Handle", hKey, "Index", dwIndex,
+        LOQ2("pluLL", "Handle", hKey, "Index", dwIndex,
             "ValueName", lpValueName, "Type", lpType, "DataLength", lpcbData);
     }
     return ret;
@@ -219,7 +218,7 @@ HOOKDEF(LONG, WINAPI, RegSetValueExA,
             "Buffer", dwType, cbData, lpData);
     }
     else {
-        LOQ("psl", "Handle", hKey, "ValueName", lpValueName, "Type", dwType);
+        LOQ2("psl", "Handle", hKey, "ValueName", lpValueName, "Type", dwType);
     }
     return ret;
 }
@@ -239,7 +238,7 @@ HOOKDEF(LONG, WINAPI, RegSetValueExW,
             "Buffer", dwType, cbData, lpData);
     }
     else {
-        LOQ("pul", "Handle", hKey, "ValueName", lpValueName, "Type", dwType);
+        LOQ2("pul", "Handle", hKey, "ValueName", lpValueName, "Type", dwType);
     }
     return ret;
 }
@@ -262,7 +261,7 @@ HOOKDEF(LONG, WINAPI, RegQueryValueExA,
             "Data", *lpType, *lpcbData, lpData);
     }
     else {
-        LOQ("psLL", "Handle", hKey, "ValueName", lpValueName,
+        LOQ2("psLL", "Handle", hKey, "ValueName", lpValueName,
             "Type", lpType, "DataLength", lpcbData);
     }
     return ret;
@@ -286,7 +285,7 @@ HOOKDEF(LONG, WINAPI, RegQueryValueExW,
             "Data", *lpType, *lpcbData, lpData);
     }
     else {
-        LOQ("puLL", "Handle", hKey, "ValueName", lpValueName,
+        LOQ2("puLL", "Handle", hKey, "ValueName", lpValueName,
             "Type", lpType, "DataLength", lpcbData);
     }
     return ret;
