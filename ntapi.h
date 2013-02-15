@@ -370,4 +370,38 @@ typedef struct _RTL_USER_PROCESS_INFORMATION {
     SECTION_IMAGE_INFORMATION ImageInformation;
 } RTL_USER_PROCESS_INFORMATION, *PRTL_USER_PROCESS_INFORMATION;
 
+typedef struct _LDR_DATA_TABLE_ENTRY {
+     LIST_ENTRY InLoadOrderLinks;
+     LIST_ENTRY InMemoryOrderLinks;
+     LIST_ENTRY InInitializationOrderLinks;
+     PVOID DllBase;
+     PVOID EntryPoint;
+     ULONG SizeOfImage;
+     UNICODE_STRING FullDllName;
+     UNICODE_STRING BaseDllName;
+     ULONG Flags;
+     WORD LoadCount;
+     WORD TlsIndex;
+     union {
+          LIST_ENTRY HashLinks;
+          struct {
+               PVOID SectionPointer;
+               ULONG CheckSum;
+          };
+     };
+     union {
+          ULONG TimeDateStamp;
+          PVOID LoadedImports;
+     };
+     _ACTIVATION_CONTEXT *EntryPointActivationContext;
+     PVOID PatchInformation;
+     LIST_ENTRY ForwarderLinks;
+     LIST_ENTRY ServiceTagLinks;
+     LIST_ENTRY StaticLinks;
+} LDR_DATA_TABLE_ENTRY, *PLDR_DATA_TABLE_ENTRY;
+
+typedef VOID (NTAPI LDR_ENUM_CALLBACK)(
+    IN LDR_DATA_TABLE_ENTRY *ModuleInformation,
+    IN VOID *Context, OUT BOOLEAN *Stop);
+
 #endif
