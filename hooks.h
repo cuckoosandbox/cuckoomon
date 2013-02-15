@@ -1454,3 +1454,5 @@ extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 );
+
+void set_hooks();
