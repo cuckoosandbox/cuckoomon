@@ -162,6 +162,16 @@ static void NTAPI update_modules(LDR_DATA_TABLE_ENTRY *ldr_entry,
 {
     void **addr = context;
     if(ldr_entry->DllBase == *addr) {
+
+        *stop = TRUE;
+
+        // if we don't have hooks for this library, then there's no need to
+        // make a stubdll for it
+        if(!has_library_hooks(ldr_entry->BaseDllName.Buffer,
+                ldr_entry->BaseDllName.Length / sizeof(wchar_t))) {
+            return;
+        }
+
         void *new_dll; uint32_t image_size;
 
         new_dll = generate_stubdll(*addr, &image_size);
@@ -177,7 +187,6 @@ static void NTAPI update_modules(LDR_DATA_TABLE_ENTRY *ldr_entry,
         add_entry(&dll);
 
         *addr = new_dll;
-        *stop = TRUE;
     }
     else {
         *stop = FALSE;
