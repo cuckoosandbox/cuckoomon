@@ -19,12 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <windows.h>
 #include "hooking.h"
+#include "hooks.h"
 #include "ntapi.h"
 #include "log.h"
 #include "pipe.h"
 #include "hook_sleep.h"
-
-void set_hooks_dll(const wchar_t *library, int len);
 
 HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,

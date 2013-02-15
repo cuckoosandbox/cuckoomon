@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include "ntapi.h"
 #include "stubdll.h"
+#include "hooking.h"
+#include "hooks.h"
 
 typedef struct _stubdll_t {
     HMODULE real_address;
@@ -122,6 +124,13 @@ static void NTAPI init_modules(LDR_DATA_TABLE_ENTRY *ldr_entry, void *context,
 {
     *stop = FALSE;
 
+    // if we don't have hooks for this library, then there's no need to make
+    // a stubdll for it
+    if(!has_library_hooks(ldr_entry->BaseDllName.Buffer,
+            ldr_entry->BaseDllName.Length / sizeof(wchar_t))) {
+        return;
+    }
+
     void *new_dll; uint32_t image_size;
 
     new_dll = generate_stubdll(ldr_entry->DllBase, &image_size);
@@ -152,9 +161,22 @@ static void NTAPI update_modules(LDR_DATA_TABLE_ENTRY *ldr_entry,
     void *context, BOOLEAN *stop)
 {
     void **addr = context;
-    if(ldr_entry->DllBase == addr[0]) {
-        ldr_entry->DllBase = addr[1];
-        ldr_entry->SizeOfImage = (uint32_t) addr[2];
+    if(ldr_entry->DllBase == *addr) {
+        void *new_dll; uint32_t image_size;
+
+        new_dll = generate_stubdll(*addr, &image_size);
+
+        ldr_entry->DllBase = new_dll;
+        ldr_entry->SizeOfImage = image_size;
+
+        stubdll_t dll = {
+            .real_address = *addr,
+            .stub_address = new_dll,
+        };
+
+        add_entry(&dll);
+
+        *addr = new_dll;
         *stop = TRUE;
     }
     else {
@@ -165,23 +187,9 @@ static void NTAPI update_modules(LDR_DATA_TABLE_ENTRY *ldr_entry,
 // to alter the return address of LdrLoadDll
 void stubdll_loadlib(HMODULE *image)
 {
-    void *new_dll; uint32_t image_size;
-
     if(has_entry(*image, image)) {
         return;
     }
 
-    new_dll = generate_stubdll(*image, &image_size);
-
-    stubdll_t dll = {
-        .real_address = *image,
-        .stub_address = new_dll,
-    };
-
-    add_entry(&dll);
-
-    void *addr[3] = {*image, new_dll, (void *) image_size};
-    pLdrEnumerateLoadedModules(FALSE, &update_modules, addr);
-
-    *image = new_dll;
+    pLdrEnumerateLoadedModules(FALSE, &update_modules, image);
 }

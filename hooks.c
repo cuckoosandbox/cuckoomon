@@ -319,6 +319,7 @@ static hook_t g_hooks[] = {
 // get a random hooking method, except for hook_jmp_direct
 #define HOOKTYPE randint(HOOK_NOP_JMP_DIRECT, HOOK_MOV_EAX_INDIRECT_PUSH_RETN)
 
+// this library has just been loaded, set the hooks accordingly
 void set_hooks_dll(const wchar_t *library, int len)
 {
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
@@ -328,6 +329,7 @@ void set_hooks_dll(const wchar_t *library, int len)
     }
 }
 
+// set hooks for all currently loaded libraries
 void set_hooks()
 {
     // the hooks contain executable code as well, so they have to be RWX
@@ -348,4 +350,15 @@ void set_hooks()
     }
 
     hook_enable();
+}
+
+// check if we have hooks for this particular library
+int has_library_hooks(const wchar_t *library, int len)
+{
+    for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
+        if(!wcsnicmp(g_hooks[i].library, library, len)) {
+            return 1;
+        }
+    }
+    return 0;
 }
