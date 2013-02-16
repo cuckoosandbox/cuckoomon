@@ -69,6 +69,10 @@ static int has_entry(void *address, HMODULE *stub_address)
     return ret;
 }
 
+void generate_stub_function(uint8_t *orig_func, uint8_t *new_func)
+{
+}
+
 static void *generate_stubdll(void *image, uint32_t *image_size)
 {
     IMAGE_DOS_HEADER *image_dos_header = (IMAGE_DOS_HEADER *) image;
@@ -88,8 +92,9 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     // image nt headers, one image section header), 64 bytes for every
     // function stub, and then the export table (which we pretty much copy
     // directly)
-    uint32_t required_size = 1024 + 64 * export_directory->NumberOfFunctions +
+    uint32_t section_size = 64 * export_directory->NumberOfFunctions +
         export_data_directory->Size;
+    uint32_t required_size = 1024 + section_size;
 
     // initially allocate everything as RWX
     unsigned char *stub_dll = VirtualAlloc(NULL, required_size,
@@ -116,7 +121,69 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     memset(new_nt_headers->OptionalHeader.DataDirectory, 0,
         sizeof(IMAGE_DATA_DIRECTORY) * IMAGE_NUMBEROF_DIRECTORY_ENTRIES);
 
+    // generate the text section
+    IMAGE_SECTION_HEADER image_section_header = {
+        .Name               = ".text",
+        .Misc.VirtualSize   = section_size,
+        .VirtualAddress     = 1024,
+        .SizeOfRawData      = section_size,
+        .PointerToRawData   = 1024,
+        .Characteristics    =
+            IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ,
+    };
 
+    // copy the section to the right place
+    memcpy(IMAGE_FIRST_SECTION(stub_dll), &image_section_header,
+        sizeof(image_section_header));
+
+    // first let's setup the export table
+    IMAGE_EXPORT_DIRECTORY image_export_directory = {
+        .Characteristics        = export_directory->Characteristics,
+        .TimeDateStamp          = export_directory->TimeDateStamp,
+        .MajorVersion           = export_directory->MajorVersion,
+        .MinorVersion           = export_directory->MinorVersion,
+        .Name                   = export_directory->Name +
+            (uint32_t) image - (uint32_t) stub_dll,
+        .Base                   = 1, // TODO is this correct?
+        .NumberOfFunctions      = export_directory->NumberOfFunctions,
+        .NumberOfNames          = export_directory->NumberOfNames,
+        // addressoffunctions is right after the image export directory
+        .AddressOfFunctions     = 1024 + sizeof(image_export_directory),
+        .AddressOfNames         = export_directory->AddressOfNames +
+            (uint32_t) image - (uint32_t) stub_dll,
+        .AddressOfNameOrdinals  = export_directory->AddressOfNameOrdinals +
+            (uint32_t) image - (uint32_t) stub_dll,
+    };
+
+    memcpy(stub_dll + 1024, &image_export_directory,
+        sizeof(image_export_directory));
+
+    // now set all the function addresses correctly up
+    uint32_t *address_of_functions = (uint32_t *)(stub_dll + 1024 +
+        sizeof(image_export_directory));
+
+    // points to the address of each stub function
+    uint8_t *function = (uint8_t *)(
+        address_of_functions + export_directory->NumberOfFunctions);
+
+    // original table of function addresses
+    uint32_t *orig_function_addresses = (uint32_t *)(
+        (char *) image + export_directory->AddressOfFunctions);
+
+    for (int i = 0; i < export_directory->NumberOfFunctions; i++) {
+        // original function address
+        uint8_t *orig_addr = (uint8_t *) image + orig_function_addresses[i];
+
+        // now generate a stub function
+        generate_stub_function(orig_addr, function);
+
+        // place the relative address of the new function in our function
+        // address table
+        *address_of_functions++ = function - stub_dll;
+
+        // we've decided upfront that every function may take upto 64 bytes
+        function += 64;
+    }
 }
 
 static void NTAPI init_modules(LDR_DATA_TABLE_ENTRY *ldr_entry, void *context,
