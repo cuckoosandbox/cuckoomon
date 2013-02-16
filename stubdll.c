@@ -94,10 +94,10 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     // directly)
     uint32_t section_size = 64 * export_directory->NumberOfFunctions +
         export_data_directory->Size;
-    uint32_t required_size = 1024 + section_size;
+    *image_size = 1024 + section_size;
 
     // initially allocate everything as RWX
-    unsigned char *stub_dll = VirtualAlloc(NULL, required_size,
+    unsigned char *stub_dll = VirtualAlloc(NULL, *image_size,
         MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
     // copy the image dos header and whatever is between the image dos header
