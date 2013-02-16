@@ -100,12 +100,9 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     unsigned char *stub_dll = VirtualAlloc(NULL, required_size,
         MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
-    // copy the image dos header
-    memcpy(stub_dll, image_dos_header, sizeof(IMAGE_DOS_HEADER));
-
-    // copy whatever is between the image dos header and the image nt headers
-    memcpy(stub_dll + sizeof(IMAGE_DOS_HEADER), image_dos_header + 1,
-        image_dos_header->e_lfanew - sizeof(IMAGE_DOS_HEADER));
+    // copy the image dos header and whatever is between the image dos header
+    // and the image nt headers
+    memcpy(stub_dll, image_dos_header, image_dos_header->e_lfanew);
 
     // copy the image nt headers
     IMAGE_NT_HEADERS *new_nt_headers = (IMAGE_NT_HEADERS *)(
@@ -116,10 +113,23 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     new_nt_headers->FileHeader.NumberOfSections = 1;
     new_nt_headers->FileHeader.PointerToSymbolTable = 0;
     new_nt_headers->FileHeader.NumberOfSymbols = 0;
+    new_nt_headers->OptionalHeader.NumberOfRvaAndSizes =
+        IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
 
     // reset the data directories
     memset(new_nt_headers->OptionalHeader.DataDirectory, 0,
         sizeof(IMAGE_DATA_DIRECTORY) * IMAGE_NUMBEROF_DIRECTORY_ENTRIES);
+
+    // update the data directory to point the export table to our newly
+    // generated table (see below)
+    IMAGE_DATA_DIRECTORY *new_data_directory =
+        new_nt_headers->OptionalHeader.DataDirectory;
+
+    IMAGE_DATA_DIRECTORY *new_export_data_directory =
+        &new_data_directory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+
+    new_export_data_directory->VirtualAddress = 1024;
+    new_export_data_directory->Size = export_data_directory->Size;
 
     // generate the text section
     IMAGE_SECTION_HEADER image_section_header = {
@@ -133,7 +143,7 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     };
 
     // copy the section to the right place
-    memcpy(IMAGE_FIRST_SECTION(stub_dll), &image_section_header,
+    memcpy(IMAGE_FIRST_SECTION(new_nt_headers), &image_section_header,
         sizeof(image_section_header));
 
     // first let's setup the export table
@@ -149,8 +159,8 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
         .NumberOfNames          = export_directory->NumberOfNames,
         // addressoffunctions is right after the image export directory
         .AddressOfFunctions     = 1024 + sizeof(image_export_directory),
-        .AddressOfNames         = export_directory->AddressOfNames +
-            (uint32_t) image - (uint32_t) stub_dll,
+        .AddressOfNames         = 1024 + sizeof(image_export_directory) +
+            sizeof(uint32_t) * export_directory->NumberOfFunctions,
         .AddressOfNameOrdinals  = export_directory->AddressOfNameOrdinals +
             (uint32_t) image - (uint32_t) stub_dll,
     };
@@ -164,11 +174,26 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
 
     // points to the address of each stub function
     uint8_t *function = (uint8_t *)(
-        address_of_functions + export_directory->NumberOfFunctions);
+        address_of_functions + export_directory->NumberOfFunctions +
+        export_directory->NumberOfNames);
 
     // original table of function addresses
     uint32_t *orig_function_addresses = (uint32_t *)(
         (char *) image + export_directory->AddressOfFunctions);
+
+    // our table of names, which we will want to point to the original dll
+    uint32_t *address_of_names = (uint32_t *)(stub_dll + 1024 +
+        sizeof(image_export_directory) +
+        sizeof(uint32_t) * export_directory->NumberOfFunctions);
+
+    // original table of names addresses
+    uint32_t *orig_names_addresses = (uint32_t *)(
+        (char *) image + export_directory->AddressOfNames);
+
+    for (int i = 0; i < export_directory->NumberOfNames; i++) {
+        address_of_names[i] = orig_names_addresses[i] +
+            (uint32_t) image - (uint32_t) stub_dll;
+    }
 
     for (int i = 0; i < export_directory->NumberOfFunctions; i++) {
         // original function address
@@ -184,6 +209,7 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
         // we've decided upfront that every function may take upto 64 bytes
         function += 64;
     }
+    return stub_dll;
 }
 
 static void NTAPI init_modules(LDR_DATA_TABLE_ENTRY *ldr_entry, void *context,
