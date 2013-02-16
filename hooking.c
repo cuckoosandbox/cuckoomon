@@ -20,11 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stddef.h>
 #include <windows.h>
 #include "hooking.h"
-#include "distorm.h"
-#include "mnemonics.h"
 #include "ntapi.h"
-#include "distorm.h"
 #include "ignore.h"
+#include "misc.h"
 
 // this number can be changed if required to do so
 #define TLS_HOOK_INFO 0x44
@@ -57,20 +55,6 @@ static void ensure_valid_hook_info();
 
 // by default we enable the retaddr check
 static int g_enable_retaddr_check = 1;
-
-// length disassembler engine
-int lde(void *addr)
-{
-    // the length of an instruction is 16 bytes max, but there can also be
-    // 16 instructions of length one, so.. we support "decomposing" 16
-    // instructions at once, max
-    unsigned int used_instruction_count; _DInst instructions[16];
-    _CodeInfo code_info = {0, 0, addr, 16, Decode32Bits};
-    _DecodeResult ret = distorm_decompose(&code_info, instructions, 16,
-        &used_instruction_count);
-
-    return ret == DECRES_SUCCESS ? instructions[0].size : 0;
-}
 
 static inline unsigned int __readfsdword(unsigned int index)
 {

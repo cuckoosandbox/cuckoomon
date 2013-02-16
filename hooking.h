@@ -44,8 +44,6 @@ typedef struct _hook_t {
     unsigned char hook_data[32];
 } hook_t;
 
-int lde(void *addr);
-
 int hook_api(hook_t *h, int type);
 
 void hook_enable();

@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <shlwapi.h>
 #include "ntapi.h"
 #include "misc.h"
+#include "distorm.h"
 
 ULONG_PTR parent_process_id() // By Napalm @ NetCore2K (rohitab.com)
 {
@@ -239,4 +240,18 @@ int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length)
         wcsncpy(out, in, length < MAX_PATH ? length : MAX_PATH);
         return out[length] = 0, length;
     }
+}
+
+// length disassembler engine
+int lde(void *addr)
+{
+    // the length of an instruction is 16 bytes max, but there can also be
+    // 16 instructions of length one, so.. we support "decomposing" 16
+    // instructions at once, max
+    unsigned int used_instruction_count; _DInst instructions[16];
+    _CodeInfo code_info = {0, 0, addr, 16, Decode32Bits};
+    _DecodeResult ret = distorm_decompose(&code_info, instructions, 16,
+        &used_instruction_count);
+
+    return ret == DECRES_SUCCESS ? instructions[0].size : 0;
 }

@@ -30,6 +30,9 @@ int path_from_handle(HANDLE handle, wchar_t *path);
 int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path);
 int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length);
 
+// length disassembler engine
+int lde(void *addr);
+
 // imported but for some doesn't show up when #including string.h etc
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);
 int wcsicmp(const wchar_t *a, const wchar_t *b);
