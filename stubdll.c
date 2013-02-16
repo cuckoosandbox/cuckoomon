@@ -69,8 +69,73 @@ static int has_entry(void *address, HMODULE *stub_address)
     return ret;
 }
 
-void generate_stub_function(uint8_t *orig_func, uint8_t *new_func)
+uint8_t *generate_stub_function(const uint8_t *orig_func, uint8_t *new_func)
 {
+    int esp_cleanup = 0, pushed_reg[8] = {};
+    for (int required_length = 5, length; required_length > 0;
+            orig_func += length, required_length -= length) {
+        length = lde(orig_func);
+
+        // error?
+        if(length == 0) {
+            return NULL;
+        }
+
+        // now we have to copy some instructions in order to make our
+        // function look legit
+        // mov edi, edi and nop and mov (eax|ecx|edx|ebx), imm32
+        if((*orig_func == 0x8b && orig_func[1] == 0xff) ||
+                *orig_func == 0x90 ||
+                (*orig_func >= 0xb8 && *orig_func <= 0xbb)) {
+            memcpy(new_func, orig_func, length);
+            new_func += length;
+        }
+        // push eax..edi
+        else if(*orig_func >= 0x50 && *orig_func < 0x58) {
+            *new_func++ = *orig_func;
+            esp_cleanup += 4;
+
+            // keep track at which stack pointer offset this register is
+            // pushed
+            pushed_reg[*orig_func - 0x50] = esp_cleanup;
+        }
+        // mov ebp, esp
+        else if(*orig_func == 0x8b && orig_func[1] == 0xec) {
+            memcpy(new_func, orig_func, length);
+            new_func += length;
+        }
+        // sub esp, abc
+        else if(*orig_func == 0x83 && orig_func[1] == 0xec) {
+            memcpy(new_func, orig_func, length);
+            esp_cleanup += orig_func[2];
+        }
+        else {
+            return NULL;
+        }
+    }
+
+    // we've copied the function stub, now let's clean it up
+    if(esp_cleanup != 0) {
+        // add esp, esp_cleanup
+        *new_func++ = 0x81;
+        *new_func++ = 0xc4;
+        *(uint32_t *) new_func = esp_cleanup;
+        new_func += 4;
+    }
+
+    // restore registers that were pushed to the stack
+    for (uint32_t i = 0; i < 8; i++) {
+        if(pushed_reg[i] != -1) {
+            // mov reg32, dword [esp-offset]
+            *new_func++ = 0x8b;
+            *new_func++ = 0x44 + 8 * i;
+            *new_func++ = 0xe4;
+            *new_func++ = 0x100 - pushed_reg[i];
+        }
+    }
+
+    // return the address of the end of the function stub
+    return new_func;
 }
 
 static void *generate_stubdll(void *image, uint32_t *image_size)

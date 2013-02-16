@@ -243,7 +243,7 @@ int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length)
 }
 
 // length disassembler engine
-int lde(void *addr)
+int lde(const void *addr)
 {
     // the length of an instruction is 16 bytes max, but there can also be
     // 16 instructions of length one, so.. we support "decomposing" 16
