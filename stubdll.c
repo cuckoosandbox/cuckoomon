@@ -165,6 +165,9 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     unsigned char *stub_dll = VirtualAlloc(NULL, *image_size,
         MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
+    // set all bytes to int3, so we see it when something goes wrong
+    memset(stub_dll, 0xcc, *image_size);
+
     // copy the image dos header and whatever is between the image dos header
     // and the image nt headers
     memcpy(stub_dll, image_dos_header, image_dos_header->e_lfanew);
