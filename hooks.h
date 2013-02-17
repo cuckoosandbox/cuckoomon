@@ -1458,3 +1458,5 @@ extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
 void set_hooks_dll(const wchar_t *library, int len);
 void set_hooks();
 int has_library_hooks(const wchar_t *library, int len);
+hook_t *get_function_hook(const wchar_t *library, int len,
+    const char *funcname);

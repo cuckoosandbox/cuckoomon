@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "stubdll.h"
 #include "hooking.h"
 #include "hooks.h"
+#include "misc.h"
 
 typedef struct _stubdll_t {
     HMODULE real_address;
@@ -138,7 +139,8 @@ uint8_t *generate_stub_function(const uint8_t *orig_func, uint8_t *new_func)
     return new_func;
 }
 
-static void *generate_stubdll(void *image, uint32_t *image_size)
+static void *generate_stubdll(void *image, uint32_t *image_size,
+    const wchar_t *library, int liblen)
 {
     IMAGE_DOS_HEADER *image_dos_header = (IMAGE_DOS_HEADER *) image;
     IMAGE_NT_HEADERS *image_nt_headers =
@@ -258,17 +260,37 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
     uint32_t *orig_names_addresses = (uint32_t *)(
         (char *) image + export_directory->AddressOfNames);
 
+    uint16_t *orig_address_of_name_ordinals = (uint16_t *)(
+        (char *) image + export_directory->AddressOfNameOrdinals);
+
     for (int i = 0; i < export_directory->NumberOfNames; i++) {
         address_of_names[i] = orig_names_addresses[i] +
             (uint32_t) image - (uint32_t) stub_dll;
     }
 
+    // what could possibly go wrong?
+    uint8_t *func_table[export_directory->NumberOfFunctions];
+
     for (int i = 0; i < export_directory->NumberOfFunctions; i++) {
         // original function address
         uint8_t *orig_addr = (uint8_t *) image + orig_function_addresses[i];
 
+        uint32_t function_offset = orig_function_addresses[i];
+
+        // check if this function is being forwarded, which is the case when
+        // the address is within the range of the image export data entry
+        if(function_offset >= export_data_directory->VirtualAddress &&
+                function_offset < export_data_directory->VirtualAddress +
+                    export_data_directory->Size) {
+            // TODO add real support for forwarded functions
+            continue;
+        }
+
         // now generate a stub function
-        generate_stub_function(orig_addr, function);
+        uint8_t *func_stub = generate_stub_function(orig_addr, function);
+
+        // temporarily store the function stub address in the table
+        func_table[i] = func_stub;
 
         // place the relative address of the new function in our function
         // address table
@@ -276,6 +298,47 @@ static void *generate_stubdll(void *image, uint32_t *image_size)
 
         // we've decided upfront that every function may take upto 64 bytes
         function += 64;
+    }
+
+    // now we're going to cross-reference the function stubs in the function
+    // table against the list of function names, in order to check whether
+    // functions have to be hooked
+    for (int i = 0; i < export_directory->NumberOfNames; i++) {
+        // function name
+        const char *funcname = (const char *) image + orig_names_addresses[i];
+
+        // original function address
+        uint8_t *orig_addr = (uint8_t *) image + orig_function_addresses[i];
+
+        // lookup if we want to hook this function
+        hook_t *h = get_function_hook(library, liblen, funcname);
+        if(h != NULL) {
+
+            uint8_t *func_stub = func_table[orig_address_of_name_ordinals[i]];
+
+            *func_stub = 0xe9;
+            *(uint32_t *) &func_stub[1] =
+                (uint8_t *) h->new_func - func_stub - 5;
+
+            // TODO is this correct?
+            *h->old_func = orig_addr;
+
+            func_table[orig_address_of_name_ordinals[i]] = NULL;
+        }
+    }
+
+    // we have to add a jump to original functions to all functions that are
+    // *not* hooked
+    for (int i = 0; i < export_directory->NumberOfFunctions; i++) {
+        if(func_table[i] != NULL) {
+            // original function address
+            uint8_t *orig_addr =
+                (uint8_t *) image + orig_function_addresses[i];
+
+            uint8_t *func_stub = func_table[i];
+            *func_stub = 0xe9;
+            *(uint32_t *) &func_stub[1] = orig_addr - func_stub - 5;
+        }
     }
     return stub_dll;
 }
@@ -294,7 +357,9 @@ static void NTAPI init_modules(LDR_DATA_TABLE_ENTRY *ldr_entry, void *context,
 
     void *new_dll; uint32_t image_size;
 
-    new_dll = generate_stubdll(ldr_entry->DllBase, &image_size);
+    new_dll = generate_stubdll(ldr_entry->DllBase, &image_size,
+        ldr_entry->BaseDllName.Buffer,
+        ldr_entry->BaseDllName.Length / sizeof(wchar_t));
 
     stubdll_t dll = {
         .real_address = ldr_entry->DllBase,
@@ -335,7 +400,9 @@ static void NTAPI update_modules(LDR_DATA_TABLE_ENTRY *ldr_entry,
 
         void *new_dll; uint32_t image_size;
 
-        new_dll = generate_stubdll(*addr, &image_size);
+        new_dll = generate_stubdll(*addr, &image_size,
+            ldr_entry->BaseDllName.Buffer,
+            ldr_entry->BaseDllName.Length / sizeof(wchar_t));
 
         ldr_entry->DllBase = new_dll;
         ldr_entry->SizeOfImage = image_size;

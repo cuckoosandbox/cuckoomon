@@ -362,3 +362,16 @@ int has_library_hooks(const wchar_t *library, int len)
     }
     return 0;
 }
+
+// check if we want to hook a particular function
+hook_t *get_function_hook(const wchar_t *library, int len,
+    const char *funcname)
+{
+    for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
+        if(!wcsnicmp(g_hooks[i].library, library, len) &&
+                !strcmp(funcname, g_hooks[i].funcname)) {
+            return &g_hooks[i];
+        }
+    }
+    return NULL;
+}
