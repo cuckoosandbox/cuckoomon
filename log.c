@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // the size of the logging buffer
 #define BUFFERSIZE 1024 * 1024
+#define BUFFER_LOG_MAX 256
 
 static CRITICAL_SECTION g_mutex;
 static int g_sock;
@@ -140,6 +141,38 @@ static void log_wstring(const wchar_t *str, int length)
     }
 }
 
+static void log_argv(int argc, const char ** argv) {
+    log_int32(argc);
+
+    for (int i=0; i<argc; i++) {
+        log_string(argv[i], -1);
+    }
+}
+
+static void log_wargv(int argc, const wchar_t ** argv) {
+    log_int32(argc);
+
+    for (int i=0; i<argc; i++) {
+        log_wstring(argv[i], -1);
+    }
+}
+
+static void log_buffer(const char *buf, size_t length) {
+    size_t trunclength = min(length, BUFFER_LOG_MAX);
+
+    log_int32(trunclength);
+    log_int32(length);
+
+    for (int i=0; i<trunclength; i++) {
+        g_buffer[g_idx] = buf[i];
+        g_idx++;
+
+        if (g_idx >= BUFFERSIZE -1) {
+            log_flush();
+        }
+    }
+}
+
 void loq(int index, int is_success, int return_value, const char *fmt, ...)
 {
     va_list args;
@@ -194,15 +227,14 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
             log_wstring(s, len);
         }
         else if(key == 'b') {
-            int len = va_arg(args, int);
+            size_t len = va_arg(args, size_t);
             const char *s = va_arg(args, const char *);
-            log_int32(len);
+            log_buffer(s, len);
         }
         else if(key == 'B') {
-            int *len = va_arg(args, int *);
+            size_t *len = va_arg(args, size_t *);
             const char *s = va_arg(args, const char *);
-            if (len) log_int32(*len);
-            else log_int32(0);
+            log_buffer(s, *len);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
@@ -238,16 +270,12 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
         else if(key == 'a') {
             int argc = va_arg(args, int);
             const char **argv = va_arg(args, const char **);
-            // TODO
-            (void)argc;
-            (void)argv;
+            log_argv(argc, argv);
         }
         else if(key == 'A') {
             int argc = va_arg(args, int);
             const wchar_t **argv = va_arg(args, const wchar_t **);
-            // TODO
-            (void)argc;
-            (void)argv;
+            log_wargv(argc, argv);
         }
         else if(key == 'r' || key == 'R') {
             unsigned long type = va_arg(args, unsigned long);

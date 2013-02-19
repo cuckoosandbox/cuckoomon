@@ -106,9 +106,16 @@ extern const char *logtbl[];
 
 #define ENSURE_DWORD(param) \
     DWORD _##param = 0; if(param == NULL) param = &_##param
+
 #define ENSURE_ULONG(param) \
     ULONG _##param = 0; if(param == NULL) param = &_##param
 #define ENSURE_ULONG_ZERO(param) \
     ENSURE_ULONG(param); else *param = 0
+
+#define ENSURE_SIZET(param) \
+    ULONG _##param = 0; if(param == NULL) param = &_##param
+#define ENSURE_SIZET_ZERO(param) \
+    ENSURE_ULONG(param); else *param = 0
+
 #define ENSURE_CLIENT_ID(param) \
     CLIENT_ID _##param = {}; if(param == NULL) param = &_##param
