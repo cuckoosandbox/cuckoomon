@@ -278,6 +278,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
 
     BOOL ret = Old_NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToRead, NumberOfBytesReaded);
+
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesReaded, Buffer);
     return ret;
@@ -291,9 +292,11 @@ HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
     _Out_   SIZE_T *lpNumberOfBytesRead
 ) {
     IS_SUCCESS_BOOL();
+    ENSURE_SIZET(lpNumberOfBytesRead);
 
     BOOL ret = Old_ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesRead);
+
     LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
         "Buffer", lpNumberOfBytesRead, lpBuffer);
     return ret;
@@ -310,6 +313,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
 
     BOOL ret = Old_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToWrite, NumberOfBytesWritten);
+
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesWritten, Buffer);
     return ret;
@@ -323,9 +327,11 @@ HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
     _Out_   SIZE_T *lpNumberOfBytesWritten
 ) {
     IS_SUCCESS_BOOL();
+    ENSURE_SIZET(lpNumberOfBytesWritten);
 
     BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesWritten);
+
     LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
         "Buffer", lpNumberOfBytesWritten, lpBuffer);
     return ret;
