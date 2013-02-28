@@ -126,7 +126,7 @@ uint8_t *generate_stub_function(const uint8_t *orig_func, uint8_t *new_func)
 
     // restore registers that were pushed to the stack
     for (uint32_t i = 0; i < 8; i++) {
-        if(pushed_reg[i] != -1) {
+        if(pushed_reg[i] != 0) {
             // mov reg32, dword [esp-offset]
             *new_func++ = 0x8b;
             *new_func++ = 0x44 + 8 * i;
@@ -283,6 +283,8 @@ static void *generate_stubdll(void *image, uint32_t *image_size,
                 function_offset < export_data_directory->VirtualAddress +
                     export_data_directory->Size) {
             // TODO add real support for forwarded functions
+            func_table[i] = NULL;
+            *address_of_functions++ = 0;
             continue;
         }
 
