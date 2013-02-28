@@ -105,10 +105,17 @@ uint8_t *generate_stub_function(const uint8_t *orig_func, uint8_t *new_func)
             memcpy(new_func, orig_func, length);
             new_func += length;
         }
-        // sub esp, abc
+        // sub esp, uint8
         else if(*orig_func == 0x83 && orig_func[1] == 0xec) {
             memcpy(new_func, orig_func, length);
+            new_func += length;
             esp_cleanup += orig_func[2];
+        }
+        // push uint8/uint32
+        else if(*orig_func == 0x68 || *orig_func == 0x6a) {
+            memcpy(new_func, orig_func, length);
+            new_func += length;
+            esp_cleanup += 4;
         }
         else {
             return NULL;
