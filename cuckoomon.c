@@ -197,7 +197,7 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtProtectVirtualMemory),
     HOOK(kernel32, VirtualProtectEx),
     HOOK(ntdll, NtFreeVirtualMemory),
-    HOOK(kernel32, VirtualFreeEx),
+    //HOOK(kernel32, VirtualFreeEx),
 
     HOOK(msvcrt, system),
 
@@ -322,7 +322,9 @@ static hook_t g_hooks[] = {
 };
 
 // get a random hooking method, except for hook_jmp_direct
-#define HOOKTYPE randint(HOOK_NOP_JMP_DIRECT, HOOK_MOV_EAX_INDIRECT_PUSH_RETN)
+//#define HOOKTYPE randint(HOOK_NOP_JMP_DIRECT, HOOK_MOV_EAX_INDIRECT_PUSH_RETN)
+// error testing with hook_jmp_direct only
+#define HOOKTYPE HOOK_JMP_DIRECT
 
 void set_hooks_dll(const wchar_t *library, int len)
 {
