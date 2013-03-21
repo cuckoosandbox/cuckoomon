@@ -98,10 +98,10 @@ HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
 ) {
     NTSTATUS ret = Old_LdrGetProcedureAddress(ModuleHandle, FunctionName,
         Ordinal, FunctionAddress);
-    LOQ("pSl", "ModuleHandle", ModuleHandle,
+    LOQ("pSlP", "ModuleHandle", ModuleHandle,
         "FunctionName", FunctionName != NULL ? FunctionName->Length : 0,
             FunctionName != NULL ? FunctionName->Buffer : NULL,
-        "Ordinal", Ordinal);
+        "Ordinal", Ordinal, "FunctionAddress", FunctionAddress);
     return ret;
 }
 
