@@ -315,6 +315,15 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
     LeaveCriticalSection(&g_mutex);
 }
 
+void announce_netlog()
+{
+    char protoname[] = "NETLOG\n";
+    for (int i=0; i<strlen(protoname); i++) {
+        g_buffer[g_idx] = protoname[i];
+        g_idx++;
+    }
+}
+
 void log_new_process()
 {
     wchar_t module_path[MAX_PATH];
@@ -359,6 +368,7 @@ void log_init(unsigned int ip, unsigned short port, int debug)
         connect(g_sock, (struct sockaddr *) &addr, sizeof(addr));
     }
 
+    announce_netlog();
     log_new_process();
     log_new_thread();
     // flushing here so host can create files / keep timestamps
