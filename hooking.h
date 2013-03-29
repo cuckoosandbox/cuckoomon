@@ -39,7 +39,7 @@ typedef struct _hook_t {
     int is_hooked;
 
     unsigned char tramp[128];
-    unsigned char pre_tramp[128];
+    unsigned char pre_tramp[150];
     unsigned char store_exc[128];
     unsigned char hook_data[32];
 } hook_t;

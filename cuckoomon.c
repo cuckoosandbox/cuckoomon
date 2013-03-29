@@ -49,8 +49,8 @@ static hook_t g_hooks[] = {
     // In other words, do *NOT* place "special" hooks behind "normal" hooks.
     //
 
-    HOOK2(ntdll, LdrLoadDll, TRUE),
-    HOOK2(kernel32, CreateProcessInternalW, TRUE),
+    //HOOK2(ntdll, LdrLoadDll, TRUE),
+    //HOOK2(kernel32, CreateProcessInternalW, TRUE),
 
     //
     // File Hooks
@@ -231,7 +231,7 @@ static hook_t g_hooks[] = {
     HOOK(user32, ExitWindowsEx),
     HOOK(kernel32, IsDebuggerPresent),
     HOOK(advapi32, LookupPrivilegeValueW),
-    HOOK(ntdll, NtClose),
+    //HOOK(ntdll, NtClose),
     HOOK(kernel32, WriteConsoleA),
     HOOK(kernel32, WriteConsoleW),
 
@@ -347,7 +347,7 @@ void set_hooks()
     // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
         if(g_hooks[i].allow_hook_recursion != FALSE) {
-            hook_api(&g_hooks[i], HOOK_SPECIAL_JMP);
+            hook_api(&g_hooks[i], HOOKTYPE);
         }
         else {
             hook_api(&g_hooks[i], HOOKTYPE);

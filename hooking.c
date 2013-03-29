@@ -32,11 +32,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // do not change this number
 #define TLS_LAST_ERROR 0x34
 
+// hook return address stack space
+#define TLS_HOOK_INFO_RETADDR_SPACE 0x100
+
 typedef struct _hook_info_t {
     unsigned int depth_count;
 
     unsigned int hook_count;
-    unsigned int ret_hook;
+    unsigned int retaddr_esp;
 
     unsigned int last_error;
     unsigned int ret_last_error;
@@ -177,10 +180,14 @@ static int hook_create_trampoline(unsigned char *addr, int len,
         0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
         // dec dword [eax+hook_info_t.hook_count]
         0xff, 0x48, offsetof(hook_info_t, hook_count),
-        // push dword fs:[TLS_LAST_ERROR]
-        0x64, 0xff, 0x35, TLS_LAST_ERROR, 0x00, 0x00, 0x00,
-        // pop dword [eax+hook_info_t.last_error]
-        0x8f, 0x40, offsetof(hook_info_t, last_error),
+        // cmp dword [eax+hook_info_t.depth_count], 1
+        0x83, 0x78, offsetof(hook_info_t, depth_count), 0x01,
+        // jg $+0a
+        0x7f, 0x0a,
+            // push dword fs:[TLS_LAST_ERROR]
+            0x64, 0xff, 0x35, TLS_LAST_ERROR, 0x00, 0x00, 0x00,
+            // pop dword [eax+hook_info_t.last_error]
+            0x8f, 0x40, offsetof(hook_info_t, last_error),
         // mov eax, dword [eax+hook_info_t.ret_last_error]
         0x8b, 0x40, offsetof(hook_info_t, ret_last_error),
         // xchg eax, dword [esp]
@@ -333,7 +340,10 @@ static int hook_create_trampoline(unsigned char *addr, int len,
 // the hook recursion is not allowed.
 static void hook_create_pre_tramp(hook_t *h)
 {
+    uint8_t is_special_hook = 0;
     unsigned char pre_tramp[] = {
+        // push ebx
+        0x53,
         // push eax
         0x50,
 
@@ -352,12 +362,38 @@ static void hook_create_pre_tramp(hook_t *h)
             // mov eax, fs:[TLS_HOOK_INFO]
             0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
 
-        // cmp dword [eax+hook_info_t.depth_count], 0
-        0x83, 0x78, offsetof(hook_info_t, depth_count), 0x00,
-        // jle $+6
-        0x7e, 0x06,
-            // pop eax
-            0x58,
+        // inc dword [eax+hook_info_t.depth_count]
+        0xff, 0x40, offsetof(hook_info_t, depth_count),
+
+        // mov ebx, [esp+8]
+        0x8b, 0x5c, 0xe4, 0x08,
+        // xchg esp, [eax+hook_info_t.retaddr_esp]
+        0x87, 0x60, offsetof(hook_info_t, retaddr_esp),
+        // push ebx
+        0x53,
+        // xchg esp, [eax+hook_info_t.retaddr_esp]
+        0x87, 0x60, offsetof(hook_info_t, retaddr_esp),
+        // mov dword [esp+8], new_return_address
+        0xc7, 0x44, 0xe4, 0x08, 0x00, 0x00, 0x00, 0x00,
+
+        // special hook support
+        // mov ebx, 1
+        0xbb, 0x01, 0x00, 0x00, 0x00,
+        // cmp ebx, is_special_hook
+        0x83, 0xfb, is_special_hook,
+        // jnz $+7
+        0x75, 0x07,
+            // pop eax; pop ebx
+            0x58, 0x5b,
+            // jmp h->store_exc
+            0xe9, 0x00, 0x00, 0x00, 0x00,
+
+        // cmp dword [eax+hook_info_t.depth_count], 1
+        0x83, 0x78, offsetof(hook_info_t, depth_count), 0x01,
+        // jle $+7
+        0x7e, 0x07,
+            // pop eax; pop ebx
+            0x58, 0x5b,
             // jmp h->tramp
             0xe9, 0x00, 0x00, 0x00, 0x00,
 
@@ -373,28 +409,21 @@ static void hook_create_pre_tramp(hook_t *h)
         0x58,
         // popad
         0x61,
-        // jnz $+6
-        0x75, 0x06,
-            // pop eax
-            0x58,
-            // jmp h->trap
+        // jnz $+7
+        0x75, 0x07,
+            // pop eax; pop ebx
+            0x58, 0x5b,
+            // jmp h->tramp
             0xe9, 0x00, 0x00, 0x00, 0x00,
 
-        // inc dword [eax+hook_info_t.depth_count]
-        0xff, 0x40, offsetof(hook_info_t, depth_count),
-        // push dword [esp+4]
-        0xff, 0x74, 0xe4, 0x04,
-        // pop dword [eax+hook_info_t.ret_hook]
-        0x8f, 0x40, offsetof(hook_info_t, ret_hook),
-        // mov dword [esp+4], new_return_address
-        0xc7, 0x44, 0xe4, 0x04, 0x00, 0x00, 0x00, 0x00,
-        // pop eax
-        0x58,
+        // pop eax; pop ebx
+        0x58, 0x5b,
         // jmp h->store_exc
         0xe9, 0x00, 0x00, 0x00, 0x00,
 
-        // push eax
-        0x50,
+
+        // push ebx; push eax
+        0x53, 0x50,
         // mov eax, fs:[TLS_HOOK_INFO]
         0x64, 0xa1, TLS_HOOK_INFO, 0x00, 0x00, 0x00,
         // dec dword [eax+hook_info_t.depth_count]
@@ -403,23 +432,35 @@ static void hook_create_pre_tramp(hook_t *h)
         0xff, 0x70, offsetof(hook_info_t, last_error),
         // pop dword fs:[0x34]
         0x64, 0x8f, 0x05, 0x34, 0x00, 0x00, 0x00,
-        // mov eax, dword [eax+hook_info_t.ret_hook]
-        0x8b, 0x40, offsetof(hook_info_t, ret_hook),
-        // xchg eax, dword [esp]
-        0x87, 0x04, 0xe4,
+
+        // xchg esp, [eax+hook_info_t.retaddr_esp]
+        0x87, 0x60, offsetof(hook_info_t, retaddr_esp),
+        // pop ebx
+        0x5b,
+        // xchg esp, [eax+hook_info_t.retaddr_esp]
+        0x87, 0x60, offsetof(hook_info_t, retaddr_esp),
+        // pop eax
+        0x58,
+        // xchg ebx, dword [esp]
+        0x87, 0x1c, 0xe4,
         // retn
         0xc3,
+
     };
 
-    *(unsigned int *)(pre_tramp + 13) =
-        (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 12 - 5;
-    *(unsigned int *)(pre_tramp + 32) = h->tramp - h->pre_tramp - 31 - 5;
-    *(unsigned int *)(pre_tramp + 39) =
-        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 38 - 5;
-    *(unsigned int *)(pre_tramp + 51) = h->tramp - h->pre_tramp - 50 - 5;
-    *(unsigned int *)(pre_tramp + 69) = (unsigned int) h->pre_tramp + 79;
-    *(unsigned int *)(pre_tramp + 75) =
-        (unsigned char *) h->store_exc - h->pre_tramp - 74 - 5;
+    *(unsigned int *)(pre_tramp + 14) =
+        (unsigned char *) &ensure_valid_hook_info - h->pre_tramp - 13 - 5;
+    *(unsigned int *)(pre_tramp + 43) = (unsigned int) h->pre_tramp + 104;
+
+    *(unsigned int *)(pre_tramp + 60) =
+        (unsigned char *) h->store_exc - h->pre_tramp - 59 - 5;
+
+    *(unsigned int *)(pre_tramp + 73) = h->tramp - h->pre_tramp - 72 - 5;
+    *(unsigned int *)(pre_tramp + 80) =
+        (unsigned char *) &is_interesting_backtrace - h->pre_tramp - 79 - 5;
+    *(unsigned int *)(pre_tramp + 93) = h->tramp - h->pre_tramp - 92 - 5;
+    *(unsigned int *)(pre_tramp + 100) =
+        (unsigned char *) h->store_exc - h->pre_tramp - 99 - 5;
 
     memcpy(h->pre_tramp, pre_tramp, sizeof(pre_tramp));
 }
@@ -761,7 +802,8 @@ static hook_info_t *hook_info()
 static void ensure_valid_hook_info()
 {
     if(hook_info() == NULL) {
-        hook_info_t *info = (hook_info_t *) calloc(1, sizeof(hook_info_t));
+        hook_info_t *info = (hook_info_t *) calloc(1, sizeof(hook_info_t)+TLS_HOOK_INFO_RETADDR_SPACE);
+        info->retaddr_esp = (unsigned int) info + sizeof(hook_info_t) + TLS_HOOK_INFO_RETADDR_SPACE;
         __writefsdword(TLS_HOOK_INFO, (unsigned int) info);
     }
 }
