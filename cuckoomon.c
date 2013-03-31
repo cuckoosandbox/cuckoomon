@@ -49,8 +49,8 @@ static hook_t g_hooks[] = {
     // In other words, do *NOT* place "special" hooks behind "normal" hooks.
     //
 
-    //HOOK2(ntdll, LdrLoadDll, TRUE),
-    //HOOK2(kernel32, CreateProcessInternalW, TRUE),
+    HOOK2(ntdll, LdrLoadDll, TRUE),
+    HOOK2(kernel32, CreateProcessInternalW, TRUE),
 
     //
     // File Hooks
@@ -183,7 +183,7 @@ static hook_t g_hooks[] = {
     HOOK(ntdll, NtTerminateProcess),
     HOOK(ntdll, NtCreateSection),
     HOOK(ntdll, NtOpenSection),
-    HOOK(kernel32, CreateProcessInternalW),
+    //HOOK(kernel32, CreateProcessInternalW),
     HOOK(kernel32, ExitProcess),
 
     // all variants of ShellExecute end up in ShellExecuteExW
@@ -224,7 +224,7 @@ static hook_t g_hooks[] = {
     HOOK(user32, SetWindowsHookExA),
     HOOK(user32, SetWindowsHookExW),
     HOOK(user32, UnhookWindowsHookEx),
-    HOOK(ntdll, LdrLoadDll),
+    //HOOK(ntdll, LdrLoadDll),
     HOOK(ntdll, LdrGetDllHandle),
     HOOK(ntdll, LdrGetProcedureAddress),
     HOOK(kernel32, DeviceIoControl),
