@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "hook_sleep.h"
 
+static IS_SUCCESS_NTSTATUS();
+
 void set_hooks_dll(const wchar_t *library, int len);
 
 HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
@@ -42,6 +44,11 @@ HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
 
     NTSTATUS ret = Old2_LdrLoadDll(PathToFile, Flags, ModuleFileName,
         ModuleHandle);
+
+    if (hook_info()->depth_count == 1) {
+        LOQspecial("loP", "Flags", Flags, "FileName", &library,
+            "BaseAddress", ModuleHandle);
+    }
 
     //
     // Check this DLL against our table of hooks, because we might have to
@@ -75,6 +82,7 @@ HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
         lpCommandLine, lpProcessAttributes, lpThreadAttributes,
         bInheritHandles, dwCreationFlags | CREATE_SUSPENDED, lpEnvironment,
         lpCurrentDirectory, lpStartupInfo, lpProcessInformation, lpUnknown2);
+
     if(ret != FALSE) {
         pipe("PROCESS:%d,%d", lpProcessInformation->dwProcessId,
             lpProcessInformation->dwThreadId);
@@ -87,5 +95,15 @@ HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
 
         disable_sleep_skip();
     }
+
+    if (hook_info()->depth_count == 1) {
+        LOQspecial("uupllpp", "ApplicationName", lpApplicationName,
+            "CommandLine", lpCommandLine, "CreationFlags", dwCreationFlags,
+            "ProcessId", lpProcessInformation->dwProcessId,
+            "ThreadId", lpProcessInformation->dwThreadId,
+            "ProcessHandle", lpProcessInformation->hProcess,
+            "ThreadHandle", lpProcessInformation->hThread);
+    }
+
     return ret;
 }
