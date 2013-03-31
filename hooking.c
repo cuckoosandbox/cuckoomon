@@ -35,27 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // hook return address stack space
 #define TLS_HOOK_INFO_RETADDR_SPACE 0x100
 
-typedef struct _hook_info_t {
-    unsigned int depth_count;
-
-    unsigned int hook_count;
-    unsigned int retaddr_esp;
-
-    unsigned int last_error;
-    unsigned int ret_last_error;
-
-    // in case of an exception, this is the state of all registers upon
-    // execution of our hook
-    unsigned int eax;
-    unsigned int ecx;
-    unsigned int edx;
-    unsigned int ebx;
-    unsigned int esp;
-    unsigned int ebp;
-    unsigned int esi;
-    unsigned int edi;
-} hook_info_t;
-
 static void ensure_valid_hook_info();
 
 // by default we enable the retaddr check
@@ -338,9 +317,8 @@ static int hook_create_trampoline(unsigned char *addr, int len,
 // engine "once inside a hook, don't hook further API calls" by setting the
 // allow_hook_recursion flag to false. The example above is what happens when
 // the hook recursion is not allowed.
-static void hook_create_pre_tramp(hook_t *h)
+static void hook_create_pre_tramp(hook_t *h, uint8_t is_special_hook)
 {
-    uint8_t is_special_hook = 0;
     unsigned char pre_tramp[] = {
         // push ebx
         0x53,
@@ -761,20 +739,17 @@ int hook_api(hook_t *h, int type)
 
                 hook_store_exception_info(h);
 
-                // if allow hook recursion is *not* set, then we have to
-                // create a pre-trampoline
-                if(h->allow_hook_recursion == 0) {
-                    hook_create_pre_tramp(h);
+                uint8_t special = 0;
 
-                    // insert the hook (jump from the api to the
-                    // pre-trampoline)
-                    ret = hook_types[type].hook(h, addr, h->pre_tramp);
+                if(h->allow_hook_recursion == 1) {
+                    special = 1;
                 }
-                else {
-                    // insert the hook (jump from the api to the store
-                    // exception function which will jump to the new function)
-                    ret = hook_types[type].hook(h, addr, h->store_exc);
-                }
+
+                hook_create_pre_tramp(h, special);
+
+                // insert the hook (jump from the api to the
+                // pre-trampoline)
+                ret = hook_types[type].hook(h, addr, h->pre_tramp);
 
                 // if successful, assign the trampoline address to *old_func
                 if(ret == 0) {
@@ -794,7 +769,7 @@ int hook_api(hook_t *h, int type)
     return ret;
 }
 
-static hook_info_t *hook_info()
+hook_info_t *hook_info()
 {
     return (hook_info_t *) __readfsdword(TLS_HOOK_INFO);
 }

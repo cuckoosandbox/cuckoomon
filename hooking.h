@@ -16,6 +16,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+typedef struct _hook_info_t {
+    unsigned int depth_count;
+
+    unsigned int hook_count;
+    unsigned int retaddr_esp;
+
+    unsigned int last_error;
+    unsigned int ret_last_error;
+
+    // in case of an exception, this is the state of all registers upon
+    // execution of our hook
+    unsigned int eax;
+    unsigned int ecx;
+    unsigned int edx;
+    unsigned int ebx;
+    unsigned int esp;
+    unsigned int ebp;
+    unsigned int esi;
+    unsigned int edi;
+} hook_info_t;
+
 typedef struct _hook_t {
     const wchar_t *library;
     const char *funcname;
@@ -48,6 +69,7 @@ int lde(void *addr);
 
 int hook_api(hook_t *h, int type);
 
+hook_info_t* hook_info();
 void hook_enable();
 void hook_disable();
 
