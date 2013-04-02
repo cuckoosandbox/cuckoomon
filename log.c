@@ -160,6 +160,10 @@ static void log_wargv(int argc, const wchar_t ** argv) {
 static void log_buffer(const char *buf, size_t length) {
     size_t trunclength = min(length, BUFFER_LOG_MAX);
 
+    if (buf == NULL) {
+        trunclength = 0;
+    }
+
     log_int32(trunclength);
     log_int32(length);
 
