@@ -198,3 +198,24 @@ HOOKDEF(BOOL, WINAPI, WriteConsoleW,
         "Buffer", nNumberOfCharsToWrite, lpBuffer);
     return ret;
 }
+
+HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
+  _In_     HANDLE SectionHandle,
+  _In_     HANDLE ProcessHandle,
+  __inout  PVOID *BaseAddress,
+  _In_     ULONG_PTR ZeroBits,
+  _In_     SIZE_T CommitSize,
+  __inout  PLARGE_INTEGER SectionOffset,
+  __inout  PSIZE_T ViewSize,
+  __in     UINT InheritDisposition,
+  __in     ULONG AllocationType,
+  __in     ULONG Win32Protect
+) {
+    NTSTATUS ret = Old_ZwMapViewOfSection(SectionHandle, ProcessHandle,
+        BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize,
+        InheritDisposition, AllocationType, Win32Protect);
+    LOQ("ppPp", "SectionHandle", SectionHandle,
+        "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "SectionOffset", SectionOffset);
+    return ret;
+}

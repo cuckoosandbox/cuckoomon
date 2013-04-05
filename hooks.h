@@ -1427,3 +1427,16 @@ extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 );
+
+extern HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
+  _In_     HANDLE SectionHandle,
+  _In_     HANDLE ProcessHandle,
+  __inout  PVOID *BaseAddress,
+  _In_     ULONG_PTR ZeroBits,
+  _In_     SIZE_T CommitSize,
+  __inout  PLARGE_INTEGER SectionOffset,
+  __inout  PSIZE_T ViewSize,
+  __in     UINT InheritDisposition,
+  __in     ULONG AllocationType,
+  __in     ULONG Win32Protect
+);
