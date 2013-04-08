@@ -132,6 +132,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
         // looks hacky, is indeed hacky.. UniqueProcess is the first value in
         // CLIENT_ID, so it's correct like this.. (although still hacky)
         "ProcessIdentifier", &ClientId->UniqueProcess);
+    /*
     if(NT_SUCCESS(ret)) {
         // let's do an extra check here, because the msdn documentation is
         // so vague..
@@ -143,6 +144,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
         }
         pipe("PROCESS:%d", pid);
     }
+    */
     return ret;
 }
 
