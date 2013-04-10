@@ -957,6 +957,10 @@ extern HOOKDEF(BOOL, WINAPI, WriteConsoleW,
     _Reserved_  LPVOID lpReseverd
 );
 
+extern HOOKDEF(int, WINAPI, GetSystemMetrics,
+    _In_  int nIndex
+);
+
 //
 // Network Hooks
 //

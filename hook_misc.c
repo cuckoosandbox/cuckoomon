@@ -219,3 +219,11 @@ HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
         "SectionOffset", SectionOffset);
     return ret;
 }
+
+HOOKDEF(int, WINAPI, GetSystemMetrics,
+    _In_  int nIndex
+) {
+    int ret = Old_GetSystemMetrics(nIndex);
+    LOQ("l", "SystemMetricIndex", nIndex);
+    return ret;
+}

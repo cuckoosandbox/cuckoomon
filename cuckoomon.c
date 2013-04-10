@@ -235,6 +235,7 @@ static hook_t g_hooks[] = {
     //HOOK(ntdll, NtClose),
     HOOK(kernel32, WriteConsoleA),
     HOOK(kernel32, WriteConsoleW),
+    HOOK(user32, GetSystemMetrics),
 
     //
     // Network Hooks
