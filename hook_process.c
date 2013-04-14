@@ -118,10 +118,14 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
 ) {
     // although the documentation on msdn is a bit vague, this seems correct
     // for both XP and Vista (the ClientId->UniqueProcess part, that is)
-    if(ClientId != NULL && is_protected_pid((int) ClientId->UniqueProcess)) {
+
+    int pid = 0;
+    if (ClientId != NULL) pid = ClientId->UniqueProcess;
+
+    if(is_protected_pid(pid)) {
         NTSTATUS ret = STATUS_ACCESS_DENIED;
         LOQ("ppp", "ProcessHandle", NULL, "DesiredAccess", DesiredAccess,
-            "ProcessIdentifier", ClientId->UniqueProcess);
+            "ProcessIdentifier", &pid);
         return STATUS_ACCESS_DENIED;
     }
 
@@ -129,9 +133,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
         ObjectAttributes, ClientId);
     LOQ2("PpP", "ProcessHandle", ProcessHandle,
         "DesiredAccess", DesiredAccess,
-        // looks hacky, is indeed hacky.. UniqueProcess is the first value in
-        // CLIENT_ID, so it's correct like this.. (although still hacky)
-        "ProcessIdentifier", &ClientId->UniqueProcess);
+        "ProcessIdentifier", &pid);
     /*
     if(NT_SUCCESS(ret)) {
         // let's do an extra check here, because the msdn documentation is
