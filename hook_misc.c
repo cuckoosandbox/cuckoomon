@@ -214,16 +214,17 @@ HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
   __in     ULONG AllocationType,
   __in     ULONG Win32Protect
 ) {
-    // if(NT_SUCCESS(ret)) {
-    //     pipe("PROCESS:%d", pid_from_process_handle(ProcessHandle));
-    //     disable_sleep_skip();
-    // }
     NTSTATUS ret = Old_ZwMapViewOfSection(SectionHandle, ProcessHandle,
         BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize,
         InheritDisposition, AllocationType, Win32Protect);
     LOQ("ppPp", "SectionHandle", SectionHandle,
         "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "SectionOffset", SectionOffset);
+
+    if(NT_SUCCESS(ret)) {
+        pipe("PROCESS:%d", pid_from_process_handle(ProcessHandle));
+        disable_sleep_skip();
+    }
     return ret;
 }
 
