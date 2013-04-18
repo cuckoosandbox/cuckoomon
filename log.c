@@ -97,9 +97,12 @@ static void log_int32(int value)
 
 static void log_string(const char *str, int length)
 {
-    if(length == -1) length = strlen(str);
-
-    int encoded_length = utf8_strlen_ascii(str, length);
+    int encoded_length = 0;
+    if(str == NULL) length = 0;
+    else {
+        if(length == -1) length = strlen(str);
+        encoded_length = utf8_strlen_ascii(str, length);
+    }
 
     // write the utf8 length
     log_int32(encoded_length);
@@ -120,9 +123,12 @@ static void log_string(const char *str, int length)
 
 static void log_wstring(const wchar_t *str, int length)
 {
-    if(length == -1) length = lstrlenW(str);
-
-    int encoded_length = utf8_strlen_unicode(str, length);
+    int encoded_length = 0;
+    if(str == NULL) length = 0;
+    else {
+        if(length == -1) length = lstrlenW(str);
+        encoded_length = utf8_strlen_unicode(str, length);
+    }
 
     // write the utf8 length
     log_int32(encoded_length);
