@@ -66,3 +66,33 @@ int utf8_strlen_unicode(const wchar_t *s, int len)
     }
     return ret;
 }
+
+char * utf8_string(const char *str, int length)
+{
+    if (length == -1) length = strlen(str);
+
+    int encoded_length = utf8_strlen_ascii(str, length);
+    char * utf8string = (char *) malloc(encoded_length+4);
+    *((int *) utf8string) = encoded_length;
+    int pos = 4;
+
+    while (length-- != 0) {
+        pos += utf8_encode(*str++, (unsigned char *) &utf8string[pos]);
+    }
+    return utf8string;
+}
+
+char * utf8_wstring(const wchar_t *str, int length)
+{
+    if (length == -1) length = lstrlenW(str);
+    
+    int encoded_length = utf8_strlen_unicode(str, length);
+    char * utf8string = (char *) malloc(encoded_length+4);
+    *((int *) utf8string) = encoded_length;
+    int pos = 4;
+
+    while (length-- != 0) {
+        pos += utf8_encode(*str++, (unsigned char *) &utf8string[pos]);
+    }
+    return utf8string;
+}

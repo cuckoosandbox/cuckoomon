@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "misc.h"
 #include "utf8.h"
 #include "log.h"
+#include "bson.h"
 
 // the size of the logging buffer
 #define BUFFERSIZE 1024 * 1024
@@ -37,6 +38,10 @@ static unsigned int g_starttick;
 
 static char g_buffer[BUFFERSIZE];
 static int g_idx;
+
+// current to-be-logged API call
+static bson g_bson[1];
+static char g_istr[4];
 
 //
 // Log API
@@ -68,99 +73,54 @@ void log_flush()
 
 static void log_int8(char value)
 {
-    if(g_idx >= BUFFERSIZE) {
-        log_flush();
-    }
-
-    g_buffer[g_idx++] = value;
+    bson_append_int( g_bson, g_istr, value );
 }
 
 static void log_int16(short value)
 {
-    if(g_idx + 2 >= BUFFERSIZE) {
-        log_flush();
-    }
-
-    *(short *) &g_buffer[g_idx] = value;
-    g_idx += 2;
+    bson_append_int( g_bson, g_istr, value );
 }
 
 static void log_int32(int value)
 {
-    if(g_idx + 4 >= BUFFERSIZE) {
-        log_flush();
-    }
-
-    *(int *) &g_buffer[g_idx] = value;
-    g_idx += 4;
+    bson_append_int( g_bson, g_istr, value );
 }
 
 static void log_string(const char *str, int length)
 {
-    int encoded_length = 0;
-    if(str == NULL) length = 0;
-    else {
-        if(length == -1) length = strlen(str);
-        encoded_length = utf8_strlen_ascii(str, length);
-    }
-
-    // write the utf8 length
-    log_int32(encoded_length);
-
-    // and the maximum length (which is in fact the length in characters)
-    log_int32(length);
-
-    while (length > 0) {
-        while (g_idx < BUFFERSIZE - 3 && length-- != 0) {
-            g_idx += utf8_encode(*str++, (unsigned char *) &g_buffer[g_idx]);
-        }
-
-        if(g_idx > BUFFERSIZE - 4) {
-            log_flush();
-        }
-    }
+    char * utf8s = utf8_string(str, length);
+    int utf8len = * (int *) utf8s;
+    bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    free(utf8s);
 }
 
 static void log_wstring(const wchar_t *str, int length)
 {
-    int encoded_length = 0;
-    if(str == NULL) length = 0;
-    else {
-        if(length == -1) length = lstrlenW(str);
-        encoded_length = utf8_strlen_unicode(str, length);
-    }
-
-    // write the utf8 length
-    log_int32(encoded_length);
-
-    // and the maximum length (which is in fact the length in characters)
-    log_int32(length);
-
-    while (length > 0) {
-        while (g_idx < BUFFERSIZE - 3 && length-- != 0) {
-            g_idx += utf8_encode(*str++, (unsigned char *) &g_buffer[g_idx]);
-        }
-
-        if(g_idx > BUFFERSIZE - 4) {
-            log_flush();
-        }
-    }
+    char * utf8s = utf8_wstring(str, length);
+    int utf8len = * (int *) utf8s;
+    bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    free(utf8s);
 }
 
 static void log_argv(int argc, const char ** argv) {
-    log_int32(argc);
+    bson_append_start_array( g_bson, g_istr );
 
     for (int i=0; i<argc; i++) {
+        snprintf(g_istr, 4, "%u", i);
         log_string(argv[i], -1);
     }
+    bson_append_finish_array( g_bson );
 }
 
 static void log_wargv(int argc, const wchar_t ** argv) {
-    log_int32(argc);
+    bson_append_start_array( g_bson, g_istr );
 
     for (int i=0; i<argc; i++) {
+        snprintf(g_istr, 4, "%u", i);
         log_wstring(argv[i], -1);
     }
+
+    bson_append_finish_array( g_bson );
 }
 
 static void log_buffer(const char *buf, size_t length) {
@@ -170,10 +130,11 @@ static void log_buffer(const char *buf, size_t length) {
         trunclength = 0;
     }
 
-    log_int32(trunclength);
-    log_int32(length);
+    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, buf, trunclength );
+}
 
-    for (int i=0; i<trunclength; i++) {
+static void log_raw(const char *buf, size_t length) {
+    for (int i=0; i<length; i++) {
         g_buffer[g_idx] = buf[i];
         g_idx++;
 
@@ -183,19 +144,123 @@ static void log_buffer(const char *buf, size_t length) {
     }
 }
 
-void loq(int index, int is_success, int return_value, const char *fmt, ...)
+void loq(int index, const char *name,
+    int is_success, int return_value, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
+    const char * fmtbak = fmt;
+    int argnum = 2;
     int count = 1; char key = 0;
 
     EnterCriticalSection(&g_mutex);
 
-    log_int8(index);
-    log_int8(is_success);
-    log_int32(return_value);
-    log_int32(GetCurrentThreadId());
-    log_int32(GetTickCount() - g_starttick);
+    if (logtbl_explained[index] == 0) {
+        logtbl_explained[index] = 1;
+        const char * pname;
+
+        bson b[1];
+        bson_init( b );
+        bson_append_int( b, "index", index );
+        bson_append_string( b, "name", name );
+
+        bson_append_start_array( b, "args" );
+        bson_append_string( b, "0", "is_success" );
+        bson_append_string( b, "1", "retval" );
+
+        while (--count != 0 || *fmt != 0) {
+            // we have to find the next format specifier
+            if(count == 0) {
+                // end of format
+                if(*fmt == 0) break;
+
+                // set the count, possibly with a repeated format specifier
+                count = *fmt >= '2' && *fmt <= '9' ? *fmt++ - '0' : 1;
+
+                // the next format specifier
+                key = *fmt++;
+            }
+
+            pname = va_arg(args, const char *);
+            snprintf(g_istr, 4, "%u", argnum);
+            argnum++;
+            bson_append_string( b, g_istr, pname );
+
+            //now ignore the values
+            if(key == 's') {
+                (void) va_arg(args, const char *);
+            }
+            else if(key == 'S') {
+                (void) va_arg(args, int);
+                (void) va_arg(args, const char *);
+            }
+            else if(key == 'u') {
+                (void) va_arg(args, const wchar_t *);
+            }
+            else if(key == 'U') {
+                (void) va_arg(args, int);
+                (void) va_arg(args, const wchar_t *);
+            }
+            else if(key == 'b') {
+                (void) va_arg(args, size_t);
+                (void) va_arg(args, const char *);
+            }
+            else if(key == 'B') {
+                (void) va_arg(args, size_t *);
+                (void) va_arg(args, const char *);
+            }
+            else if(key == 'i') {
+                (void) va_arg(args, int);
+            }
+            else if(key == 'l' || key == 'p') {
+                (void) va_arg(args, long);
+            }
+            else if(key == 'L' || key == 'P') {
+                (void) va_arg(args, long *);
+            }
+            else if(key == 'o') {
+                (void) va_arg(args, UNICODE_STRING *);
+            }
+            else if(key == 'O') {
+                (void) va_arg(args, OBJECT_ATTRIBUTES *);
+            }
+            else if(key == 'a') {
+                (void) va_arg(args, int);
+                (void) va_arg(args, const char **);
+            }
+            else if(key == 'A') {
+                (void) va_arg(args, int);
+                (void) va_arg(args, const wchar_t **);
+            }
+            else if(key == 'r' || key == 'R') {
+                (void) va_arg(args, unsigned long);
+                (void) va_arg(args, unsigned long);
+                (void) va_arg(args, unsigned char *);
+            }
+        }
+        bson_append_finish_array( b );
+        bson_finish( b );
+        if (bson_size( b ) > BUFFERSIZE) {
+            //DBGWARN, ignoring bson obj
+        } else {
+            log_raw(bson_data( b ), bson_size( b ));
+        }
+
+        bson_destroy( b );
+    }
+
+    va_end(args);
+    fmt = fmtbak;
+    va_start(args, fmt);
+    count = 1; key = 0; argnum = 2;
+
+    bson_init( g_bson );
+    bson_append_int( g_bson, "index", index );
+    bson_append_int( g_bson, "tid", GetCurrentThreadId() );
+    bson_append_int( g_bson, "time", GetTickCount() - g_starttick );
+    bson_append_start_array( g_bson, "args" );
+    bson_append_int( g_bson, "0", is_success );
+    bson_append_int( g_bson, "1", return_value );
 
     while (--count != 0 || *fmt != 0) {
 
@@ -213,6 +278,8 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
 
         // pop the key and omit it
         (void) va_arg(args, const char *);
+        snprintf(g_istr, 4, "%u", argnum);
+        argnum++;
 
         // log the value
         if(key == 's') {
@@ -292,8 +359,10 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
             unsigned long size = va_arg(args, unsigned long);
             unsigned char *data = va_arg(args, unsigned char *);
 
-            log_int32(type);
+            bson_append_start_object( g_bson, g_istr );
+            bson_append_int( g_bson, "type", type );
 
+            strncpy(g_istr, "val", 4);
             if(type == REG_NONE) {
                 log_string("", 0);
             }
@@ -316,22 +385,32 @@ void loq(int index, int is_success, int return_value, const char *fmt, ...)
                         size / sizeof(wchar_t));
                 }
             }
+
+            bson_append_finish_object( g_bson );
         }
     }
 
     va_end(args);
 
+    bson_append_finish_array( g_bson );
+    bson_finish( g_bson );
+    if (bson_size( g_bson ) > BUFFERSIZE) {
+        //DBGWARN, ignoring bson obj
+    } else {
+        log_raw(bson_data( g_bson ), bson_size( g_bson ));
+    }
+
+    bson_destroy( g_bson );
     log_flush();
     LeaveCriticalSection(&g_mutex);
 }
 
 void announce_netlog()
 {
-    char protoname[] = "NETLOG\n";
-    for (int i=0; i<strlen(protoname); i++) {
-        g_buffer[g_idx] = protoname[i];
-        g_idx++;
-    }
+    char protoname[32];
+    strcpy(protoname, "FILE\n");
+    sprintf(protoname+5, "logs/%lu.bson\n", GetCurrentProcessId());
+    log_raw(protoname, strlen(protoname));
 }
 
 void log_new_process()
@@ -344,7 +423,7 @@ void log_new_process()
     FILETIME st;
     GetSystemTimeAsFileTime(&st);
 
-    loq(0, 1, 0, "llllu", "TimeLow", st.dwLowDateTime,
+    loq(0, "__process__", 1, 0, "llllu", "TimeLow", st.dwLowDateTime,
         "TimeHigh", st.dwHighDateTime,
         "ProcessIdentifier", GetCurrentProcessId(),
         "ParentProcessIdentifier", parent_process_id(),
@@ -353,7 +432,7 @@ void log_new_process()
 
 void log_new_thread()
 {
-    loq(1, 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
+    loq(1, "__thread__", 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
 }
 
 void log_init(unsigned int ip, unsigned short port, int debug)

@@ -12,7 +12,7 @@ CUCKOOOBJ = $(wildcard ../objects/*.o)
 all: $(TESTSEXE)
 
 %.exe: %.c $(CUCKOOOBJ) $(DISTORM3OBJ)
-	gcc -Wall -std=c99 -s -I../distorm3.2-package/include -I.. -o $@ $^ \
+	i586-mingw32msvc-cc -Wall -std=c99 -s -I../distorm3.2-package/include -I.. -o $@ $^ \
 		-ldnsapi -lws2_32 -lwininet -lshlwapi
 
 clean:

@@ -23,3 +23,6 @@ int utf8_length(unsigned short x);
 // ascii/unicode string "s" in bytes
 int utf8_strlen_ascii(const char *s, int len);
 int utf8_strlen_unicode(const wchar_t *s, int len);
+
+char * utf8_string(const char *str, int length);
+char * utf8_wstring(const wchar_t *str, int length);
