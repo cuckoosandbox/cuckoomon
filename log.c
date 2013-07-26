@@ -71,6 +71,28 @@ void log_flush()
     }
 }
 
+static void log_raw(const char *buf, size_t length) {
+    for (int i=0; i<length; i++) {
+        g_buffer[g_idx] = buf[i];
+        g_idx++;
+
+        if (g_idx >= BUFFERSIZE -1) {
+            log_flush();
+        }
+    }
+}
+
+static void debug_message(const char *msg) {
+    bson b[1];
+    bson_init( b );
+    bson_append_string( b, "type", "debug" );
+    bson_append_string( b, "msg", msg );
+    bson_finish( b );
+    log_raw(bson_data( b ), bson_size( b ));
+    bson_destroy( b );
+    log_flush();
+}
+
 static void log_int8(char value)
 {
     bson_append_int( g_bson, g_istr, value );
@@ -88,17 +110,39 @@ static void log_int32(int value)
 
 static void log_string(const char *str, int length)
 {
+    if (str == NULL) {
+        bson_append_string_n( g_bson, g_istr, "", 0 );
+        return;
+    }
+    int ret;
     char * utf8s = utf8_string(str, length);
     int utf8len = * (int *) utf8s;
-    bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    ret = bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    if (ret == BSON_ERROR) {
+        char tmp[64];
+        snprintf(tmp, 64, "dbg bson err string %x utf8len %d", g_bson->err, utf8len);
+        debug_message(tmp);
+        bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, str, utf8len );
+    }
     free(utf8s);
 }
 
 static void log_wstring(const wchar_t *str, int length)
 {
+    if (str == NULL) {
+        bson_append_string_n( g_bson, g_istr, "", 0 );
+        return;
+    }
+    int ret;
     char * utf8s = utf8_wstring(str, length);
     int utf8len = * (int *) utf8s;
-    bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    ret = bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    if (ret == BSON_ERROR) {
+        char tmp[64];
+        snprintf(tmp, 64, "dbg bson err wstring %x utf8len %d", g_bson->err, utf8len);
+        debug_message(tmp);
+        bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, utf8s+4, utf8len );
+    }
     free(utf8s);
 }
 
@@ -131,28 +175,6 @@ static void log_buffer(const char *buf, size_t length) {
     }
 
     bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, buf, trunclength );
-}
-
-static void log_raw(const char *buf, size_t length) {
-    for (int i=0; i<length; i++) {
-        g_buffer[g_idx] = buf[i];
-        g_idx++;
-
-        if (g_idx >= BUFFERSIZE -1) {
-            log_flush();
-        }
-    }
-}
-
-static void debug_message(const char *msg) {
-    bson b[1];
-    bson_init( b );
-    bson_append_string( b, "type", "debug" );
-    bson_append_string( b, "msg", msg );
-    bson_finish( b );
-    log_raw(bson_data( b ), bson_size( b ));
-    bson_destroy( b );
-    log_flush();
 }
 
 void loq(int index, const char *name,
@@ -298,17 +320,18 @@ void loq(int index, const char *name,
         else if(key == 'S') {
             int len = va_arg(args, int);
             const char *s = va_arg(args, const char *);
+            if(s == NULL) { s = ""; len = 0; }
             log_string(s, len);
         }
         else if(key == 'u') {
             const wchar_t *s = va_arg(args, const wchar_t *);
             if(s == NULL) s = L"";
-
             log_wstring(s, -1);
         }
         else if(key == 'U') {
             int len = va_arg(args, int);
             const wchar_t *s = va_arg(args, const wchar_t *);
+            if(s == NULL) { s = L""; len = 0; }
             log_wstring(s, len);
         }
         else if(key == 'b') {
@@ -367,10 +390,10 @@ void loq(int index, const char *name,
             unsigned long size = va_arg(args, unsigned long);
             unsigned char *data = va_arg(args, unsigned char *);
 
-            bson_append_start_object( g_bson, g_istr );
-            bson_append_int( g_bson, "type", type );
+            // bson_append_start_object( g_bson, g_istr );
+            // bson_append_int( g_bson, "type", type );
 
-            strncpy(g_istr, "val", 4);
+            // strncpy(g_istr, "val", 4);
             if(type == REG_NONE) {
                 log_string("", 0);
             }
@@ -383,18 +406,26 @@ void loq(int index, const char *name,
                 log_int32(htonl(value));
             }
             else if(type == REG_EXPAND_SZ || type == REG_SZ) {
+
+                if (data == NULL) {
+                    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, 0 );
+                }
                 // ascii strings
-                if(key == 'r') {
-                    log_string((const char *) data, size);
+                else if(key == 'r') {
+                    // log_string((const char *) data, size);
+                    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, size );
                 }
                 // unicode strings
                 else {
-                    log_wstring((const wchar_t *) data,
-                        size / sizeof(wchar_t));
+                    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, size );
+                    // log_wstring((const wchar_t *) data,
+                    //     size / sizeof(wchar_t));
                 }
+            } else {
+                bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, 0 );
             }
 
-            bson_append_finish_object( g_bson );
+            // bson_append_finish_object( g_bson );
         }
     }
 
