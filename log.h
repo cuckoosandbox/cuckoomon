@@ -63,7 +63,7 @@ void log_free();
 
 int log_resolve_index(const char *funcname, int index);
 extern const char *logtbl[];
-extern const char *logtbl_explained[];
+extern char logtbl_explained[];
 
 #define LOQ(fmt, ...) { static int _index; if(_index == 0) \
     _index = log_resolve_index(&__FUNCTION__[4], 0); loq(_index, \

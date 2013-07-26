@@ -144,6 +144,17 @@ static void log_raw(const char *buf, size_t length) {
     }
 }
 
+static void debug_message(const char *msg) {
+    bson b[1];
+    bson_init( b );
+    bson_append_string( b, "type", "debug" );
+    bson_append_string( b, "msg", msg );
+    bson_finish( b );
+    log_raw(bson_data( b ), bson_size( b ));
+    bson_destroy( b );
+    log_flush();
+}
+
 void loq(int index, const char *name,
     int is_success, int return_value, const char *fmt, ...)
 {
@@ -161,8 +172,9 @@ void loq(int index, const char *name,
 
         bson b[1];
         bson_init( b );
-        bson_append_int( b, "index", index );
+        bson_append_int( b, "I", index );
         bson_append_string( b, "name", name );
+        bson_append_string( b, "type", "info" );
 
         bson_append_start_array( b, "args" );
         bson_append_string( b, "0", "is_success" );
@@ -240,13 +252,9 @@ void loq(int index, const char *name,
         }
         bson_append_finish_array( b );
         bson_finish( b );
-        if (bson_size( b ) > BUFFERSIZE) {
-            //DBGWARN, ignoring bson obj
-        } else {
-            log_raw(bson_data( b ), bson_size( b ));
-        }
-
+        log_raw(bson_data( b ), bson_size( b ));
         bson_destroy( b );
+        log_flush();
     }
 
     va_end(args);
@@ -255,9 +263,9 @@ void loq(int index, const char *name,
     count = 1; key = 0; argnum = 2;
 
     bson_init( g_bson );
-    bson_append_int( g_bson, "index", index );
-    bson_append_int( g_bson, "tid", GetCurrentThreadId() );
-    bson_append_int( g_bson, "time", GetTickCount() - g_starttick );
+    bson_append_int( g_bson, "I", index );
+    bson_append_int( g_bson, "T", GetCurrentThreadId() );
+    bson_append_int( g_bson, "t", GetTickCount() - g_starttick );
     bson_append_start_array( g_bson, "args" );
     bson_append_int( g_bson, "0", is_success );
     bson_append_int( g_bson, "1", return_value );

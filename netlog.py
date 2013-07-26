@@ -79,7 +79,7 @@ def generate_c_code(fname):
         lines.append('    "%s",' % funcname)
     lines.append('    NULL')
     lines.append('};')
-    lines.append('char logtbl_explained[sizeof(logtbl)/sizeof(char *)];')
+    lines.append('char logtbl_explained[sizeof(logtbl)/sizeof(char *)] = {0};')
     file(fname, 'w').write('\n'.join(lines) + '\n')
 
 if __name__ == '__main__':
