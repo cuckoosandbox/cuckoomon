@@ -117,12 +117,11 @@ static void log_string(const char *str, int length)
     int ret;
     char * utf8s = utf8_string(str, length);
     int utf8len = * (int *) utf8s;
-    ret = bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    ret = bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, utf8s+4, utf8len );
     if (ret == BSON_ERROR) {
         char tmp[64];
         snprintf(tmp, 64, "dbg bson err string %x utf8len %d", g_bson->err, utf8len);
         debug_message(tmp);
-        bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, str, utf8len );
     }
     free(utf8s);
 }
@@ -136,12 +135,11 @@ static void log_wstring(const wchar_t *str, int length)
     int ret;
     char * utf8s = utf8_wstring(str, length);
     int utf8len = * (int *) utf8s;
-    ret = bson_append_string_n( g_bson, g_istr, utf8s+4, utf8len );
+    ret = bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, utf8s+4, utf8len );
     if (ret == BSON_ERROR) {
         char tmp[64];
         snprintf(tmp, 64, "dbg bson err wstring %x utf8len %d", g_bson->err, utf8len);
         debug_message(tmp);
-        bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, utf8s+4, utf8len );
     }
     free(utf8s);
 }
