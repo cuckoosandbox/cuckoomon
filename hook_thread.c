@@ -120,12 +120,12 @@ HOOKDEF(NTSTATUS, WINAPI, NtTerminateThread,
 }
 
 HOOKDEF(HANDLE, WINAPI, CreateThread,
-  __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
-  __in   SIZE_T dwStackSize,
-  __in   LPTHREAD_START_ROUTINE lpStartAddress,
-  __in   LPVOID lpParameter,
-  __in   DWORD dwCreationFlags,
-  __out  LPDWORD lpThreadId
+    __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    __in   SIZE_T dwStackSize,
+    __in   LPTHREAD_START_ROUTINE lpStartAddress,
+    __in   LPVOID lpParameter,
+    __in   DWORD dwCreationFlags,
+    __out  LPDWORD lpThreadId
 ) {
     IS_SUCCESS_HANDLE();
 
@@ -140,13 +140,13 @@ HOOKDEF(HANDLE, WINAPI, CreateThread,
 }
 
 HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
-  __in   HANDLE hProcess,
-  __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
-  __in   SIZE_T dwStackSize,
-  __in   LPTHREAD_START_ROUTINE lpStartAddress,
-  __in   LPVOID lpParameter,
-  __in   DWORD dwCreationFlags,
-  __out  LPDWORD lpThreadId
+    __in   HANDLE hProcess,
+    __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    __in   SIZE_T dwStackSize,
+    __in   LPTHREAD_START_ROUTINE lpStartAddress,
+    __in   LPVOID lpParameter,
+    __in   DWORD dwCreationFlags,
+    __out  LPDWORD lpThreadId
 ) {
     IS_SUCCESS_HANDLE();
 
@@ -165,7 +165,7 @@ HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
 }
 
 HOOKDEF(VOID, WINAPI, ExitThread,
-  __in  DWORD dwExitCode
+    __in  DWORD dwExitCode
 ) {
     IS_SUCCESS_VOID();
 

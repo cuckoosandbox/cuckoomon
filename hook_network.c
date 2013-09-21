@@ -114,12 +114,12 @@ HOOKDEF(HINTERNET, WINAPI, InternetConnectW,
 }
 
 HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlA,
-  __in  HINTERNET hInternet,
-  __in  LPCTSTR lpszUrl,
-  __in  LPCTSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hInternet,
+    __in  LPCTSTR lpszUrl,
+    __in  LPCTSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 ) {
     HINTERNET ret = Old_InternetOpenUrlA(hInternet, lpszUrl, lpszHeaders,
         dwHeadersLength, dwFlags, dwContext);
@@ -130,12 +130,12 @@ HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlA,
 }
 
 HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlW,
-  __in  HINTERNET hInternet,
-  __in  LPWSTR lpszUrl,
-  __in  LPWSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hInternet,
+    __in  LPWSTR lpszUrl,
+    __in  LPWSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 ) {
     HINTERNET ret = Old_InternetOpenUrlW(hInternet, lpszUrl, lpszHeaders,
         dwHeadersLength, dwFlags, dwContext);
@@ -145,14 +145,14 @@ HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlW,
 }
 
 HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestA,
-  __in  HINTERNET hConnect,
-  __in  LPCTSTR lpszVerb,
-  __in  LPCTSTR lpszObjectName,
-  __in  LPCTSTR lpszVersion,
-  __in  LPCTSTR lpszReferer,
-  __in  LPCTSTR *lplpszAcceptTypes,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hConnect,
+    __in  LPCTSTR lpszVerb,
+    __in  LPCTSTR lpszObjectName,
+    __in  LPCTSTR lpszVersion,
+    __in  LPCTSTR lpszReferer,
+    __in  LPCTSTR *lplpszAcceptTypes,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 ) {
     HINTERNET ret = Old_HttpOpenRequestA(hConnect, lpszVerb, lpszObjectName,
         lpszVersion, lpszReferer, lplpszAcceptTypes, dwFlags, dwContext);
@@ -162,14 +162,14 @@ HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestA,
 }
 
 HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestW,
-  __in  HINTERNET hConnect,
-  __in  LPWSTR lpszVerb,
-  __in  LPWSTR lpszObjectName,
-  __in  LPWSTR lpszVersion,
-  __in  LPWSTR lpszReferer,
-  __in  LPWSTR *lplpszAcceptTypes,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hConnect,
+    __in  LPWSTR lpszVerb,
+    __in  LPWSTR lpszObjectName,
+    __in  LPWSTR lpszVersion,
+    __in  LPWSTR lpszReferer,
+    __in  LPWSTR *lplpszAcceptTypes,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 ) {
     HINTERNET ret = Old_HttpOpenRequestW(hConnect, lpszVerb, lpszObjectName,
         lpszVersion, lpszReferer, lplpszAcceptTypes, dwFlags, dwContext);
@@ -179,11 +179,11 @@ HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestW,
 }
 
 HOOKDEF(BOOL, WINAPI, HttpSendRequestA,
-  __in  HINTERNET hRequest,
-  __in  LPCTSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  LPVOID lpOptional,
-  __in  DWORD dwOptionalLength
+    __in  HINTERNET hRequest,
+    __in  LPCTSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  LPVOID lpOptional,
+    __in  DWORD dwOptionalLength
 ) {
     IS_SUCCESS_BOOL();
 
@@ -197,11 +197,11 @@ HOOKDEF(BOOL, WINAPI, HttpSendRequestA,
 }
 
 HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
-  __in  HINTERNET hRequest,
-  __in  LPWSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  LPVOID lpOptional,
-  __in  DWORD dwOptionalLength
+    __in  HINTERNET hRequest,
+    __in  LPWSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  LPVOID lpOptional,
+    __in  DWORD dwOptionalLength
 ) {
     IS_SUCCESS_BOOL();
 
@@ -254,12 +254,12 @@ HOOKDEF(BOOL, WINAPI, InternetCloseHandle,
 }
 
 HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
-  __in         PCSTR lpstrName,
-  __in         WORD wType,
-  __in         DWORD Options,
-  __inout_opt  PVOID pExtra,
-  __out_opt    PDNS_RECORD *ppQueryResultsSet,
-  __out_opt    PVOID *pReserved
+    __in         PCSTR lpstrName,
+    __in         WORD wType,
+    __in         DWORD Options,
+    __inout_opt  PVOID pExtra,
+    __out_opt    PDNS_RECORD *ppQueryResultsSet,
+    __out_opt    PVOID *pReserved
 ) {
     IS_SUCCESS_ZERO();
 
@@ -270,12 +270,12 @@ HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
 }
 
 HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_UTF8,
-  __in         LPBYTE lpstrName,
-  __in         WORD wType,
-  __in         DWORD Options,
-  __inout_opt  PVOID pExtra,
-  __out_opt    PDNS_RECORD *ppQueryResultsSet,
-  __out_opt    PVOID *pReserved
+    __in         LPBYTE lpstrName,
+    __in         WORD wType,
+    __in         DWORD Options,
+    __inout_opt  PVOID pExtra,
+    __out_opt    PDNS_RECORD *ppQueryResultsSet,
+    __out_opt    PVOID *pReserved
 ) {
     IS_SUCCESS_ZERO();
 
@@ -286,12 +286,12 @@ HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_UTF8,
 }
 
 HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_W,
-  __in         PWSTR lpstrName,
-  __in         WORD wType,
-  __in         DWORD Options,
-  __inout_opt  PVOID pExtra,
-  __out_opt    PDNS_RECORD *ppQueryResultsSet,
-  __out_opt    PVOID *pReserved
+    __in         PWSTR lpstrName,
+    __in         WORD wType,
+    __in         DWORD Options,
+    __inout_opt  PVOID pExtra,
+    __out_opt    PDNS_RECORD *ppQueryResultsSet,
+    __out_opt    PVOID *pReserved
 ) {
     IS_SUCCESS_ZERO();
 
@@ -302,10 +302,10 @@ HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_W,
 }
 
 HOOKDEF(int, WSAAPI, getaddrinfo,
-  _In_opt_  PCSTR pNodeName,
-  _In_opt_  PCSTR pServiceName,
-  _In_opt_  const ADDRINFOA *pHints,
-  _Out_     PADDRINFOA *ppResult
+    _In_opt_  PCSTR pNodeName,
+    _In_opt_  PCSTR pServiceName,
+    _In_opt_  const ADDRINFOA *pHints,
+    _Out_     PADDRINFOA *ppResult
 ) {
     IS_SUCCESS_ZERO();
 
@@ -315,10 +315,10 @@ HOOKDEF(int, WSAAPI, getaddrinfo,
 }
 
 HOOKDEF(int, WSAAPI, GetAddrInfoW,
-  _In_opt_  PCWSTR pNodeName,
-  _In_opt_  PCWSTR pServiceName,
-  _In_opt_  const ADDRINFOW *pHints,
-  _Out_     PADDRINFOW *ppResult
+    _In_opt_  PCWSTR pNodeName,
+    _In_opt_  PCWSTR pServiceName,
+    _In_opt_  const ADDRINFOW *pHints,
+    _Out_     PADDRINFOW *ppResult
 ) {
     IS_SUCCESS_ZERO();
 

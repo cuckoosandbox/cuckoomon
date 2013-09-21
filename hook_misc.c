@@ -57,7 +57,7 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
 }
 
 HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
-  __in  HHOOK hhk
+    __in  HHOOK hhk
 ) {
     IS_SUCCESS_BOOL();
 
@@ -109,14 +109,14 @@ HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
 }
 
 HOOKDEF(BOOL, WINAPI, DeviceIoControl,
-  __in         HANDLE hDevice,
-  __in         DWORD dwIoControlCode,
-  __in_opt     LPVOID lpInBuffer,
-  __in         DWORD nInBufferSize,
-  __out_opt    LPVOID lpOutBuffer,
-  __in         DWORD nOutBufferSize,
-  __out_opt    LPDWORD lpBytesReturned,
-  __inout_opt  LPOVERLAPPED lpOverlapped
+    __in         HANDLE hDevice,
+    __in         DWORD dwIoControlCode,
+    __in_opt     LPVOID lpInBuffer,
+    __in         DWORD nInBufferSize,
+    __out_opt    LPVOID lpOutBuffer,
+    __in         DWORD nOutBufferSize,
+    __out_opt    LPDWORD lpBytesReturned,
+    __inout_opt  LPOVERLAPPED lpOverlapped
 ) {
     IS_SUCCESS_BOOL();
 
@@ -131,8 +131,8 @@ HOOKDEF(BOOL, WINAPI, DeviceIoControl,
 }
 
 HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
-  __in  UINT uFlags,
-  __in  DWORD dwReason
+    __in  UINT uFlags,
+    __in  DWORD dwReason
 ) {
     IS_SUCCESS_BOOL();
 
@@ -152,9 +152,9 @@ HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
 }
 
 HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
-  __in_opt  LPWSTR lpSystemName,
-  __in      LPWSTR lpName,
-  __out     PLUID lpLuid
+    __in_opt  LPWSTR lpSystemName,
+    __in      LPWSTR lpName,
+    __out     PLUID lpLuid
 ) {
     IS_SUCCESS_BOOL();
 
@@ -203,16 +203,16 @@ HOOKDEF(BOOL, WINAPI, WriteConsoleW,
 }
 
 HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
-  _In_     HANDLE SectionHandle,
-  _In_     HANDLE ProcessHandle,
-  __inout  PVOID *BaseAddress,
-  _In_     ULONG_PTR ZeroBits,
-  _In_     SIZE_T CommitSize,
-  __inout  PLARGE_INTEGER SectionOffset,
-  __inout  PSIZE_T ViewSize,
-  __in     UINT InheritDisposition,
-  __in     ULONG AllocationType,
-  __in     ULONG Win32Protect
+    _In_     HANDLE SectionHandle,
+    _In_     HANDLE ProcessHandle,
+    __inout  PVOID *BaseAddress,
+    _In_     ULONG_PTR ZeroBits,
+    _In_     SIZE_T CommitSize,
+    __inout  PLARGE_INTEGER SectionOffset,
+    __inout  PSIZE_T ViewSize,
+    __in     UINT InheritDisposition,
+    __in     ULONG AllocationType,
+    __in     ULONG Win32Protect
 ) {
     NTSTATUS ret = Old_ZwMapViewOfSection(SectionHandle, ProcessHandle,
         BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize,
