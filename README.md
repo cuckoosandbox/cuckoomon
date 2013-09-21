@@ -13,4 +13,5 @@ Authors
 =======
 
 - Jurriaan Bremer
+- Mark Schloesser
 - Claudio Guarnieri
