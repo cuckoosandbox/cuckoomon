@@ -218,7 +218,7 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
 }
 
 HOOKDEF(VOID, WINAPI, ExitProcess,
-  __in  UINT uExitCode
+    __in  UINT uExitCode
 ) {
     IS_SUCCESS_VOID();
 
@@ -229,7 +229,7 @@ HOOKDEF(VOID, WINAPI, ExitProcess,
 }
 
 HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
-  __inout  SHELLEXECUTEINFOW *pExecInfo
+    __inout  SHELLEXECUTEINFOW *pExecInfo
 ) {
     IS_SUCCESS_BOOL();
 

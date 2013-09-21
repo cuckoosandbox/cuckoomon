@@ -25,50 +25,50 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
-  __out     PHANDLE FileHandle,
-  __in      ACCESS_MASK DesiredAccess,
-  __in      POBJECT_ATTRIBUTES ObjectAttributes,
-  __out     PIO_STATUS_BLOCK IoStatusBlock,
-  __in_opt  PLARGE_INTEGER AllocationSize,
-  __in      ULONG FileAttributes,
-  __in      ULONG ShareAccess,
-  __in      ULONG CreateDisposition,
-  __in      ULONG CreateOptions,
-  __in      PVOID EaBuffer,
-  __in      ULONG EaLength
+    __out     PHANDLE FileHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in      POBJECT_ATTRIBUTES ObjectAttributes,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __in_opt  PLARGE_INTEGER AllocationSize,
+    __in      ULONG FileAttributes,
+    __in      ULONG ShareAccess,
+    __in      ULONG CreateDisposition,
+    __in      ULONG CreateOptions,
+    __in      PVOID EaBuffer,
+    __in      ULONG EaLength
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
-  __out  PHANDLE FileHandle,
-  __in   ACCESS_MASK DesiredAccess,
-  __in   POBJECT_ATTRIBUTES ObjectAttributes,
-  __out  PIO_STATUS_BLOCK IoStatusBlock,
-  __in   ULONG ShareAccess,
-  __in   ULONG OpenOptions
+    __out  PHANDLE FileHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes,
+    __out  PIO_STATUS_BLOCK IoStatusBlock,
+    __in   ULONG ShareAccess,
+    __in   ULONG OpenOptions
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtReadFile,
-  __in      HANDLE FileHandle,
-  __in_opt  HANDLE Event,
-  __in_opt  PIO_APC_ROUTINE ApcRoutine,
-  __in_opt  PVOID ApcContext,
-  __out     PIO_STATUS_BLOCK IoStatusBlock,
-  __out     PVOID Buffer,
-  __in      ULONG Length,
-  __in_opt  PLARGE_INTEGER ByteOffset,
-  __in_opt  PULONG Key
+    __in      HANDLE FileHandle,
+    __in_opt  HANDLE Event,
+    __in_opt  PIO_APC_ROUTINE ApcRoutine,
+    __in_opt  PVOID ApcContext,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __out     PVOID Buffer,
+    __in      ULONG Length,
+    __in_opt  PLARGE_INTEGER ByteOffset,
+    __in_opt  PULONG Key
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtWriteFile,
-  __in      HANDLE FileHandle,
-  __in_opt  HANDLE Event,
-  __in_opt  PIO_APC_ROUTINE ApcRoutine,
-  __in_opt  PVOID ApcContext,
-  __out     PIO_STATUS_BLOCK IoStatusBlock,
-  __in      PVOID Buffer,
-  __in      ULONG Length,
-  __in_opt  PLARGE_INTEGER ByteOffset,
-  __in_opt  PULONG Key
+    __in      HANDLE FileHandle,
+    __in_opt  HANDLE Event,
+    __in_opt  PIO_APC_ROUTINE ApcRoutine,
+    __in_opt  PVOID ApcContext,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __in      PVOID Buffer,
+    __in      ULONG Length,
+    __in_opt  PLARGE_INTEGER ByteOffset,
+    __in_opt  PULONG Key
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtDeleteFile,
@@ -131,22 +131,22 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtCreateDirectoryObject,
 );
 
 extern HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
-  __in      LPWSTR lpExistingFileName,
-  __in_opt  LPWSTR lpNewFileName,
-  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
-  __in_opt  LPVOID lpData,
-  __in      DWORD dwFlags
+    __in      LPWSTR lpExistingFileName,
+    __in_opt  LPWSTR lpNewFileName,
+    __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+    __in_opt  LPVOID lpData,
+    __in      DWORD dwFlags
 );
 
 extern HOOKDEF(BOOL, WINAPI, CreateDirectoryW,
-  __in      LPCTSTR lpPathName,
-  __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+    __in      LPCTSTR lpPathName,
+    __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
 );
 
 extern HOOKDEF(BOOL, WINAPI, CreateDirectoryExW,
-  __in      LPWSTR lpTemplateDirectory,
-  __in      LPWSTR lpNewDirectory,
-  __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+    __in      LPWSTR lpTemplateDirectory,
+    __in      LPWSTR lpNewDirectory,
+    __in_opt  LPSECURITY_ATTRIBUTES lpSecurityAttributes
 );
 
 extern HOOKDEF(BOOL, WINAPI, RemoveDirectoryA,
@@ -158,11 +158,11 @@ extern HOOKDEF(BOOL, WINAPI, RemoveDirectoryW,
 );
 
 extern HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
-  __in      LPWSTR lpExistingFileName,
-  __in_opt  LPWSTR lpNewFileName,
-  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
-  __in_opt  LPVOID lpData,
-  __in      DWORD dwFlags
+    __in      LPWSTR lpExistingFileName,
+    __in_opt  LPWSTR lpNewFileName,
+    __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+    __in_opt  LPVOID lpData,
+    __in      DWORD dwFlags
 );
 
 extern HOOKDEF(HANDLE, WINAPI, FindFirstFileExA,
@@ -196,12 +196,12 @@ extern HOOKDEF(BOOL, WINAPI, CopyFileW,
 );
 
 extern HOOKDEF(BOOL, WINAPI, CopyFileExW,
-  _In_      LPWSTR lpExistingFileName,
-  _In_      LPWSTR lpNewFileName,
-  _In_opt_  LPPROGRESS_ROUTINE lpProgressRoutine,
-  _In_opt_  LPVOID lpData,
-  _In_opt_  LPBOOL pbCancel,
-  _In_      DWORD dwCopyFlags
+    _In_      LPWSTR lpExistingFileName,
+    _In_      LPWSTR lpNewFileName,
+    _In_opt_  LPPROGRESS_ROUTINE lpProgressRoutine,
+    _In_opt_  LPVOID lpData,
+    _In_opt_  LPBOOL pbCancel,
+    _In_      DWORD dwCopyFlags
 );
 
 extern HOOKDEF(BOOL, WINAPI, DeleteFileA,
@@ -217,150 +217,150 @@ extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
 //
 
 extern HOOKDEF(LONG, WINAPI, RegOpenKeyExA,
-  __in        HKEY hKey,
-  __in_opt    LPCTSTR lpSubKey,
-  __reserved  DWORD ulOptions,
-  __in        REGSAM samDesired,
-  __out       PHKEY phkResult
+    __in        HKEY hKey,
+    __in_opt    LPCTSTR lpSubKey,
+    __reserved  DWORD ulOptions,
+    __in        REGSAM samDesired,
+    __out       PHKEY phkResult
 );
 
 extern HOOKDEF(LONG, WINAPI, RegOpenKeyExW,
-  __in        HKEY hKey,
-  __in_opt    LPWSTR lpSubKey,
-  __reserved  DWORD ulOptions,
-  __in        REGSAM samDesired,
-  __out       PHKEY phkResult
+    __in        HKEY hKey,
+    __in_opt    LPWSTR lpSubKey,
+    __reserved  DWORD ulOptions,
+    __in        REGSAM samDesired,
+    __out       PHKEY phkResult
 );
 
 extern HOOKDEF(LONG, WINAPI, RegCreateKeyExA,
-  __in        HKEY hKey,
-  __in        LPCTSTR lpSubKey,
-  __reserved  DWORD Reserved,
-  __in_opt    LPTSTR lpClass,
-  __in        DWORD dwOptions,
-  __in        REGSAM samDesired,
-  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-  __out       PHKEY phkResult,
-  __out_opt   LPDWORD lpdwDisposition
+    __in        HKEY hKey,
+    __in        LPCTSTR lpSubKey,
+    __reserved  DWORD Reserved,
+    __in_opt    LPTSTR lpClass,
+    __in        DWORD dwOptions,
+    __in        REGSAM samDesired,
+    __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+    __out       PHKEY phkResult,
+    __out_opt   LPDWORD lpdwDisposition
 );
 
 extern HOOKDEF(LONG, WINAPI, RegCreateKeyExW,
-  __in        HKEY hKey,
-  __in        LPWSTR lpSubKey,
-  __reserved  DWORD Reserved,
-  __in_opt    LPWSTR lpClass,
-  __in        DWORD dwOptions,
-  __in        REGSAM samDesired,
-  __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-  __out       PHKEY phkResult,
-  __out_opt   LPDWORD lpdwDisposition
+    __in        HKEY hKey,
+    __in        LPWSTR lpSubKey,
+    __reserved  DWORD Reserved,
+    __in_opt    LPWSTR lpClass,
+    __in        DWORD dwOptions,
+    __in        REGSAM samDesired,
+    __in_opt    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+    __out       PHKEY phkResult,
+    __out_opt   LPDWORD lpdwDisposition
 );
 
 extern HOOKDEF(LONG, WINAPI, RegDeleteKeyA,
-  __in  HKEY hKey,
-  __in  LPCTSTR lpSubKey
+    __in  HKEY hKey,
+    __in  LPCTSTR lpSubKey
 );
 
 extern HOOKDEF(LONG, WINAPI, RegDeleteKeyW,
-  __in  HKEY hKey,
-  __in  LPWSTR lpSubKey
+    __in  HKEY hKey,
+    __in  LPWSTR lpSubKey
 );
 
 extern HOOKDEF(LONG, WINAPI, RegEnumKeyW,
-  __in   HKEY hKey,
-  __in   DWORD dwIndex,
-  __out  LPWSTR lpName,
-  __in   DWORD cchName
+    __in   HKEY hKey,
+    __in   DWORD dwIndex,
+    __out  LPWSTR lpName,
+    __in   DWORD cchName
 );
 
 extern HOOKDEF(LONG, WINAPI, RegEnumKeyExA,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPTSTR lpName,
-  __inout      LPDWORD lpcName,
-  __reserved   LPDWORD lpReserved,
-  __inout      LPTSTR lpClass,
-  __inout_opt  LPDWORD lpcClass,
-  __out_opt    PFILETIME lpftLastWriteTime
+    __in         HKEY hKey,
+    __in         DWORD dwIndex,
+    __out        LPTSTR lpName,
+    __inout      LPDWORD lpcName,
+    __reserved   LPDWORD lpReserved,
+    __inout      LPTSTR lpClass,
+    __inout_opt  LPDWORD lpcClass,
+    __out_opt    PFILETIME lpftLastWriteTime
 );
 
 extern HOOKDEF(LONG, WINAPI, RegEnumKeyExW,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPWSTR lpName,
-  __inout      LPDWORD lpcName,
-  __reserved   LPDWORD lpReserved,
-  __inout      LPWSTR lpClass,
-  __inout_opt  LPDWORD lpcClass,
-  __out_opt    PFILETIME lpftLastWriteTime
+    __in         HKEY hKey,
+    __in         DWORD dwIndex,
+    __out        LPWSTR lpName,
+    __inout      LPDWORD lpcName,
+    __reserved   LPDWORD lpReserved,
+    __inout      LPWSTR lpClass,
+    __inout_opt  LPDWORD lpcClass,
+    __out_opt    PFILETIME lpftLastWriteTime
 );
 
 extern HOOKDEF(LONG, WINAPI, RegEnumValueA,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPTSTR lpValueName,
-  __inout      LPDWORD lpcchValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+    __in         HKEY hKey,
+    __in         DWORD dwIndex,
+    __out        LPTSTR lpValueName,
+    __inout      LPDWORD lpcchValueName,
+    __reserved   LPDWORD lpReserved,
+    __out_opt    LPDWORD lpType,
+    __out_opt    LPBYTE lpData,
+    __inout_opt  LPDWORD lpcbData
 );
 
 extern HOOKDEF(LONG, WINAPI, RegEnumValueW,
-  __in         HKEY hKey,
-  __in         DWORD dwIndex,
-  __out        LPWSTR lpValueName,
-  __inout      LPDWORD lpcchValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+    __in         HKEY hKey,
+    __in         DWORD dwIndex,
+    __out        LPWSTR lpValueName,
+    __inout      LPDWORD lpcchValueName,
+    __reserved   LPDWORD lpReserved,
+    __out_opt    LPDWORD lpType,
+    __out_opt    LPBYTE lpData,
+    __inout_opt  LPDWORD lpcbData
 );
 
 extern HOOKDEF(LONG, WINAPI, RegSetValueExA,
-  __in        HKEY hKey,
-  __in_opt    LPCTSTR lpValueName,
-  __reserved  DWORD Reserved,
-  __in        DWORD dwType,
-  __in        const BYTE *lpData,
-  __in        DWORD cbData
+    __in        HKEY hKey,
+    __in_opt    LPCTSTR lpValueName,
+    __reserved  DWORD Reserved,
+    __in        DWORD dwType,
+    __in        const BYTE *lpData,
+    __in        DWORD cbData
 );
 
 extern HOOKDEF(LONG, WINAPI, RegSetValueExW,
-  __in        HKEY hKey,
-  __in_opt    LPWSTR lpValueName,
-  __reserved  DWORD Reserved,
-  __in        DWORD dwType,
-  __in        const BYTE *lpData,
-  __in        DWORD cbData
+    __in        HKEY hKey,
+    __in_opt    LPWSTR lpValueName,
+    __reserved  DWORD Reserved,
+    __in        DWORD dwType,
+    __in        const BYTE *lpData,
+    __in        DWORD cbData
 );
 
 extern HOOKDEF(LONG, WINAPI, RegQueryValueExA,
-  __in         HKEY hKey,
-  __in_opt     LPCTSTR lpValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+    __in         HKEY hKey,
+    __in_opt     LPCTSTR lpValueName,
+    __reserved   LPDWORD lpReserved,
+    __out_opt    LPDWORD lpType,
+    __out_opt    LPBYTE lpData,
+    __inout_opt  LPDWORD lpcbData
 );
 
 extern HOOKDEF(LONG, WINAPI, RegQueryValueExW,
-  __in         HKEY hKey,
-  __in_opt     LPWSTR lpValueName,
-  __reserved   LPDWORD lpReserved,
-  __out_opt    LPDWORD lpType,
-  __out_opt    LPBYTE lpData,
-  __inout_opt  LPDWORD lpcbData
+    __in         HKEY hKey,
+    __in_opt     LPWSTR lpValueName,
+    __reserved   LPDWORD lpReserved,
+    __out_opt    LPDWORD lpType,
+    __out_opt    LPBYTE lpData,
+    __inout_opt  LPDWORD lpcbData
 );
 
 extern HOOKDEF(LONG, WINAPI, RegDeleteValueA,
-  __in      HKEY hKey,
-  __in_opt  LPCTSTR lpValueName
+    __in      HKEY hKey,
+    __in_opt  LPCTSTR lpValueName
 );
 
 extern HOOKDEF(LONG, WINAPI, RegDeleteValueW,
-  __in      HKEY hKey,
-  __in_opt  LPWSTR lpValueName
+    __in      HKEY hKey,
+    __in_opt  LPWSTR lpValueName
 );
 
 extern HOOKDEF(LONG, WINAPI, RegQueryInfoKeyA,
@@ -531,27 +531,27 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtSaveKeyEx,
 //
 
 extern HOOKDEF(HWND, WINAPI, FindWindowA,
-  __in_opt  LPCTSTR lpClassName,
-  __in_opt  LPCTSTR lpWindowName
+    __in_opt  LPCTSTR lpClassName,
+    __in_opt  LPCTSTR lpWindowName
 );
 
 extern HOOKDEF(HWND, WINAPI, FindWindowW,
-  __in_opt  LPWSTR lpClassName,
-  __in_opt  LPWSTR lpWindowName
+    __in_opt  LPWSTR lpClassName,
+    __in_opt  LPWSTR lpWindowName
 );
 
 extern HOOKDEF(HWND, WINAPI, FindWindowExA,
-  __in_opt  HWND hwndParent,
-  __in_opt  HWND hwndChildAfter,
-  __in_opt  LPCTSTR lpszClass,
-  __in_opt  LPCTSTR lpszWindow
+    __in_opt  HWND hwndParent,
+    __in_opt  HWND hwndChildAfter,
+    __in_opt  LPCTSTR lpszClass,
+    __in_opt  LPCTSTR lpszWindow
 );
 
 extern HOOKDEF(HWND, WINAPI, FindWindowExW,
-  __in_opt  HWND hwndParent,
-  __in_opt  HWND hwndChildAfter,
-  __in_opt  LPWSTR lpszClass,
-  __in_opt  LPWSTR lpszWindow
+    __in_opt  HWND hwndParent,
+    __in_opt  HWND hwndChildAfter,
+    __in_opt  LPWSTR lpszClass,
+    __in_opt  LPWSTR lpszWindow
 );
 
 //
@@ -688,11 +688,11 @@ extern HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
 );
 
 extern HOOKDEF(VOID, WINAPI, ExitProcess,
-  __in  UINT uExitCode
+    __in  UINT uExitCode
 );
 
 extern HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
-  __inout  SHELLEXECUTEINFOW *pExecInfo
+    __inout  SHELLEXECUTEINFOW *pExecInfo
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtUnmapViewOfSection,
@@ -823,31 +823,31 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtTerminateThread,
 );
 
 extern HOOKDEF(HANDLE, WINAPI, CreateThread,
-  __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
-  __in   SIZE_T dwStackSize,
-  __in   LPTHREAD_START_ROUTINE lpStartAddress,
-  __in   LPVOID lpParameter,
-  __in   DWORD dwCreationFlags,
-  __out  LPDWORD lpThreadId
+    __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    __in   SIZE_T dwStackSize,
+    __in   LPTHREAD_START_ROUTINE lpStartAddress,
+    __in   LPVOID lpParameter,
+    __in   DWORD dwCreationFlags,
+    __out  LPDWORD lpThreadId
 );
 
 extern HOOKDEF(HANDLE, WINAPI, CreateRemoteThread,
-  __in   HANDLE hProcess,
-  __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
-  __in   SIZE_T dwStackSize,
-  __in   LPTHREAD_START_ROUTINE lpStartAddress,
-  __in   LPVOID lpParameter,
-  __in   DWORD dwCreationFlags,
-  __out  LPDWORD lpThreadId
+    __in   HANDLE hProcess,
+    __in   LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    __in   SIZE_T dwStackSize,
+    __in   LPTHREAD_START_ROUTINE lpStartAddress,
+    __in   LPVOID lpParameter,
+    __in   DWORD dwCreationFlags,
+    __out  LPDWORD lpThreadId
 );
 
 extern HOOKDEF(BOOL, WINAPI, TerminateThread,
-  __inout  HANDLE hThread,
-  __in     DWORD dwExitCode
+    __inout  HANDLE hThread,
+    __in     DWORD dwExitCode
 );
 
 extern HOOKDEF(VOID, WINAPI, ExitThread,
-  __in  DWORD dwExitCode
+    __in  DWORD dwExitCode
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserThread,
@@ -882,7 +882,7 @@ extern HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
 );
 
 extern HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
-  __in  HHOOK hhk
+    __in  HHOOK hhk
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
@@ -907,14 +907,14 @@ extern HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
 );
 
 extern HOOKDEF(BOOL, WINAPI, DeviceIoControl,
-  __in         HANDLE hDevice,
-  __in         DWORD dwIoControlCode,
-  __in_opt     LPVOID lpInBuffer,
-  __in         DWORD nInBufferSize,
-  __out_opt    LPVOID lpOutBuffer,
-  __in         DWORD nOutBufferSize,
-  __out_opt    LPDWORD lpBytesReturned,
-  __inout_opt  LPOVERLAPPED lpOverlapped
+    __in         HANDLE hDevice,
+    __in         DWORD dwIoControlCode,
+    __in_opt     LPVOID lpInBuffer,
+    __in         DWORD nInBufferSize,
+    __out_opt    LPVOID lpOutBuffer,
+    __in         DWORD nOutBufferSize,
+    __out_opt    LPDWORD lpBytesReturned,
+    __inout_opt  LPOVERLAPPED lpOverlapped
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
@@ -923,8 +923,8 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
 );
 
 extern HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
-  __in  UINT uFlags,
-  __in  DWORD dwReason
+    __in  UINT uFlags,
+    __in  DWORD dwReason
 );
 
 extern HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
@@ -932,9 +932,9 @@ extern HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
 );
 
 extern HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
-  __in_opt  LPWSTR lpSystemName,
-  __in      LPWSTR lpName,
-  __out     PLUID lpLuid
+    __in_opt  LPWSTR lpSystemName,
+    __in      LPWSTR lpName,
+    __out     PLUID lpLuid
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, NtClose,
@@ -1016,59 +1016,59 @@ extern HOOKDEF(HINTERNET, WINAPI, InternetConnectW,
 );
 
 extern HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlA,
-  __in  HINTERNET hInternet,
-  __in  LPCTSTR lpszUrl,
-  __in  LPCTSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hInternet,
+    __in  LPCTSTR lpszUrl,
+    __in  LPCTSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 );
 
 extern HOOKDEF(HINTERNET, WINAPI, InternetOpenUrlW,
-  __in  HINTERNET hInternet,
-  __in  LPWSTR lpszUrl,
-  __in  LPWSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hInternet,
+    __in  LPWSTR lpszUrl,
+    __in  LPWSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 );
 
 extern HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestA,
-  __in  HINTERNET hConnect,
-  __in  LPCTSTR lpszVerb,
-  __in  LPCTSTR lpszObjectName,
-  __in  LPCTSTR lpszVersion,
-  __in  LPCTSTR lpszReferer,
-  __in  LPCTSTR *lplpszAcceptTypes,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hConnect,
+    __in  LPCTSTR lpszVerb,
+    __in  LPCTSTR lpszObjectName,
+    __in  LPCTSTR lpszVersion,
+    __in  LPCTSTR lpszReferer,
+    __in  LPCTSTR *lplpszAcceptTypes,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 );
 
 extern HOOKDEF(HINTERNET, WINAPI, HttpOpenRequestW,
-  __in  HINTERNET hConnect,
-  __in  LPWSTR lpszVerb,
-  __in  LPWSTR lpszObjectName,
-  __in  LPWSTR lpszVersion,
-  __in  LPWSTR lpszReferer,
-  __in  LPWSTR *lplpszAcceptTypes,
-  __in  DWORD dwFlags,
-  __in  DWORD_PTR dwContext
+    __in  HINTERNET hConnect,
+    __in  LPWSTR lpszVerb,
+    __in  LPWSTR lpszObjectName,
+    __in  LPWSTR lpszVersion,
+    __in  LPWSTR lpszReferer,
+    __in  LPWSTR *lplpszAcceptTypes,
+    __in  DWORD dwFlags,
+    __in  DWORD_PTR dwContext
 );
 
 extern HOOKDEF(BOOL, WINAPI, HttpSendRequestA,
-  __in  HINTERNET hRequest,
-  __in  LPCTSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  LPVOID lpOptional,
-  __in  DWORD dwOptionalLength
+    __in  HINTERNET hRequest,
+    __in  LPCTSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  LPVOID lpOptional,
+    __in  DWORD dwOptionalLength
 );
 
 extern HOOKDEF(BOOL, WINAPI, HttpSendRequestW,
-  __in  HINTERNET hRequest,
-  __in  LPWSTR lpszHeaders,
-  __in  DWORD dwHeadersLength,
-  __in  LPVOID lpOptional,
-  __in  DWORD dwOptionalLength
+    __in  HINTERNET hRequest,
+    __in  LPWSTR lpszHeaders,
+    __in  DWORD dwHeadersLength,
+    __in  LPVOID lpOptional,
+    __in  DWORD dwOptionalLength
 );
 
 extern HOOKDEF(BOOL, WINAPI, InternetReadFile,
@@ -1090,44 +1090,44 @@ extern HOOKDEF(BOOL, WINAPI, InternetCloseHandle,
 );
 
 extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_A,
-  __in         PCSTR lpstrName,
-  __in         WORD wType,
-  __in         DWORD Options,
-  __inout_opt  PVOID pExtra,
-  __out_opt    PDNS_RECORD *ppQueryResultsSet,
-  __out_opt    PVOID *pReserved
+    __in         PCSTR lpstrName,
+    __in         WORD wType,
+    __in         DWORD Options,
+    __inout_opt  PVOID pExtra,
+    __out_opt    PDNS_RECORD *ppQueryResultsSet,
+    __out_opt    PVOID *pReserved
 );
 
 extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_UTF8,
-  __in         LPBYTE lpstrName,
-  __in         WORD wType,
-  __in         DWORD Options,
-  __inout_opt  PVOID pExtra,
-  __out_opt    PDNS_RECORD *ppQueryResultsSet,
-  __out_opt    PVOID *pReserved
+    __in         LPBYTE lpstrName,
+    __in         WORD wType,
+    __in         DWORD Options,
+    __inout_opt  PVOID pExtra,
+    __out_opt    PDNS_RECORD *ppQueryResultsSet,
+    __out_opt    PVOID *pReserved
 );
 
 extern HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_W,
-  __in         PWSTR lpstrName,
-  __in         WORD wType,
-  __in         DWORD Options,
-  __inout_opt  PVOID pExtra,
-  __out_opt    PDNS_RECORD *ppQueryResultsSet,
-  __out_opt    PVOID *pReserved
+    __in         PWSTR lpstrName,
+    __in         WORD wType,
+    __in         DWORD Options,
+    __inout_opt  PVOID pExtra,
+    __out_opt    PDNS_RECORD *ppQueryResultsSet,
+    __out_opt    PVOID *pReserved
 );
 
 extern HOOKDEF(int, WSAAPI, getaddrinfo,
-  _In_opt_  PCSTR pNodeName,
-  _In_opt_  PCSTR pServiceName,
-  _In_opt_  const ADDRINFOA *pHints,
-  _Out_     PADDRINFOA *ppResult
+    _In_opt_  PCSTR pNodeName,
+    _In_opt_  PCSTR pServiceName,
+    _In_opt_  const ADDRINFOA *pHints,
+    _Out_     PADDRINFOA *ppResult
 );
 
 extern HOOKDEF(int, WSAAPI, GetAddrInfoW,
-  _In_opt_  PCWSTR pNodeName,
-  _In_opt_  PCWSTR pServiceName,
-  _In_opt_  const ADDRINFOW *pHints,
-  _Out_     PADDRINFOW *ppResult
+    _In_opt_  PCWSTR pNodeName,
+    _In_opt_  PCWSTR pServiceName,
+    _In_opt_  const ADDRINFOW *pHints,
+    _Out_     PADDRINFOW *ppResult
 );
 
 //
@@ -1135,81 +1135,81 @@ extern HOOKDEF(int, WSAAPI, GetAddrInfoW,
 //
 
 extern HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerA,
-  __in_opt  LPCTSTR lpMachineName,
-  __in_opt  LPCTSTR lpDatabaseName,
-  __in      DWORD dwDesiredAccess
+    __in_opt  LPCTSTR lpMachineName,
+    __in_opt  LPCTSTR lpDatabaseName,
+    __in      DWORD dwDesiredAccess
 );
 
 extern HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerW,
-  __in_opt  LPWSTR lpMachineName,
-  __in_opt  LPWSTR lpDatabaseName,
-  __in      DWORD dwDesiredAccess
+    __in_opt  LPWSTR lpMachineName,
+    __in_opt  LPWSTR lpDatabaseName,
+    __in      DWORD dwDesiredAccess
 );
 
 extern HOOKDEF(SC_HANDLE, WINAPI, CreateServiceA,
-  __in       SC_HANDLE hSCManager,
-  __in       LPCTSTR lpServiceName,
-  __in_opt   LPCTSTR lpDisplayName,
-  __in       DWORD dwDesiredAccess,
-  __in       DWORD dwServiceType,
-  __in       DWORD dwStartType,
-  __in       DWORD dwErrorControl,
-  __in_opt   LPCTSTR lpBinaryPathName,
-  __in_opt   LPCTSTR lpLoadOrderGroup,
-  __out_opt  LPDWORD lpdwTagId,
-  __in_opt   LPCTSTR lpDependencies,
-  __in_opt   LPCTSTR lpServiceStartName,
-  __in_opt   LPCTSTR lpPassword
+    __in       SC_HANDLE hSCManager,
+    __in       LPCTSTR lpServiceName,
+    __in_opt   LPCTSTR lpDisplayName,
+    __in       DWORD dwDesiredAccess,
+    __in       DWORD dwServiceType,
+    __in       DWORD dwStartType,
+    __in       DWORD dwErrorControl,
+    __in_opt   LPCTSTR lpBinaryPathName,
+    __in_opt   LPCTSTR lpLoadOrderGroup,
+    __out_opt  LPDWORD lpdwTagId,
+    __in_opt   LPCTSTR lpDependencies,
+    __in_opt   LPCTSTR lpServiceStartName,
+    __in_opt   LPCTSTR lpPassword
 );
 
 extern HOOKDEF(SC_HANDLE, WINAPI, CreateServiceW,
-  __in       SC_HANDLE hSCManager,
-  __in       LPWSTR lpServiceName,
-  __in_opt   LPWSTR lpDisplayName,
-  __in       DWORD dwDesiredAccess,
-  __in       DWORD dwServiceType,
-  __in       DWORD dwStartType,
-  __in       DWORD dwErrorControl,
-  __in_opt   LPWSTR lpBinaryPathName,
-  __in_opt   LPWSTR lpLoadOrderGroup,
-  __out_opt  LPDWORD lpdwTagId,
-  __in_opt   LPWSTR lpDependencies,
-  __in_opt   LPWSTR lpServiceStartName,
-  __in_opt   LPWSTR lpPassword
+    __in       SC_HANDLE hSCManager,
+    __in       LPWSTR lpServiceName,
+    __in_opt   LPWSTR lpDisplayName,
+    __in       DWORD dwDesiredAccess,
+    __in       DWORD dwServiceType,
+    __in       DWORD dwStartType,
+    __in       DWORD dwErrorControl,
+    __in_opt   LPWSTR lpBinaryPathName,
+    __in_opt   LPWSTR lpLoadOrderGroup,
+    __out_opt  LPDWORD lpdwTagId,
+    __in_opt   LPWSTR lpDependencies,
+    __in_opt   LPWSTR lpServiceStartName,
+    __in_opt   LPWSTR lpPassword
 );
 
 extern HOOKDEF(SC_HANDLE, WINAPI, OpenServiceA,
-  __in  SC_HANDLE hSCManager,
-  __in  LPCTSTR lpServiceName,
-  __in  DWORD dwDesiredAccess
+    __in  SC_HANDLE hSCManager,
+    __in  LPCTSTR lpServiceName,
+    __in  DWORD dwDesiredAccess
 );
 
 extern HOOKDEF(SC_HANDLE, WINAPI, OpenServiceW,
-  __in  SC_HANDLE hSCManager,
-  __in  LPWSTR lpServiceName,
-  __in  DWORD dwDesiredAccess
+    __in  SC_HANDLE hSCManager,
+    __in  LPWSTR lpServiceName,
+    __in  DWORD dwDesiredAccess
 );
 
 extern HOOKDEF(BOOL, WINAPI, StartServiceA,
-  __in      SC_HANDLE hService,
-  __in      DWORD dwNumServiceArgs,
-  __in_opt  LPCTSTR *lpServiceArgVectors
+    __in      SC_HANDLE hService,
+    __in      DWORD dwNumServiceArgs,
+    __in_opt  LPCTSTR *lpServiceArgVectors
 );
 
 extern HOOKDEF(BOOL, WINAPI, StartServiceW,
-  __in      SC_HANDLE hService,
-  __in      DWORD dwNumServiceArgs,
-  __in_opt  LPWSTR *lpServiceArgVectors
+    __in      SC_HANDLE hService,
+    __in      DWORD dwNumServiceArgs,
+    __in_opt  LPWSTR *lpServiceArgVectors
 );
 
 extern HOOKDEF(BOOL, WINAPI, ControlService,
-  __in   SC_HANDLE hService,
-  __in   DWORD dwControl,
-  __out  LPSERVICE_STATUS lpServiceStatus
+    __in   SC_HANDLE hService,
+    __in   DWORD dwControl,
+    __out  LPSERVICE_STATUS lpServiceStatus
 );
 
 extern HOOKDEF(BOOL, WINAPI, DeleteService,
-  __in  SC_HANDLE hService
+    __in  SC_HANDLE hService
 );
 
 //
@@ -1437,14 +1437,14 @@ extern HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
-  _In_     HANDLE SectionHandle,
-  _In_     HANDLE ProcessHandle,
-  __inout  PVOID *BaseAddress,
-  _In_     ULONG_PTR ZeroBits,
-  _In_     SIZE_T CommitSize,
-  __inout  PLARGE_INTEGER SectionOffset,
-  __inout  PSIZE_T ViewSize,
-  __in     UINT InheritDisposition,
-  __in     ULONG AllocationType,
-  __in     ULONG Win32Protect
+    _In_     HANDLE SectionHandle,
+    _In_     HANDLE ProcessHandle,
+    __inout  PVOID *BaseAddress,
+    _In_     ULONG_PTR ZeroBits,
+    _In_     SIZE_T CommitSize,
+    __inout  PLARGE_INTEGER SectionOffset,
+    __inout  PSIZE_T ViewSize,
+    __in     UINT InheritDisposition,
+    __in     ULONG AllocationType,
+    __in     ULONG Win32Protect
 );
