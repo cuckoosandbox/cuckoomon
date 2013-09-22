@@ -961,6 +961,10 @@ extern HOOKDEF(int, WINAPI, GetSystemMetrics,
     _In_  int nIndex
 );
 
+extern HOOKDEF(BOOL, WINAPI, GetCursorPos,
+    _Out_ LPPOINT lpPoint
+);
+
 //
 // Network Hooks
 //
