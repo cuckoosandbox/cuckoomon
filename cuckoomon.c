@@ -324,6 +324,37 @@ static hook_t g_hooks[] = {
     HOOK(mswsock, TransmitFile),
 };
 
+// as a temporary solution for the webbrowser crashes, we only hook the core
+// functions, rather than every API we currently have hooks for (i.e., we
+// hook process logic, threads, and files)
+// however, the whitelist of hooked functions is up to cuckoo, as this list
+// will be populated on init
+#define HOOKED_DLLS_MAX 32
+static wchar_t g_hooked_dlls[HOOKED_DLLS_MAX][16];
+
+static void init_hooked_dlls()
+{
+    int length = sizeof(g_hooked_dlls);
+    pipe2(g_hooked_dlls, &length, "HOOKDLLS");
+}
+
+static int is_whitelisted_hooking_dll(const wchar_t *library, int length)
+{
+    // if the first whitelisted dll starts with a null-byte, then there's no
+    // whitelist and all the dlls are allowed to hook
+    if(g_hooked_dlls[0][0] == 0) return 1;
+
+    // ?
+    if(length > 16) length = 16;
+
+    for (int i = 0; i < HOOKED_DLLS_MAX; i++) {
+        if(!wcsnicmp(g_hooked_dlls[i], library, 16)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 // get a random hooking method, except for hook_jmp_direct
 //#define HOOKTYPE randint(HOOK_NOP_JMP_DIRECT, HOOK_MOV_EAX_INDIRECT_PUSH_RETN)
 // error testing with hook_jmp_direct only
@@ -331,6 +362,9 @@ static hook_t g_hooks[] = {
 
 void set_hooks_dll(const wchar_t *library, int len)
 {
+    // skip if the dll has not been whitelisted
+    if(is_whitelisted_hooking_dll(library, len) == 0) return;
+
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
         if(!wcsnicmp(g_hooks[i].library, library, len)) {
             hook_api(&g_hooks[i], HOOKTYPE);
@@ -349,6 +383,13 @@ void set_hooks()
 
     // now, hook each api :)
     for (int i = 0; i < ARRAYSIZE(g_hooks); i++) {
+
+        // skip if the dll is not whitelisted
+        if(is_whitelisted_hooking_dll(g_hooks[i].library,
+                lstrlenW(g_hooks[i].library)) == 0) {
+            continue;
+        }
+
         if(g_hooks[i].allow_hook_recursion != FALSE) {
             hook_api(&g_hooks[i], HOOKTYPE);
         }
@@ -395,6 +436,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         if(g_config.retaddr_check == 0) {
             hook_disable_retaddr_check();
         }
+
+        // initialize the whitelist of dlls we want to hook
+        init_hooked_dlls();
 
         // initialize all hooks
         set_hooks();
