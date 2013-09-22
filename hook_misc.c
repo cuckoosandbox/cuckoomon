@@ -235,3 +235,12 @@ HOOKDEF(int, WINAPI, GetSystemMetrics,
     LOQ("l", "SystemMetricIndex", nIndex);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, GetCursorPos,
+    _Out_ LPPOINT lpPoint
+) {
+    BOOL ret = Old_GetCursorPos(lpPoint);
+    LOQ("ll", "x", lpPoint != NULL ? lpPoint->x : 0,
+        "y", lpPoint != NULL ? lpPoint->y : 0);
+    return ret;
+}
