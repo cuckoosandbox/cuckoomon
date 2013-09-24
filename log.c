@@ -216,7 +216,16 @@ void loq(int index, const char *name,
             pname = va_arg(args, const char *);
             snprintf(g_istr, 4, "%u", argnum);
             argnum++;
-            bson_append_string( b, g_istr, pname );
+
+            //on certain formats, we need to tell cuckoo about them for nicer display / matching
+            if (key == 'p' || key == 'P') {
+                bson_append_start_array( b, g_istr );
+                bson_append_string( b, "0", pname );
+                bson_append_string( b, "1", "p" );
+                bson_append_finish_array( b );
+            } else {
+                bson_append_string( b, g_istr, pname );
+            }
 
             //now ignore the values
             if(key == 's') {
@@ -269,6 +278,7 @@ void loq(int index, const char *name,
                 (void) va_arg(args, unsigned long);
                 (void) va_arg(args, unsigned char *);
             }
+            
         }
         bson_append_finish_array( b );
         bson_finish( b );
