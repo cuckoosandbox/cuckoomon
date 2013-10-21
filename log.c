@@ -43,6 +43,8 @@ static int g_idx;
 static bson g_bson[1];
 static char g_istr[4];
 
+static char logtbl_explained[256] = {0};
+
 //
 // Log API
 //
@@ -82,15 +84,28 @@ static void log_raw(const char *buf, size_t length) {
     }
 }
 
+static void log_raw_direct(const char *buf, size_t length) {
+    int sent = 0;
+    int r;
+    while (sent < length) {
+        r = send(g_sock, buf+sent, length-sent, 0);
+        if (r == -1) {
+            fprintf(stderr, "send returned -1.\n");
+            return;
+        }
+        sent += r;
+    }
+}
+
 static void debug_message(const char *msg) {
     bson b[1];
     bson_init( b );
     bson_append_string( b, "type", "debug" );
     bson_append_string( b, "msg", msg );
     bson_finish( b );
-    log_raw(bson_data( b ), bson_size( b ));
+    log_raw_direct(bson_data( b ), bson_size( b ));
     bson_destroy( b );
-    log_flush();
+    // log_flush();
 }
 
 static void log_int8(char value)
@@ -186,8 +201,8 @@ void loq(int index, const char *name,
 
     EnterCriticalSection(&g_mutex);
 
-    if (logtbl_explained[index] == 0) {
-        logtbl_explained[index] = 1;
+    if (logtbl_explained[index] < 2) {
+        logtbl_explained[index] ++;
         const char * pname;
 
         bson b[1];
@@ -282,9 +297,9 @@ void loq(int index, const char *name,
         }
         bson_append_finish_array( b );
         bson_finish( b );
-        log_raw(bson_data( b ), bson_size( b ));
+        log_raw_direct(bson_data( b ), bson_size( b ));
         bson_destroy( b );
-        log_flush();
+        // log_flush();
     }
 
     va_end(args);
@@ -441,23 +456,23 @@ void loq(int index, const char *name,
 
     bson_append_finish_array( g_bson );
     bson_finish( g_bson );
-    if (bson_size( g_bson ) > BUFFERSIZE) {
-        //DBGWARN, ignoring bson obj
-    } else {
-        log_raw(bson_data( g_bson ), bson_size( g_bson ));
-    }
+    // if (bson_size( g_bson ) > BUFFERSIZE) {
+    //     //DBGWARN, ignoring bson obj
+    // } else {
+        log_raw_direct(bson_data( g_bson ), bson_size( g_bson ));
+    // }
 
     bson_destroy( g_bson );
-    log_flush();
+    // log_flush();
     LeaveCriticalSection(&g_mutex);
 }
 
 void announce_netlog()
 {
     char protoname[32];
-    strcpy(protoname, "FILE\n");
-    sprintf(protoname+5, "logs/%lu.bson\n", GetCurrentProcessId());
-    log_raw(protoname, strlen(protoname));
+    strcpy(protoname, "BSON\n");
+    //sprintf(protoname+5, "logs/%lu.bson\n", GetCurrentProcessId());
+    log_raw_direct(protoname, strlen(protoname));
 }
 
 void log_new_process()
@@ -508,7 +523,7 @@ void log_init(unsigned int ip, unsigned short port, int debug)
     log_new_process();
     log_new_thread();
     // flushing here so host can create files / keep timestamps
-    log_flush();
+    // log_flush();
 }
 
 void log_free()
