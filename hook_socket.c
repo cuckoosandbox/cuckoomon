@@ -213,10 +213,8 @@ HOOKDEF(int, WSAAPI, WSARecv,
 ) {
     BOOL ret = Old_WSARecv(s, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd,
         lpFlags, lpOverlapped, lpCompletionRoutine);
-    int e = WSAGetLastError();
-    // TODO dump buffer
+    // TODO dump buffers
     LOQ("p", "socket", s);
-    WSASetLastError(e);
     return ret;
 }
 
@@ -234,10 +232,8 @@ HOOKDEF(int, WSAAPI, WSARecvFrom,
     BOOL ret = Old_WSARecvFrom(s, lpBuffers, dwBufferCount,
         lpNumberOfBytesRecvd, lpFlags, lpFrom, lpFromlen, lpOverlapped,
         lpCompletionRoutine);
-    int e = WSAGetLastError();
     // TODO dump buffer
     LOQ("p", "socket", s);
-    WSASetLastError(e);
     return ret;
 }
 
@@ -252,10 +248,8 @@ HOOKDEF(int, WSAAPI, WSASend,
 ) {
     BOOL ret = Old_WSASend(s, lpBuffers, dwBufferCount, lpNumberOfBytesSent,
         dwFlags, lpOverlapped, lpCompletionRoutine);
-    int e = WSAGetLastError();
-    // TODO dump buffer
-    LOQ("p", "socket", s);
-    WSASetLastError(e);
+    // TODO dump buffers
+    LOQ("p", "Socket", s);
     return ret;
 }
 
@@ -272,10 +266,8 @@ HOOKDEF(int, WSAAPI, WSASendTo,
 ) {
     BOOL ret = Old_WSASendTo(s, lpBuffers, dwBufferCount, lpNumberOfBytesSent,
         dwFlags, lpTo, iToLen, lpOverlapped, lpCompletionRoutine);
-    int e = WSAGetLastError();
-    // TODO dump buffer
-    LOQ("p", "socket", s);
-    WSASetLastError(e);
+    // TODO dump buffers
+    LOQ("p", "Socket", s);
     return ret;
 }
 
