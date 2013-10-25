@@ -315,9 +315,9 @@ static hook_t g_hooks[] = {
     HOOK(ws2_32, WSASocketA),
     HOOK(ws2_32, WSASocketW),
 
-    HOOK(wsock32, connect),
-    HOOK(wsock32, send),
-    HOOK(wsock32, recv),
+    // HOOK(wsock32, connect),
+    // HOOK(wsock32, send),
+    // HOOK(wsock32, recv),
 
     HOOK(mswsock, ConnectEx),
     HOOK(mswsock, TransmitFile),
