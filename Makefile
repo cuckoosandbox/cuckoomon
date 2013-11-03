@@ -1,4 +1,4 @@
-# MAKEFLAGS = -j8
+MAKEFLAGS = -j8
 CFLAGS = -Wall -std=c99 -s -O2
 DLL = -shared
 DIRS = -Idistorm3.2-package/include -Ibson
@@ -41,4 +41,4 @@ cuckoomon.dll: $(CUCKOOOBJ) $(DISTORM3OBJ) $(LOGTBLOBJ) $(BSONOBJ)
 	$(CC) $(CFLAGS) $(DLL) $(DIRS) -o $@ $^ $(LIBS)
 
 clean:
-	rm $(CUCKOOOBJ) $(DISTORM3OBJ) $(LOGTBLSRC) cuckoomon.dll
+	rm -f $(CUCKOOOBJ) $(DISTORM3OBJ) $(LOGTBLSRC) cuckoomon.dll
