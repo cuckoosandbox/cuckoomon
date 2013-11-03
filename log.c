@@ -73,6 +73,7 @@ void log_flush()
     }
 }
 
+/*
 static void log_raw(const char *buf, size_t length) {
     for (int i=0; i<length; i++) {
         g_buffer[g_idx] = buf[i];
@@ -83,6 +84,7 @@ static void log_raw(const char *buf, size_t length) {
         }
     }
 }
+*/
 
 static void log_raw_direct(const char *buf, size_t length) {
     int sent = 0;
@@ -108,6 +110,7 @@ static void debug_message(const char *msg) {
     // log_flush();
 }
 
+/*
 static void log_int8(char value)
 {
     bson_append_int( g_bson, g_istr, value );
@@ -117,6 +120,7 @@ static void log_int16(short value)
 {
     bson_append_int( g_bson, g_istr, value );
 }
+*/
 
 static void log_int32(int value)
 {
@@ -293,7 +297,7 @@ void loq(int index, const char *name,
                 (void) va_arg(args, unsigned long);
                 (void) va_arg(args, unsigned char *);
             }
-            
+
         }
         bson_append_finish_array( b );
         bson_finish( b );
@@ -430,22 +434,23 @@ void loq(int index, const char *name,
             }
             else if(type == REG_EXPAND_SZ || type == REG_SZ) {
 
-                if (data == NULL) {
-                    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, 0 );
+                if(data == NULL) {
+                    bson_append_binary(g_bson, g_istr, BSON_BIN_BINARY,
+                        (const char *) data, 0);
                 }
                 // ascii strings
                 else if(key == 'r') {
-                    // log_string((const char *) data, size);
-                    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, size );
+                    bson_append_binary(g_bson, g_istr, BSON_BIN_BINARY,
+                        (const char *) data, size);
                 }
                 // unicode strings
                 else {
-                    bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, size );
-                    // log_wstring((const wchar_t *) data,
-                    //     size / sizeof(wchar_t));
+                    bson_append_binary(g_bson, g_istr, BSON_BIN_BINARY,
+                        (const char *) data, size);
                 }
             } else {
-                bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, data, 0 );
+                bson_append_binary(g_bson, g_istr, BSON_BIN_BINARY,
+                    (const char *) data, 0);
             }
 
             // bson_append_finish_object( g_bson );

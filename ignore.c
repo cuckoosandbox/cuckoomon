@@ -123,6 +123,7 @@ void init_ignored_retaddr()
     pipe("RET_INIT:%d,%x", GetCurrentProcessId(), retaddr);
 }
 
+/*
 static void ret_get_flags(unsigned int addr, unsigned int *ignored,
     unsigned int *initialized)
 {
@@ -142,7 +143,9 @@ static void ret_set_flags(unsigned int addr, unsigned int ignored)
     // set the new flags
     retaddr[index / 4] |= (!!ignored + 2) << (index % 4) << 1;
 }
+*/
 
 int is_ignored_retaddr(unsigned int addr)
 {
+    return 0;
 }

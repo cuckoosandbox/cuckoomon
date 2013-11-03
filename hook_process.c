@@ -120,7 +120,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     // for both XP and Vista (the ClientId->UniqueProcess part, that is)
 
     int pid = 0;
-    if (ClientId != NULL) pid = ClientId->UniqueProcess;
+    if(ClientId != NULL) {
+        pid = (int) ClientId->UniqueProcess;
+    }
 
     if(is_protected_pid(pid)) {
         NTSTATUS ret = STATUS_ACCESS_DENIED;
