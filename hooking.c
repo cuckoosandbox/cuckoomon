@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "distorm.h"
 #include "mnemonics.h"
 #include "ntapi.h"
-#include "distorm.h"
 #include "ignore.h"
 
 // this number can be changed if required to do so
