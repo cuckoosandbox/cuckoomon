@@ -29,6 +29,9 @@ struct {
     // is this the first process or not?
     int first_process;
 
+    // how many milliseconds since startup
+    unsigned int startup_time;
+
     // do we want to enable the retaddr check?
     int retaddr_check;
 

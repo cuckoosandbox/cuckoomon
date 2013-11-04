@@ -134,3 +134,8 @@ void init_sleep_skip(int first_process)
         disable_sleep_skip();
     }
 }
+
+void init_startup_time(unsigned int startup_time)
+{
+    time_skipped.QuadPart += (unsigned __int64) startup_time * 10000;
+}

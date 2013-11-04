@@ -59,6 +59,9 @@ void read_config()
                 else if(!strcmp(key, "first-process")) {
                     g_config.first_process = value[0] == '1';
                 }
+                else if(!strcmp(key, "startup-time")) {
+                    g_config.startup_time = atoi(value);
+                }
                 else if(!strcmp(key, "retaddr-check")) {
                     g_config.retaddr_check = value[0] == '1';
                 }

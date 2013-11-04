@@ -18,3 +18,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void disable_sleep_skip();
 void init_sleep_skip(int first_process);
+void init_startup_time(unsigned int startup_time);
