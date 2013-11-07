@@ -53,18 +53,6 @@ int lde(void *addr)
     return ret == DECRES_SUCCESS ? instructions[0].size : 0;
 }
 
-static inline unsigned int __readfsdword(unsigned int index)
-{
-    unsigned int ret;
-    __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (index));
-    return ret;
-}
-
-static inline void __writefsdword(unsigned int index, unsigned int value)
-{
-    __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
-}
-
 static int is_interesting_backtrace(unsigned int ebp)
 {
     // only perform this function when the retaddr-check is enabled, otherwise

@@ -371,6 +371,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
             return TRUE;
         }
 
+        // hide our module from peb
+        hide_module_from_peb(hModule);
+
         // obtain all protected pids
         int pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
         pipe2(pids, &length, "GETPIDS");

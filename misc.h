@@ -22,6 +22,7 @@ DWORD pid_from_thread_handle(HANDLE thread_handle);
 DWORD random();
 DWORD randint(DWORD min, DWORD max);
 BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj);
+void hide_module_from_peb(HMODULE module_handle);
 
 // imported but for some doesn't show up when #including string.h etc
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);

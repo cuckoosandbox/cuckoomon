@@ -112,3 +112,33 @@ BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj)
     }
     return FALSE;
 }
+
+// hide our module from PEB
+// http://www.openrce.org/blog/view/844/How_to_hide_dll
+
+#define CUT_LIST(item) \
+    item.Blink->Flink = item.Flink; \
+    item.Flink->Blink = item.Blink
+
+void hide_module_from_peb(HMODULE module_handle)
+{
+    LDR_MODULE *mod; PEB *peb = (PEB *) __readfsdword(0x30);
+
+    for (mod = (LDR_MODULE *) peb->LoaderData->InLoadOrderModuleList.Flink;
+         mod->BaseAddress != NULL;
+         mod = (LDR_MODULE *) mod->InLoadOrderModuleList.Flink) {
+
+        if(mod->BaseAddress == module_handle) {
+            CUT_LIST(mod->InLoadOrderModuleList);
+            CUT_LIST(mod->InInitializationOrderModuleList);
+            CUT_LIST(mod->InMemoryOrderModuleList);
+
+            // TODO test whether this list is really used as a linked list
+            // like InLoadOrderModuleList etc
+            CUT_LIST(mod->HashTableEntry);
+
+            memset(mod, 0, sizeof(LDR_MODULE));
+            break;
+        }
+    }
+}
