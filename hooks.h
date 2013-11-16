@@ -803,6 +803,20 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,
     __in      BOOLEAN CreateSuspended
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtCreateThreadEx,
+    OUT     PHANDLE hThread,
+    IN      ACCESS_MASK DesiredAccess,
+    IN      PVOID ObjectAttributes,
+    IN      HANDLE ProcessHandle,
+    IN      LPTHREAD_START_ROUTINE lpStartAddress,
+    IN      PVOID lpParameter,
+    IN      BOOL CreateSuspended,
+    IN      LONG StackZeroBits,
+    IN      LONG SizeOfStackCommit,
+    IN      LONG SizeOfStackReserve,
+    OUT     PVOID lpBytesBuffer
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtOpenThread,
     __out  PHANDLE ThreadHandle,
     __in   ACCESS_MASK DesiredAccess,

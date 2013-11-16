@@ -194,4 +194,5 @@ table = [
     ("GetSystemMetrics", "misc", ("l", "SystemMetricIndex")),
     ("GetCursorPos", "misc", ("ll", "x", "y")),
     ("RtlCreateUserProcess", "process", ("opp", "ImagePath", "ObjectAttributes", "ParentProcess")),
+    ("NtCreateThreadEx", "threading", ("Pppl", "ThreadHandle", "ProcessHandle", "StartAddress", "CreateSuspended")),
 ]

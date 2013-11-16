@@ -208,6 +208,7 @@ static hook_t g_hooks[] = {
     //
 
     HOOK(ntdll, NtCreateThread),
+    HOOK(ntdll, NtCreateThreadEx),
     HOOK(ntdll, NtOpenThread),
     HOOK(ntdll, NtGetContextThread),
     HOOK(ntdll, NtSetContextThread),
