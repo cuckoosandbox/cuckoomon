@@ -110,6 +110,33 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserProcess,
+    IN      PUNICODE_STRING ImagePath,
+    IN      ULONG ObjectAttributes,
+    IN OUT  PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
+    IN      PSECURITY_DESCRIPTOR ProcessSecurityDescriptor OPTIONAL,
+    IN      PSECURITY_DESCRIPTOR ThreadSecurityDescriptor OPTIONAL,
+    IN      HANDLE ParentProcess,
+    IN      BOOLEAN InheritHandles,
+    IN      HANDLE DebugPort OPTIONAL,
+    IN      HANDLE ExceptionPort OPTIONAL,
+    OUT     PRTL_USER_PROCESS_INFORMATION ProcessInformation
+) {
+    NTSTATUS ret = Old_RtlCreateUserProcess(ImagePath, ObjectAttributes,
+        ProcessParameters, ProcessSecurityDescriptor,
+        ThreadSecurityDescriptor, ParentProcess, InheritHandles, DebugPort,
+        ExceptionPort, ProcessInformation);
+    LOQ("opp", "ImagePath", ImagePath, "ObjectAttributes", ObjectAttributes,
+        "ParentProcess", ParentProcess);
+    if(NT_SUCCESS(ret)) {
+        pipe("PROCESS:%d,%d",
+            pid_from_process_handle(ProcessInformation->ProcessHandle),
+            pid_from_thread_handle(ProcessInformation->ThreadHandle));
+        disable_sleep_skip();
+    }
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
     __out     PHANDLE ProcessHandle,
     __in      ACCESS_MASK DesiredAccess,

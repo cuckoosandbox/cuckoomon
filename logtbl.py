@@ -193,4 +193,5 @@ table = [
     ("ZwMapViewOfSection", "process", ("ppPp", "SectionHandle", "ProcessHandle", "BaseAddress", "SectionOffset")),
     ("GetSystemMetrics", "misc", ("l", "SystemMetricIndex")),
     ("GetCursorPos", "misc", ("ll", "x", "y")),
+    ("RtlCreateUserProcess", "process", ("opp", "ImagePath", "ObjectAttributes", "ParentProcess")),
 ]
