@@ -214,6 +214,7 @@ void loq(int index, const char *name,
         bson_append_int( b, "I", index );
         bson_append_string( b, "name", name );
         bson_append_string( b, "type", "info" );
+        bson_append_string( b, "category", logtbl[index][1] );
 
         bson_append_start_array( b, "args" );
         bson_append_string( b, "0", "is_success" );
@@ -546,8 +547,8 @@ void log_free()
 
 int log_resolve_index(const char *funcname, int index)
 {
-    for (int i = 0; logtbl[i] != NULL; i++) {
-        if(!strcmp(funcname, logtbl[i])) {
+    for (int i = 0; logtbl[i][0] != NULL; i++) {
+        if(!strcmp(funcname, logtbl[i][0])) {
             if(index != 0) {
                 index--;
             }

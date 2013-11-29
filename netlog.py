@@ -74,10 +74,10 @@ def parse_fmt(funcname, fmt, *args):
 
 
 def generate_c_code(fname):
-    lines = ['#include <stdio.h>', '', 'const char *logtbl[] = {']
+    lines = ['#include <stdio.h>', '', 'const char *logtbl[][2] = {']
     for index, (funcname, module, args) in enumerate(logtbl.table):
-        lines.append('    "%s",' % funcname)
-    lines.append('    NULL')
+        lines.append('    {"%s", "%s"},' % (funcname, module))
+    lines.append('    {NULL, NULL},')
     lines.append('};')
     lines.append('char logtbl_explained[sizeof(logtbl)/sizeof(char *)] = {0};')
     file(fname, 'w').write('\n'.join(lines) + '\n')
