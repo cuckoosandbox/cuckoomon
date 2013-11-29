@@ -205,8 +205,8 @@ void loq(int index, const char *name,
 
     EnterCriticalSection(&g_mutex);
 
-    if (logtbl_explained[index] < 2) {
-        logtbl_explained[index] ++;
+    if(logtbl_explained[index] == 0) {
+        logtbl_explained[index] = 1;
         const char * pname;
 
         bson b[1];
