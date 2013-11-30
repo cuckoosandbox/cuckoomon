@@ -24,6 +24,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static IS_SUCCESS_NTSTATUS();
 
+static UNICODE_STRING *unistr_from_objattr(OBJECT_ATTRIBUTES *obj)
+{
+    return obj != NULL ? obj->ObjectName : NULL;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateMutant,
     __out       PHANDLE MutantHandle,
     __in        ACCESS_MASK DesiredAccess,
@@ -32,7 +37,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateMutant,
 ) {
     NTSTATUS ret = Old_NtCreateMutant(MutantHandle, DesiredAccess,
         ObjectAttributes, InitialOwner);
-    LOQ("POl", "Handle", MutantHandle, "MutexName", ObjectAttributes,
+    LOQ("Pol", "Handle", MutantHandle,
+        "MutexName", unistr_from_objattr(ObjectAttributes),
         "InitialOwner", InitialOwner);
     return ret;
 }
@@ -44,7 +50,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenMutant,
 ) {
     NTSTATUS ret = Old_NtOpenMutant(MutantHandle, DesiredAccess,
         ObjectAttributes);
-    LOQ("PO", "Handle", MutantHandle, "MutexName", ObjectAttributes);
+    LOQ("Po", "Handle", MutantHandle,
+        "MutexName", unistr_from_objattr(ObjectAttributes));
     return ret;
 }
 
