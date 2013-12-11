@@ -129,6 +129,8 @@ table = [
     ("NtOpenProcess", "process", ("ppp", "ProcessHandle", "DesiredAccess", "ProcessIdentifier")),
     ("NtOpenProcess", "process", ("PpP", "ProcessHandle", "DesiredAccess", "ProcessIdentifier")),
     ("NtCreateSection", "process", ("PpOp", "SectionHandle", "DesiredAccess", "ObjectAttributes", "FileHandle")),
+    ("NtMakeTemporaryObject", "process", ("p", "ObjectHandle")),
+    ("NtMakePermanentObject", "process", ("p", "ObjectHandle")),
     ("NtOpenSection", "process", ("PpO", "SectionHandle", "DesiredAccess", "ObjectAttributes")),
     ("CreateProcessInternalW", "process", ("uupllpp", "ApplicationName", "CommandLine", "CreationFlags", "ProcessId", "ThreadId", "ProcessHandle", "ThreadHandle")),
     ("ShellExecuteExW", "process", ("2ul", "FilePath", "Parameters", "Show")),

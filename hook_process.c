@@ -207,6 +207,22 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateSection,
     return ret;
 }
 
+HOOKDEF(NTSTATUS, WINAPI, NtMakeTemporaryObject,
+    __in     HANDLE ObjectHandle
+) {
+    NTSTATUS ret = Old_NtMakeTemporaryObject(ObjectHandle);
+    LOQ("p", "ObjectHandle", ObjectHandle);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtMakePermanentObject,
+    __in     HANDLE ObjectHandle
+) {
+    NTSTATUS ret = Old_NtMakePermanentObject(ObjectHandle);
+    LOQ("p", "ObjectHandle", ObjectHandle);
+    return ret;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
     __out  PHANDLE SectionHandle,
     __in   ACCESS_MASK DesiredAccess,
