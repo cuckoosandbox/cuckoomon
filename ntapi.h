@@ -383,14 +383,14 @@ typedef struct _PEB {
     ULONG   SessionId;
 } PEB, *PPEB;
 
-inline unsigned int __readfsdword(unsigned int index)
+static inline unsigned int __readfsdword(unsigned int index)
 {
     unsigned int ret;
     __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (index));
     return ret;
 }
 
-inline void __writefsdword(unsigned int index, unsigned int value)
+static inline void __writefsdword(unsigned int index, unsigned int value)
 {
     __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
 }
