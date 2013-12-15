@@ -664,6 +664,14 @@ extern HOOKDEF(NTSTATUS, WINAPI, NtCreateSection,
     __in_opt  HANDLE FileHandle
 );
 
+extern HOOKDEF(NTSTATUS, WINAPI, NtMakeTemporaryObject,
+    __in     HANDLE ObjectHandle
+);
+
+extern HOOKDEF(NTSTATUS, WINAPI, NtMakePermanentObject,
+    __in     HANDLE ObjectHandle
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, NtOpenSection,
     __out  PHANDLE SectionHandle,
     __in   ACCESS_MASK DesiredAccess,
