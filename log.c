@@ -50,11 +50,11 @@ void log_flush()
         // if this call didn't write the entire buffer, then we have to move
         // around some stuff in the buffer
         if(written < g_idx) {
-            memcpy(g_buffer, g_buffer + written, g_idx - written);
+            memcpy(g_buffer, g_buffer + written, (g_idx - written)>BUFFERSIZE?BUFFERSIZE:(g_idx - written));
         }
 
         // subtract the amount of written bytes from the index
-        g_idx -= written;
+        (g_idx - written)>BUFFERSIZE?(g_idx -= BUFFERSIZE):(g_idx -= written);
     }
 }
 
