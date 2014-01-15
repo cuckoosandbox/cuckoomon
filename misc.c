@@ -219,6 +219,9 @@ int path_from_handle(HANDLE handle, wchar_t *path, unsigned int path_buffer_len)
 /* ObjectName->Length is actually the SIZE IN BYTES! */
 int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path, unsigned int buffer_len)
 {
+	if (obj->ObjectName == NULL || obj->ObjectName->Buffer == NULL){
+		return 0;
+	}
     if(obj->RootDirectory == NULL) {
         wcsncpy(path, obj->ObjectName->Buffer, buffer_len);
         return ( (obj->ObjectName->Length / sizeof(wchar_t)) > buffer_len ) ? (buffer_len) : (obj->ObjectName->Length / sizeof(wchar_t));
