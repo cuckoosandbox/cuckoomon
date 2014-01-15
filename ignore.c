@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,6 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "ignore.h"
 #include "misc.h"
+#include "pipe.h"
+
+//
+// Protected Processes
+//
 
 static unsigned long g_pids[MAX_PROTECTED_PIDS];
 static unsigned long g_pid_count;
@@ -40,13 +45,16 @@ int is_protected_pid(unsigned long pid)
     return 0;
 }
 
-#define S(s, f) {s, L##s, sizeof(s)-1, f}
+//
+// Blacklist for Dumping Files
+//
+
+#define S(s, f) {L##s, sizeof(s)-1, f}
 
 #define FLAG_NONE           0
 #define FLAG_BEGINS_WITH    1
 
 static struct _ignored_file_t {
-    const char      *ascii;
     const wchar_t   *unicode;
     unsigned int    length;
     unsigned int    flags;
@@ -59,40 +67,16 @@ static struct _ignored_file_t {
     S("\\Device\\", FLAG_BEGINS_WITH),
 };
 
-int is_ignored_file_ascii(const char *fname, int length)
-{
-    struct _ignored_file_t *f = g_ignored_files;
-    for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
-        if(
-                // FLAG_NONE
-                (f->flags == FLAG_NONE &&
-                    length == f->length &&
-                    !strcmp(fname, f->ascii)) ||
-
-                // FLAG_BEGINS_WITH
-                (f->flags == FLAG_BEGINS_WITH &&
-                    length >= f->length &&
-                    !strncmp(fname, f->ascii, f->length))) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 int is_ignored_file_unicode(const wchar_t *fname, int length)
 {
     struct _ignored_file_t *f = g_ignored_files;
     for (unsigned int i = 0; i < ARRAYSIZE(g_ignored_files); i++, f++) {
-        if(
-                // FLAG_NONE
-                (f->flags == FLAG_NONE &&
-                    length == f->length &&
-                    !wcscmp(fname, f->unicode)) ||
-
-                // FLAG_BEGINS_WITH
-                (f->flags == FLAG_BEGINS_WITH &&
-                    length >= f->length &&
-                    !wcsncmp(fname, f->unicode, f->length))) {
+        if(f->flags == FLAG_NONE && length == f->length &&
+                !wcsnicmp(fname, f->unicode, length)) {
+            return 1;
+        }
+        else if(f->flags == FLAG_BEGINS_WITH && length >= f->length &&
+                !wcsnicmp(fname, f->unicode, f->length)) {
             return 1;
         }
     }
@@ -101,11 +85,8 @@ int is_ignored_file_unicode(const wchar_t *fname, int length)
 
 int is_ignored_file_objattr(const OBJECT_ATTRIBUTES *obj)
 {
-    if(obj != NULL && obj->ObjectName != NULL) {
-        return is_ignored_file_unicode(obj->ObjectName->Buffer,
-            obj->ObjectName->Length >> 1);
-    }
-    return 1;
+    return is_ignored_file_unicode(obj->ObjectName->Buffer,
+        obj->ObjectName->Length / sizeof(wchar_t));
 }
 
 static wchar_t *g_ignored_processpaths[] = {
@@ -124,5 +105,47 @@ int is_ignored_process()
             return 1;
         }
     }
+    return 0;
+}
+
+//
+// Whitelist for Return Addresses
+//
+
+// for each high 20-bits of an address, there are two bits:
+// - is this address ignored
+// - is the ignored bit initialized yet?
+static unsigned char retaddr[0x40000];
+
+void init_ignored_retaddr()
+{
+    // send the address of the retaddr buffer to analyzer.py
+    pipe("RET_INIT:%d,%x", GetCurrentProcessId(), retaddr);
+}
+
+/*
+static void ret_get_flags(unsigned int addr, unsigned int *ignored,
+    unsigned int *initialized)
+{
+    unsigned int index = addr / 0x1000;
+    unsigned char info = retaddr[index / 4] >> ((index % 4) << 1);
+    // first bit defines whether the address is ignored
+    *ignored = info & 1;
+    // second bit defines whether the ignored bit has been initialized yet
+    *initialized = (info >> 1) & 1;
+}
+
+static void ret_set_flags(unsigned int addr, unsigned int ignored)
+{
+    unsigned int index = addr / 0x1000;
+    // reset the original flags
+    retaddr[index / 4] &= ~(3 << (index % 4) << 1);
+    // set the new flags
+    retaddr[index / 4] |= (!!ignored + 2) << (index % 4) << 1;
+}
+*/
+
+int is_ignored_retaddr(unsigned int addr)
+{
     return 0;
 }

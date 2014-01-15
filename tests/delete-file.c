@@ -29,6 +29,15 @@ NTSTATUS (WINAPI *pZwSetInformationFile)(HANDLE FileHandle,
     PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length,
     FILE_INFORMATION_CLASS FileInformationClass);
 
+void write_file(const char *fname, const char *s)
+{
+    FILE *fp = fopen(fname, "wb");
+    if(fp != NULL) {
+        fputs(s, fp);
+        fclose(fp);
+    }
+}
+
 int main()
 {
     printf(
@@ -36,16 +45,16 @@ int main()
         "Note that the MoveFileEx method will fail (see source why)\n"
     );
 
-    fclose(fopen("abc", "wb"));
+    write_file("abc.txt", "DeleteFile");
 
     //
     // delete the file using the well-known DeleteFile function
     //
 
-    printf("DeleteFile: %s (0x%08x)\n", DeleteFile("abc") ?
+    printf("DeleteFile: %s (0x%08x)\n", DeleteFile("abc.txt") ?
         "SUCCESS" : "FAILURE", GetLastError());
 
-    fclose(fopen("abc", "wb"));
+    write_file("abc.txt", "MoveFileEx");
 
     //
     // delete the file using MoveFileEx, note that a NULL destination filename
@@ -53,10 +62,10 @@ int main()
     // (so this call will actually fail..)
     //
 
-    printf("MoveFileEx: %s (0x%08x)\n", MoveFileEx("abc", NULL, 0) ?
+    printf("MoveFileEx: %s (0x%08x)\n", MoveFileEx("abc.txt", NULL, 0) ?
         "SUCCESS" : "FAILURE", GetLastError());
 
-    fclose(fopen("abc", "wb"));
+    write_file("abc.txt", "ZwDeleteFile");
 
     //
     // delete the file using ZwDeleteFile
@@ -81,7 +90,7 @@ int main()
     GetCurrentDirectoryW(MAX_PATH-4, cur_dir+4);
 
     pRtlInitUnicodeString(&dir_fname, cur_dir);
-    pRtlInitUnicodeString(&file_fname, L"abc");
+    pRtlInitUnicodeString(&file_fname, L"abc.txt");
 
     InitializeObjectAttributes(&obj_dir, &dir_fname,
         OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
@@ -105,7 +114,7 @@ int main()
         printf("ZwDeleteFile: FAILURE (0x%08x)\n", ret);
     }
 
-    fclose(fopen("abc", "wb"));
+    write_file("abc.txt", "ZwSetInformationFile");
 
     //
     // delete the file using ZwSetInformationFile
@@ -114,10 +123,10 @@ int main()
     IO_STATUS_BLOCK io_file;
     HANDLE file_handle;
 
-    // prepend the path with "\\??\\" and append "abc"
+    // prepend the path with "\\??\\" and append "abc.txt"
     wchar_t file_name[MAX_PATH] = L"\\??\\";
     GetCurrentDirectoryW(MAX_PATH-4, file_name+4);
-    lstrcatW(file_name, L"\\abc");
+    lstrcatW(file_name, L"\\abc.txt");
 
     pRtlInitUnicodeString(&file_fname, file_name);
     InitializeObjectAttributes(&obj_file, &file_fname,

@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "pipe.h"
 #include "misc.h"
 #include "ignore.h"
+#include "lookup.h"
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "filesystem";
 
 #define DUMP_FILE_MASK (GENERIC_WRITE | FILE_GENERIC_WRITE | \
     FILE_WRITE_DATA | FILE_APPEND_DATA | STANDARD_RIGHTS_WRITE | \
@@ -39,60 +39,106 @@ static const char *module_name = "filesystem";
 // length of a hardcoded unicode string
 #define UNILEN(x) (sizeof(x) / sizeof(wchar_t) - 1)
 
-static void new_file(const OBJECT_ATTRIBUTES *obj)
+typedef struct _file_record_t {
+    unsigned int attributes;
+    unsigned int length;
+    wchar_t filename[0];
+} file_record_t;
+
+static lookup_t g_files;
+
+void file_init()
 {
-    // don't dump directories, and don't dump ignored files
-    if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
-        const wchar_t *str = obj->ObjectName->Buffer;
-        unsigned int len = obj->ObjectName->Length;
+    lookup_init(&g_files);
+}
 
-        // if it's a path including \??\ then we can send it straight away,
-        // but we strip the \??\ part
-        if(len > 4 && !wcsncmp(str, L"\\??\\", 4)) {
-            pipe("FILE_NEW:%S", len - 4, str + 4);
-        }
-        // maybe it's an absolute path (or a relative path with a harddisk,
-        // such as C:abc.txt)
-        else if(isalpha(str[0]) != 0 && str[1] == ':') {
-            pipe("FILE_NEW:%S", len, str);
-        }
-        // the filename starts with \Device\HarddiskVolume1, which is
-        // basically just C:
-        else if(!wcsnicmp(str, HDDVOL1, UNILEN(HDDVOL1))) {
-            str += UNILEN(HDDVOL1), len -= UNILEN(HDDVOL1);
-            pipe("FILE_NEW:C:%S", len, str);
-        }
-        // is it safe to assume that this is a relative path?
-        else {
-            wchar_t cur_dir[MAX_PATH];
-            GetCurrentDirectoryW(sizeof(cur_dir), cur_dir);
+static void new_file(const UNICODE_STRING *obj)
+{
+    const wchar_t *str = obj->Buffer;
+    unsigned int len = obj->Length / sizeof(wchar_t);
 
-            // we have to make sure that the filename is zero terminated..
-            wchar_t fname[len + 1];
-            memcpy(fname, str, len * sizeof(wchar_t));
-            fname[len] = 0;
-
-            // this should be large enough..
-            wchar_t path[MAX_PATH];
-            PathCombineW(path, cur_dir, fname);
-
-            pipe("FILE_NEW:%Z", path);
-        }
+    // if it's a path including \??\ then we can send it straight away,
+    // but we strip the \??\ part
+    if(len > 4 && !wcsncmp(str, L"\\??\\", 4)) {
+        pipe("FILE_NEW:%S", len - 4, str + 4);
+    }
+    // maybe it's an absolute path (or a relative path with a harddisk,
+    // such as C:abc.txt)
+    else if(isalpha(str[0]) != 0 && str[1] == ':') {
+        pipe("FILE_NEW:%S", len, str);
+    }
+    // the filename starts with \Device\HarddiskVolume1, which is
+    // basically just C:
+    else if(!wcsnicmp(str, HDDVOL1, UNILEN(HDDVOL1))) {
+        str += UNILEN(HDDVOL1), len -= UNILEN(HDDVOL1);
+        pipe("FILE_NEW:C:%S", len, str);
     }
 }
 
+static void cache_file(HANDLE file_handle, const wchar_t *path,
+    unsigned int length, unsigned int attributes)
+{
+    file_record_t *r = lookup_add(&g_files, (unsigned int) file_handle,
+        sizeof(file_record_t) + length * sizeof(wchar_t) + sizeof(wchar_t));
+
+    *r = (file_record_t) {
+        .attributes = attributes,
+        .length     = length * sizeof(wchar_t),
+    };
+
+    memcpy(r->filename, path, r->length);
+    r->filename[r->length / sizeof(wchar_t)] = 0;
+}
+
+static void file_write(HANDLE file_handle)
+{
+    file_record_t *r = lookup_get(&g_files, (unsigned int) file_handle, NULL);
+    if(r != NULL) {
+        UNICODE_STRING str = {
+            .Length         = r->length,
+            .MaximumLength  = r->length + sizeof(wchar_t),
+            .Buffer         = r->filename,
+        };
+
+        // we do in fact want to dump this file because it was written to
+        new_file(&str);
+
+        // delete the file record from the list
+        lookup_del(&g_files, (unsigned int) file_handle);
+    }
+}
+
+static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
+{
+    if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
+
+        wchar_t fname[MAX_PATH]; int length;
+        length = path_from_object_attributes(obj, fname);
+
+        length = ensure_absolute_path(fname, fname, length);
+
+        // cache this file
+        cache_file(file_handle, fname, length, obj->Attributes);
+    }
+}
+
+void file_close(HANDLE file_handle)
+{
+    lookup_del(&g_files, (unsigned int) file_handle);
+}
+
 HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
-  __out     PHANDLE FileHandle,
-  __in      ACCESS_MASK DesiredAccess,
-  __in      POBJECT_ATTRIBUTES ObjectAttributes,
-  __out     PIO_STATUS_BLOCK IoStatusBlock,
-  __in_opt  PLARGE_INTEGER AllocationSize,
-  __in      ULONG FileAttributes,
-  __in      ULONG ShareAccess,
-  __in      ULONG CreateDisposition,
-  __in      ULONG CreateOptions,
-  __in      PVOID EaBuffer,
-  __in      ULONG EaLength
+    __out     PHANDLE FileHandle,
+    __in      ACCESS_MASK DesiredAccess,
+    __in      POBJECT_ATTRIBUTES ObjectAttributes,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __in_opt  PLARGE_INTEGER AllocationSize,
+    __in      ULONG FileAttributes,
+    __in      ULONG ShareAccess,
+    __in      ULONG CreateDisposition,
+    __in      ULONG CreateOptions,
+    __in      PVOID EaBuffer,
+    __in      ULONG EaLength
 ) {
     NTSTATUS ret = Old_NtCreateFile(FileHandle, DesiredAccess,
         ObjectAttributes, IoStatusBlock, AllocationSize, FileAttributes,
@@ -101,39 +147,39 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateFile,
         "FileName", ObjectAttributes, "CreateDisposition", CreateDisposition,
         "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        new_file(ObjectAttributes);
+        handle_new_file(*FileHandle, ObjectAttributes);
     }
     return ret;
 }
 
 HOOKDEF(NTSTATUS, WINAPI, NtOpenFile,
-  __out  PHANDLE FileHandle,
-  __in   ACCESS_MASK DesiredAccess,
-  __in   POBJECT_ATTRIBUTES ObjectAttributes,
-  __out  PIO_STATUS_BLOCK IoStatusBlock,
-  __in   ULONG ShareAccess,
-  __in   ULONG OpenOptions
+    __out  PHANDLE FileHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes,
+    __out  PIO_STATUS_BLOCK IoStatusBlock,
+    __in   ULONG ShareAccess,
+    __in   ULONG OpenOptions
 ) {
     NTSTATUS ret = Old_NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes,
         IoStatusBlock, ShareAccess, OpenOptions);
     LOQ("PpOl", "FileHandle", FileHandle, "DesiredAccess", DesiredAccess,
         "FileName", ObjectAttributes, "ShareAccess", ShareAccess);
     if(NT_SUCCESS(ret) && DesiredAccess & DUMP_FILE_MASK) {
-        new_file(ObjectAttributes);
+        handle_new_file(*FileHandle, ObjectAttributes);
     }
     return ret;
 }
 
 HOOKDEF(NTSTATUS, WINAPI, NtReadFile,
-  __in      HANDLE FileHandle,
-  __in_opt  HANDLE Event,
-  __in_opt  PIO_APC_ROUTINE ApcRoutine,
-  __in_opt  PVOID ApcContext,
-  __out     PIO_STATUS_BLOCK IoStatusBlock,
-  __out     PVOID Buffer,
-  __in      ULONG Length,
-  __in_opt  PLARGE_INTEGER ByteOffset,
-  __in_opt  PULONG Key
+    __in      HANDLE FileHandle,
+    __in_opt  HANDLE Event,
+    __in_opt  PIO_APC_ROUTINE ApcRoutine,
+    __in_opt  PVOID ApcContext,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __out     PVOID Buffer,
+    __in      ULONG Length,
+    __in_opt  PLARGE_INTEGER ByteOffset,
+    __in_opt  PULONG Key
 ) {
     NTSTATUS ret = Old_NtReadFile(FileHandle, Event, ApcRoutine, ApcContext,
         IoStatusBlock, Buffer, Length, ByteOffset, Key);
@@ -143,20 +189,23 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadFile,
 }
 
 HOOKDEF(NTSTATUS, WINAPI, NtWriteFile,
-  __in      HANDLE FileHandle,
-  __in_opt  HANDLE Event,
-  __in_opt  PIO_APC_ROUTINE ApcRoutine,
-  __in_opt  PVOID ApcContext,
-  __out     PIO_STATUS_BLOCK IoStatusBlock,
-  __in      PVOID Buffer,
-  __in      ULONG Length,
-  __in_opt  PLARGE_INTEGER ByteOffset,
-  __in_opt  PULONG Key
+    __in      HANDLE FileHandle,
+    __in_opt  HANDLE Event,
+    __in_opt  PIO_APC_ROUTINE ApcRoutine,
+    __in_opt  PVOID ApcContext,
+    __out     PIO_STATUS_BLOCK IoStatusBlock,
+    __in      PVOID Buffer,
+    __in      ULONG Length,
+    __in_opt  PLARGE_INTEGER ByteOffset,
+    __in_opt  PULONG Key
 ) {
     NTSTATUS ret = Old_NtWriteFile(FileHandle, Event, ApcRoutine, ApcContext,
         IoStatusBlock, Buffer, Length, ByteOffset, Key);
     LOQ("pb", "FileHandle", FileHandle,
         "Buffer", IoStatusBlock->Information, Buffer);
+    if(NT_SUCCESS(ret)) {
+        file_write(FileHandle);
+    }
     return ret;
 }
 
@@ -236,10 +285,31 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetInformationFile,
     __in   ULONG Length,
     __in   FILE_INFORMATION_CLASS FileInformationClass
 ) {
+    if(FileInformation != NULL && Length == sizeof(BOOLEAN) &&
+            FileInformationClass == FileDispositionInformation &&
+            *(BOOLEAN *) FileInformation != FALSE) {
+
+        wchar_t path[MAX_PATH];
+        path_from_handle(FileHandle, path);
+        pipe("FILE_DEL:%Z", path);
+    }
+
     NTSTATUS ret = Old_NtSetInformationFile(FileHandle, IoStatusBlock,
         FileInformation, Length, FileInformationClass);
     LOQ("pb", "FileHandle", FileHandle,
         "FileInformation", IoStatusBlock->Information, FileInformation);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtOpenDirectoryObject,
+    __out  PHANDLE DirectoryHandle,
+    __in   ACCESS_MASK DesiredAccess,
+    __in   POBJECT_ATTRIBUTES ObjectAttributes
+) {
+    NTSTATUS ret = Old_NtOpenDirectoryObject(DirectoryHandle, DesiredAccess,
+        ObjectAttributes);
+    LOQ("PlO", "DirectoryHandle", DirectoryHandle,
+        "DesiredAccess", DesiredAccess, "ObjectAttributes", ObjectAttributes);
     return ret;
 }
 
@@ -300,11 +370,11 @@ HOOKDEF(BOOL, WINAPI, RemoveDirectoryW,
 }
 
 HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
-  __in      LPWSTR lpExistingFileName,
-  __in_opt  LPWSTR lpNewFileName,
-  __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
-  __in_opt  LPVOID lpData,
-  __in      DWORD dwFlags
+    __in      LPWSTR lpExistingFileName,
+    __in_opt  LPWSTR lpNewFileName,
+    __in_opt  LPPROGRESS_ROUTINE lpProgressRoutine,
+    __in_opt  LPVOID lpData,
+    __in      DWORD dwFlags
 ) {
     IS_SUCCESS_BOOL();
 
@@ -312,6 +382,9 @@ HOOKDEF(BOOL, WINAPI, MoveFileWithProgressW,
         lpProgressRoutine, lpData, dwFlags);
     LOQ("uu", "ExistingFileName", lpExistingFileName,
         "NewFileName", lpNewFileName);
+    if(ret != FALSE) {
+        pipe("FILE_MOVE:%Z::%Z", lpExistingFileName, lpNewFileName);
+    }
     return ret;
 }
 
@@ -376,12 +449,12 @@ HOOKDEF(BOOL, WINAPI, CopyFileW,
 }
 
 HOOKDEF(BOOL, WINAPI, CopyFileExW,
-  _In_      LPWSTR lpExistingFileName,
-  _In_      LPWSTR lpNewFileName,
-  _In_opt_  LPPROGRESS_ROUTINE lpProgressRoutine,
-  _In_opt_  LPVOID lpData,
-  _In_opt_  LPBOOL pbCancel,
-  _In_      DWORD dwCopyFlags
+    _In_      LPWSTR lpExistingFileName,
+    _In_      LPWSTR lpNewFileName,
+    _In_opt_  LPPROGRESS_ROUTINE lpProgressRoutine,
+    _In_opt_  LPVOID lpData,
+    _In_opt_  LPBOOL pbCancel,
+    _In_      DWORD dwCopyFlags
 ) {
     IS_SUCCESS_BOOL();
 
@@ -397,7 +470,16 @@ HOOKDEF(BOOL, WINAPI, DeleteFileA,
 ) {
     IS_SUCCESS_BOOL();
 
-    pipe("FILE_DEL:%z", lpFileName);
+    wchar_t path[MAX_PATH];
+
+    // copy ascii to unicode string
+    for (int i = 0; lpFileName[i] != 0 && i < MAX_PATH; i++) {
+        path[i] = lpFileName[i];
+    }
+
+    ensure_absolute_path(path, path, strlen(lpFileName));
+
+    pipe("FILE_DEL:%Z", path);
 
     BOOL ret = Old_DeleteFileA(lpFileName);
     LOQ("s", "FileName", lpFileName);
@@ -405,11 +487,15 @@ HOOKDEF(BOOL, WINAPI, DeleteFileA,
 }
 
 HOOKDEF(BOOL, WINAPI, DeleteFileW,
-  __in  LPWSTR lpFileName
+    __in  LPWSTR lpFileName
 ) {
     IS_SUCCESS_BOOL();
 
-    pipe("FILE_DEL:%Z", lpFileName);
+    wchar_t path[MAX_PATH];
+
+    ensure_absolute_path(path, lpFileName, lstrlenW(lpFileName));
+
+    pipe("FILE_DEL:%Z", path);
 
     BOOL ret = Old_DeleteFileW(lpFileName);
     LOQ("u", "FileName", lpFileName);

@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "pipe.h"
 #include "utf8.h"
+#include "misc.h"
+
+const char *g_pipe_name;
 
 static int _pipe_utf8x(char **out, unsigned short x)
 {
@@ -89,14 +92,19 @@ static int _pipe_sprintf(char *out, const char *fmt, va_list args)
             UNICODE_STRING *str = va_arg(args, UNICODE_STRING *);
             if(str == NULL) return -1;
 
-            ret += _pipe_unicode(&out, str->Buffer, str->Length >> 1);
+            ret += _pipe_unicode(&out, str->Buffer,
+                str->Length / sizeof(wchar_t));
         }
         else if(*fmt == 'O') {
             OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
             if(obj == NULL || obj->ObjectName == NULL) return -1;
 
-            ret += _pipe_unicode(&out, obj->ObjectName->Buffer,
-                obj->ObjectName->Length >> 1);
+            wchar_t path[MAX_PATH]; int length;
+            length = path_from_object_attributes(obj, path);
+
+            length = ensure_absolute_path(path, path, length);
+
+            ret += _pipe_unicode(&out, path, length);
         }
         else if(*fmt == 'd') {
             char s[32];
@@ -123,8 +131,8 @@ int pipe(const char *fmt, ...)
         _pipe_sprintf(buf, fmt, args);
         va_end(args);
 
-        return CallNamedPipe(PIPE_NAME, buf, len, buf, len,
-            (unsigned long *) &len, 0);
+        return CallNamedPipe(g_pipe_name, buf, len, buf, len,
+            (unsigned long *) &len, NMPWAIT_WAIT_FOREVER);
     }
     return -1;
 }
@@ -139,8 +147,8 @@ int pipe2(void *out, int *outlen, const char *fmt, ...)
         _pipe_sprintf(buf, fmt, args);
         va_end(args);
 
-        return CallNamedPipe(PIPE_NAME, buf, len, out, *outlen,
-            (DWORD *) outlen, 0);
+        return CallNamedPipe(g_pipe_name, buf, len, out, *outlen,
+            (DWORD *) outlen, NMPWAIT_WAIT_FOREVER);
     }
     return -1;
 }

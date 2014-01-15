@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,7 +23,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "synchronization";
+
+static UNICODE_STRING *unistr_from_objattr(OBJECT_ATTRIBUTES *obj)
+{
+    return obj != NULL ? obj->ObjectName : NULL;
+}
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateMutant,
     __out       PHANDLE MutantHandle,
@@ -33,7 +37,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateMutant,
 ) {
     NTSTATUS ret = Old_NtCreateMutant(MutantHandle, DesiredAccess,
         ObjectAttributes, InitialOwner);
-    LOQ("POl", "Handle", MutantHandle, "MutexName", ObjectAttributes,
+    LOQ("Pol", "Handle", MutantHandle,
+        "MutexName", unistr_from_objattr(ObjectAttributes),
         "InitialOwner", InitialOwner);
     return ret;
 }
@@ -45,6 +50,34 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenMutant,
 ) {
     NTSTATUS ret = Old_NtOpenMutant(MutantHandle, DesiredAccess,
         ObjectAttributes);
-    LOQ("PO", "Handle", MutantHandle, "MutexName", ObjectAttributes);
+    LOQ("Po", "Handle", MutantHandle,
+        "MutexName", unistr_from_objattr(ObjectAttributes));
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtCreateNamedPipeFile,
+    OUT         PHANDLE NamedPipeFileHandle,
+    IN          ACCESS_MASK DesiredAccess,
+    IN          POBJECT_ATTRIBUTES ObjectAttributes,
+    OUT         PIO_STATUS_BLOCK IoStatusBlock,
+    IN          ULONG ShareAccess,
+    IN          ULONG CreateDisposition,
+    IN          ULONG CreateOptions,
+    IN          BOOLEAN WriteModeMessage,
+    IN          BOOLEAN ReadModeMessage,
+    IN          BOOLEAN NonBlocking,
+    IN          ULONG MaxInstances,
+    IN          ULONG InBufferSize,
+    IN          ULONG OutBufferSize,
+    IN          PLARGE_INTEGER DefaultTimeOut
+) {
+    NTSTATUS ret = Old_NtCreateNamedPipeFile(NamedPipeFileHandle,
+        DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess,
+        CreateDisposition, CreateOptions, WriteModeMessage, ReadModeMessage,
+        NonBlocking, MaxInstances, InBufferSize, OutBufferSize,
+        DefaultTimeOut);
+    LOQ("PpOl", "NamedPipeHandle", NamedPipeFileHandle,
+        "DesiredAccess", DesiredAccess, "PipeName", ObjectAttributes,
+        "ShareAccess", ShareAccess);
     return ret;
 }

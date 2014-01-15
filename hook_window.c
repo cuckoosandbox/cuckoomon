@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,11 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_HWND();
-static const char *module_name = "windows";
 
 HOOKDEF(HWND, WINAPI, FindWindowA,
-  __in_opt  LPCTSTR lpClassName,
-  __in_opt  LPCTSTR lpWindowName
+    __in_opt  LPCTSTR lpClassName,
+    __in_opt  LPCTSTR lpWindowName
 ) {
     HWND ret = Old_FindWindowA(lpClassName, lpWindowName);
     LOQ("ss", "ClassName", lpClassName, "WindowName", lpWindowName);
@@ -35,8 +34,8 @@ HOOKDEF(HWND, WINAPI, FindWindowA,
 }
 
 HOOKDEF(HWND, WINAPI, FindWindowW,
-  __in_opt  LPWSTR lpClassName,
-  __in_opt  LPWSTR lpWindowName
+    __in_opt  LPWSTR lpClassName,
+    __in_opt  LPWSTR lpWindowName
 ) {
     HWND ret = Old_FindWindowW(lpClassName, lpWindowName);
     LOQ("uu", "ClassName", lpClassName, "WindowName", lpWindowName);
@@ -44,10 +43,10 @@ HOOKDEF(HWND, WINAPI, FindWindowW,
 }
 
 HOOKDEF(HWND, WINAPI, FindWindowExA,
-  __in_opt  HWND hwndParent,
-  __in_opt  HWND hwndChildAfter,
-  __in_opt  LPCTSTR lpszClass,
-  __in_opt  LPCTSTR lpszWindow
+    __in_opt  HWND hwndParent,
+    __in_opt  HWND hwndChildAfter,
+    __in_opt  LPCTSTR lpszClass,
+    __in_opt  LPCTSTR lpszWindow
 ) {
     HWND ret = Old_FindWindowExA(hwndParent, hwndChildAfter, lpszClass,
         lpszWindow);
@@ -58,16 +57,16 @@ HOOKDEF(HWND, WINAPI, FindWindowExA,
         LOQ("ls", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     else {
-        LOQ("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
+        LOQ2("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     return ret;
 }
 
 HOOKDEF(HWND, WINAPI, FindWindowExW,
-  __in_opt  HWND hwndParent,
-  __in_opt  HWND hwndChildAfter,
-  __in_opt  LPWSTR lpszClass,
-  __in_opt  LPWSTR lpszWindow
+    __in_opt  HWND hwndParent,
+    __in_opt  HWND hwndChildAfter,
+    __in_opt  LPWSTR lpszClass,
+    __in_opt  LPWSTR lpszWindow
 ) {
     HWND ret = Old_FindWindowExW(hwndParent, hwndChildAfter, lpszClass,
         lpszWindow);
@@ -77,7 +76,7 @@ HOOKDEF(HWND, WINAPI, FindWindowExW,
         LOQ("lu", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     else {
-        LOQ("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
+        LOQ2("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     return ret;
 }

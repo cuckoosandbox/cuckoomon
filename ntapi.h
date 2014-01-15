@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,6 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include <windows.h>
+#include <stdint.h>
 
 #ifndef __NTAPI_H__
 #define __NTAPI_H__
@@ -288,5 +291,180 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 } RTL_USER_PROCESS_PARAMETERS, *PRTL_USER_PROCESS_PARAMETERS;
 
 typedef void *PPS_CREATE_INFO, *PPS_ATTRIBUTE_LIST;
+
+typedef struct _TRANSMIT_FILE_BUFFERS {
+    PVOID Head;
+    DWORD HeadLength;
+    PVOID Tail;
+    DWORD TailLength;
+} TRANSMIT_FILE_BUFFERS, *LPTRANSMIT_FILE_BUFFERS;
+
+typedef void *PVOID, **PPVOID;
+
+typedef struct _PEB_LDR_DATA {
+    ULONG Length;
+    BOOLEAN Initialized;
+    PVOID SsHandle;
+    LIST_ENTRY InLoadOrderModuleList;
+    LIST_ENTRY InMemoryOrderModuleList;
+    LIST_ENTRY InInitializationOrderModuleList;
+} PEB_LDR_DATA, *PPEB_LDR_DATA;
+
+typedef struct _LDR_MODULE {
+    LIST_ENTRY InLoadOrderModuleList;
+    LIST_ENTRY InMemoryOrderModuleList;
+    LIST_ENTRY InInitializationOrderModuleList;
+    PVOID BaseAddress;
+    PVOID EntryPoint;
+    ULONG SizeOfImage;
+    UNICODE_STRING FullDllName;
+    UNICODE_STRING BaseDllName;
+    ULONG Flags;
+    SHORT LoadCount;
+    SHORT TlsIndex;
+    LIST_ENTRY HashTableEntry;
+    ULONG TimeDateStamp;
+} LDR_MODULE, *PLDR_MODULE;
+
+typedef struct _PEB {
+    BOOLEAN InheritedAddressSpace;
+    BOOLEAN ReadImageFileExecOptions;
+    BOOLEAN BeingDebugged;
+    BOOLEAN Spare;
+    HANDLE  Mutant;
+    PVOID   ImageBaseAddress;
+    PPEB_LDR_DATA LoaderData;
+    PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
+    PVOID   SubSystemData;
+    PVOID   ProcessHeap;
+    PVOID   FastPebLock;
+    void   *FastPebLockRoutine;
+    void   *FastPebUnlockRoutine;
+    ULONG   EnvironmentUpdateCount;
+    PPVOID  KernelCallbackTable;
+    PVOID   EventLogSection;
+    PVOID   EventLog;
+    void   *FreeList;
+    ULONG   TlsExpansionCounter;
+    PVOID   TlsBitmap;
+    ULONG   TlsBitmapBits[0x2];
+    PVOID   ReadOnlySharedMemoryBase;
+    PVOID   ReadOnlySharedMemoryHeap;
+    PPVOID  ReadOnlyStaticServerData;
+    PVOID   AnsiCodePageData;
+    PVOID   OemCodePageData;
+    PVOID   UnicodeCaseTableData;
+    ULONG   NumberOfProcessors;
+    ULONG   NtGlobalFlag;
+    BYTE    Spare2[0x4];
+    LARGE_INTEGER CriticalSectionTimeout;
+    ULONG   HeapSegmentReserve;
+    ULONG   HeapSegmentCommit;
+    ULONG   HeapDeCommitTotalFreeThreshold;
+    ULONG   HeapDeCommitFreeBlockThreshold;
+    ULONG   NumberOfHeaps;
+    ULONG   MaximumNumberOfHeaps;
+    PPVOID *ProcessHeaps;
+    PVOID   GdiSharedHandleTable;
+    PVOID   ProcessStarterHelper;
+    PVOID   GdiDCAttributeList;
+    PVOID   LoaderLock;
+    ULONG   OSMajorVersion;
+    ULONG   OSMinorVersion;
+    ULONG   OSBuildNumber;
+    ULONG   OSPlatformId;
+    ULONG   ImageSubSystem;
+    ULONG   ImageSubSystemMajorVersion;
+    ULONG   ImageSubSystemMinorVersion;
+    ULONG   GdiHandleBuffer[0x22];
+    ULONG   PostProcessInitRoutine;
+    ULONG   TlsExpansionBitmap;
+    BYTE    TlsExpansionBitmapBits[0x80];
+    ULONG   SessionId;
+} PEB, *PPEB;
+
+static inline unsigned int __readfsdword(unsigned int index)
+{
+    unsigned int ret;
+    __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (index));
+    return ret;
+}
+
+static inline void __writefsdword(unsigned int index, unsigned int value)
+{
+    __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
+}
+
+typedef struct _SECTION_IMAGE_INFORMATION {
+    VOID*               TransferAddress;
+    uint32_t            ZeroBits;
+    uint8_t             _PADDING0_[0x4];
+    uint64_t            MaximumStackSize;
+    uint64_t            CommittedStackSize;
+    uint32_t            SubSystemType;
+    union {
+        struct {
+            uint16_t    SubSystemMinorVersion;
+            uint16_t    SubSystemMajorVersion;
+        };
+        uint32_t        SubSystemVersion;
+    };
+    uint32_t            GpValue;
+    uint16_t            ImageCharacteristics;
+    uint16_t            DllCharacteristics;
+    uint16_t            Machine;
+    uint8_t             ImageContainsCode;
+    union {
+        uint8_t         ImageFlags;
+        struct {
+            uint8_t     ComPlusNativeReady : 1;
+            uint8_t     ComPlusILOnly : 1;
+            uint8_t     ImageDynamicallyRelocated : 1;
+            uint8_t     ImageMappedFlat : 1;
+            uint8_t     Reserved : 4;
+        };
+    };
+    uint32_t            LoaderFlags;
+    uint32_t            ImageFileSize;
+    uint32_t            CheckSum;
+} SECTION_IMAGE_INFORMATION, *PSECTION_IMAGE_INFORMATION;
+
+typedef struct _RTL_USER_PROCESS_INFORMATION {
+    ULONG Size;
+    HANDLE ProcessHandle;
+    HANDLE ThreadHandle;
+    CLIENT_ID ClientId;
+    SECTION_IMAGE_INFORMATION ImageInformation;
+} RTL_USER_PROCESS_INFORMATION, *PRTL_USER_PROCESS_INFORMATION;
+
+#define FILE_NAME_INFORMATION_REQUIRED_SIZE \
+    sizeof(FILE_NAME_INFORMATION) + sizeof(wchar_t) * MAX_PATH
+
+typedef struct _FILE_NAME_INFORMATION {
+    ULONG FileNameLength;
+    WCHAR FileName[1];
+} FILE_NAME_INFORMATION, *PFILE_NAME_INFORMATION;
+
+typedef enum  {
+    FileFsVolumeInformation       = 1,
+    FileFsLabelInformation        = 2,
+    FileFsSizeInformation         = 3,
+    FileFsDeviceInformation       = 4,
+    FileFsAttributeInformation    = 5,
+    FileFsControlInformation      = 6,
+    FileFsFullSizeInformation     = 7,
+    FileFsObjectIdInformation     = 8,
+    FileFsDriverPathInformation   = 9,
+    FileFsVolumeFlagsInformation  = 10,
+    FileFsSectorSizeInformation   = 11
+} FS_INFORMATION_CLASS;
+
+typedef struct _FILE_FS_VOLUME_INFORMATION {
+    LARGE_INTEGER VolumeCreationTime;
+    ULONG         VolumeSerialNumber;
+    ULONG         VolumeLabelLength;
+    BOOLEAN       SupportsObjects;
+    WCHAR         VolumeLabel[1];
+} FILE_FS_VOLUME_INFORMATION, *PFILE_FS_VOLUME_INFORMATION;
 
 #endif

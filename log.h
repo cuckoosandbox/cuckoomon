@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -53,14 +53,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // loq("3s", "key1", "value", "key2", "value2", "key3", "value3");
 //
 
-void loq(const char *fmt, ...);
+void loq(int index, const char *name, int is_success, int return_value, const char *fmt, ...);
+void log_new_process();
+void log_new_thread();
 
-void log_init(int debug);
+void log_init(unsigned int ip, unsigned short port, int debug);
 void log_flush();
 void log_free();
 
-#define LOQ(fmt, ...) loq(fmt, module_name, &__FUNCTION__[4], \
-    is_success(ret), ret, ##__VA_ARGS__)
+int log_resolve_index(const char *funcname, int index);
+extern const char *logtbl[][2];
+
+#define LOQ(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[4], 0); loq(_index, \
+    &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
+
+#define LOQ2(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[4], 1); loq(_index, \
+    &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
+
+#define LOQ3(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[4], 2); loq(_index, \
+    &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
+
+#define LOQspecial(fmt, ...) { static int _index; if(_index == 0) \
+    _index = log_resolve_index(&__FUNCTION__[5], 0); loq(_index, \
+    &__FUNCTION__[5], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define IS_SUCCESS_NTSTATUS() int is_success(NTSTATUS ret) { \
     return NT_SUCCESS(ret); }
@@ -92,9 +110,16 @@ void log_free();
 
 #define ENSURE_DWORD(param) \
     DWORD _##param = 0; if(param == NULL) param = &_##param
+
 #define ENSURE_ULONG(param) \
     ULONG _##param = 0; if(param == NULL) param = &_##param
 #define ENSURE_ULONG_ZERO(param) \
     ENSURE_ULONG(param); else *param = 0
+
+#define ENSURE_SIZET(param) \
+    ULONG _##param = 0; if(param == NULL) param = &_##param
+#define ENSURE_SIZET_ZERO(param) \
+    ENSURE_ULONG(param); else *param = 0
+
 #define ENSURE_CLIENT_ID(param) \
     CLIENT_ID _##param = {}; if(param == NULL) param = &_##param

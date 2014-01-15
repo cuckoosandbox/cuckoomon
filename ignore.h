@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,3 +31,5 @@ void ignore_file_prepend_stuff(const OBJECT_ATTRIBUTES *obj,
         wchar_t **str, unsigned int *length);
 
 int is_ignored_process();
+
+int is_ignored_retaddr(unsigned int addr);

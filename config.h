@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2013 Cuckoo Sandbox Developers
+Copyright (C) 2010-2012 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,23 +16,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//
-// Pipe API
-//
-// The following Format Specifiers are available:
-// z  -> (char *) -> zero-terminated ascii string
-// Z  -> (wchar_t *) -> zero-terminated unicode string
-// s  -> (int, char *) -> ascii string with length
-// S  -> (int, wchar_t *) -> unicode string with length
-// o  -> (UNICODE_STRING *) -> unicode string
-// O  -> (OBJECT_ATTRIBUTES *) -> wrapper around unicode string
-// d  -> (int) -> integer
-// x  -> (int) -> hexadecimal integer
-//
+struct {
+    // name of the pipe to communicate with cuckoo
+    char pipe_name[MAX_PATH];
 
-int pipe(const char *fmt, ...);
-int pipe2(void *out, int *outlen, const char *fmt, ...);
+    // results directory, has to be hidden
+    char results[MAX_PATH];
 
-#define PIPE_MAX_TIMEOUT 10000
+    // analyzer directory, has to be hidden
+    char analyzer[MAX_PATH];
 
-extern const char *g_pipe_name;
+    // is this the first process or not?
+    int first_process;
+
+    // how many milliseconds since startup
+    unsigned int startup_time;
+
+    // do we want to enable the retaddr check?
+    int retaddr_check;
+
+    // server ip and port
+    unsigned int host_ip;
+    unsigned short host_port;
+} g_config;
+
+void read_config();

@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,9 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
+#include "misc.h"
+#include "hook_file.h"
+#include "hook_sleep.h"
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "system";
 
 HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
     __in  int idHook,
@@ -32,7 +35,6 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
     __in  DWORD dwThreadId
 ) {
     IS_SUCCESS_HHOOK();
-    const char *module_name = "hooking";
 
     HHOOK ret = Old_SetWindowsHookExA(idHook, lpfn, hMod, dwThreadId);
     LOQ("lppl", "HookIdentifier", idHook, "ProcedureAddress", lpfn,
@@ -47,7 +49,6 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
     __in  DWORD dwThreadId
 ) {
     IS_SUCCESS_HHOOK();
-    const char *module_name = "hooking";
 
     HHOOK ret = Old_SetWindowsHookExW(idHook, lpfn, hMod, dwThreadId);
     LOQ("lppl", "HookIdentifier", idHook, "ProcedureAddress", lpfn,
@@ -56,7 +57,7 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
 }
 
 HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
-  __in  HHOOK hhk
+    __in  HHOOK hhk
 ) {
     IS_SUCCESS_BOOL();
 
@@ -100,25 +101,24 @@ HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
 ) {
     NTSTATUS ret = Old_LdrGetProcedureAddress(ModuleHandle, FunctionName,
         Ordinal, FunctionAddress);
-    LOQ("pSl", "ModuleHandle", ModuleHandle,
+    LOQ("pSlP", "ModuleHandle", ModuleHandle,
         "FunctionName", FunctionName != NULL ? FunctionName->Length : 0,
             FunctionName != NULL ? FunctionName->Buffer : NULL,
-        "Ordinal", Ordinal);
+        "Ordinal", Ordinal, "FunctionAddress", FunctionAddress);
     return ret;
 }
 
 HOOKDEF(BOOL, WINAPI, DeviceIoControl,
-  __in         HANDLE hDevice,
-  __in         DWORD dwIoControlCode,
-  __in_opt     LPVOID lpInBuffer,
-  __in         DWORD nInBufferSize,
-  __out_opt    LPVOID lpOutBuffer,
-  __in         DWORD nOutBufferSize,
-  __out_opt    LPDWORD lpBytesReturned,
-  __inout_opt  LPOVERLAPPED lpOverlapped
+    __in         HANDLE hDevice,
+    __in         DWORD dwIoControlCode,
+    __in_opt     LPVOID lpInBuffer,
+    __in         DWORD nInBufferSize,
+    __out_opt    LPVOID lpOutBuffer,
+    __in         DWORD nOutBufferSize,
+    __out_opt    LPDWORD lpBytesReturned,
+    __inout_opt  LPOVERLAPPED lpOverlapped
 ) {
     IS_SUCCESS_BOOL();
-    const char *module_name = "device";
 
     BOOL ret = Old_DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer,
         nInBufferSize, lpOutBuffer, nOutBufferSize, lpBytesReturned,
@@ -131,8 +131,8 @@ HOOKDEF(BOOL, WINAPI, DeviceIoControl,
 }
 
 HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
-  __in  UINT uFlags,
-  __in  DWORD dwReason
+    __in  UINT uFlags,
+    __in  DWORD dwReason
 ) {
     IS_SUCCESS_BOOL();
 
@@ -152,9 +152,9 @@ HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
 }
 
 HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
-  __in_opt  LPWSTR lpSystemName,
-  __in      LPWSTR lpName,
-  __out     PLUID lpLuid
+    __in_opt  LPWSTR lpSystemName,
+    __in      LPWSTR lpName,
+    __out     PLUID lpLuid
 ) {
     IS_SUCCESS_BOOL();
 
@@ -168,6 +168,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtClose,
 ) {
     NTSTATUS ret = Old_NtClose(Handle);
     LOQ("p", "Handle", Handle);
+    if(NT_SUCCESS(ret)) {
+        file_close(Handle);
+    }
     return ret;
 }
 
@@ -196,5 +199,48 @@ HOOKDEF(BOOL, WINAPI, WriteConsoleW,
         nNumberOfCharsToWrite, lpNumberOfCharsWritten, lpReseverd);
     LOQ("pU", "ConsoleHandle", hConsoleOutput,
         "Buffer", nNumberOfCharsToWrite, lpBuffer);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
+    _In_     HANDLE SectionHandle,
+    _In_     HANDLE ProcessHandle,
+    __inout  PVOID *BaseAddress,
+    _In_     ULONG_PTR ZeroBits,
+    _In_     SIZE_T CommitSize,
+    __inout  PLARGE_INTEGER SectionOffset,
+    __inout  PSIZE_T ViewSize,
+    __in     UINT InheritDisposition,
+    __in     ULONG AllocationType,
+    __in     ULONG Win32Protect
+) {
+    NTSTATUS ret = Old_ZwMapViewOfSection(SectionHandle, ProcessHandle,
+        BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize,
+        InheritDisposition, AllocationType, Win32Protect);
+    LOQ("ppPp", "SectionHandle", SectionHandle,
+        "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
+        "SectionOffset", SectionOffset);
+
+    if(NT_SUCCESS(ret)) {
+        pipe("PROCESS:%d", pid_from_process_handle(ProcessHandle));
+        disable_sleep_skip();
+    }
+    return ret;
+}
+
+HOOKDEF(int, WINAPI, GetSystemMetrics,
+    _In_  int nIndex
+) {
+    int ret = Old_GetSystemMetrics(nIndex);
+    LOQ("l", "SystemMetricIndex", nIndex);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetCursorPos,
+    _Out_ LPPOINT lpPoint
+) {
+    BOOL ret = Old_GetCursorPos(lpPoint);
+    LOQ("ll", "x", lpPoint != NULL ? lpPoint->x : 0,
+        "y", lpPoint != NULL ? lpPoint->y : 0);
     return ret;
 }

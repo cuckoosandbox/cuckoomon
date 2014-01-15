@@ -16,23 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//
-// Pipe API
-//
-// The following Format Specifiers are available:
-// z  -> (char *) -> zero-terminated ascii string
-// Z  -> (wchar_t *) -> zero-terminated unicode string
-// s  -> (int, char *) -> ascii string with length
-// S  -> (int, wchar_t *) -> unicode string with length
-// o  -> (UNICODE_STRING *) -> unicode string
-// O  -> (OBJECT_ATTRIBUTES *) -> wrapper around unicode string
-// d  -> (int) -> integer
-// x  -> (int) -> hexadecimal integer
-//
+#include <windows.h>
 
-int pipe(const char *fmt, ...);
-int pipe2(void *out, int *outlen, const char *fmt, ...);
+typedef struct _lookup_internal_t {
+    CRITICAL_SECTION cs;
+    void *root;
+} lookup_t;
 
-#define PIPE_MAX_TIMEOUT 10000
-
-extern const char *g_pipe_name;
+void lookup_init(lookup_t *d);
+void *lookup_add(lookup_t *d, unsigned int id, unsigned int size);
+void *lookup_get(lookup_t *d, unsigned int id, unsigned int *size);
+void lookup_del(lookup_t *d, unsigned int id);

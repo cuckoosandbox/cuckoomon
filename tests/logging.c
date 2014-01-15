@@ -9,7 +9,7 @@ int main()
     int is_success(int ret) { return 1; }
     int ret = 0;
 
-    log_init(1);
+    log_init(0, 0, 1);
 
     LOQ("2s", "a", "b", "c", "d");
     LOQ("S", "a", 4, "hello");

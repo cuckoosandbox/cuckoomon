@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hook_sleep.h"
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "process";
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,
     __out       PHANDLE ProcessHandle,
@@ -101,11 +100,38 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateUserProcess,
         "ThreadDesiredAccess", ThreadDesiredAccess,
         "ProcessFileName", ProcessObjectAttributes,
         "ThreadName", ThreadObjectAttributes,
-        "ImagePathName", ProcessParameters->ImagePathName,
-        "CommandLine", ProcessParameters->CommandLine);
+        "ImagePathName", &ProcessParameters->ImagePathName,
+        "CommandLine", &ProcessParameters->CommandLine);
     if(NT_SUCCESS(ret)) {
         pipe("PROCESS:%d,%d", pid_from_process_handle(*ProcessHandle),
             pid_from_thread_handle(*ThreadHandle));
+        disable_sleep_skip();
+    }
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, RtlCreateUserProcess,
+    IN      PUNICODE_STRING ImagePath,
+    IN      ULONG ObjectAttributes,
+    IN OUT  PRTL_USER_PROCESS_PARAMETERS ProcessParameters,
+    IN      PSECURITY_DESCRIPTOR ProcessSecurityDescriptor OPTIONAL,
+    IN      PSECURITY_DESCRIPTOR ThreadSecurityDescriptor OPTIONAL,
+    IN      HANDLE ParentProcess,
+    IN      BOOLEAN InheritHandles,
+    IN      HANDLE DebugPort OPTIONAL,
+    IN      HANDLE ExceptionPort OPTIONAL,
+    OUT     PRTL_USER_PROCESS_INFORMATION ProcessInformation
+) {
+    NTSTATUS ret = Old_RtlCreateUserProcess(ImagePath, ObjectAttributes,
+        ProcessParameters, ProcessSecurityDescriptor,
+        ThreadSecurityDescriptor, ParentProcess, InheritHandles, DebugPort,
+        ExceptionPort, ProcessInformation);
+    LOQ("opp", "ImagePath", ImagePath, "ObjectAttributes", ObjectAttributes,
+        "ParentProcess", ParentProcess);
+    if(NT_SUCCESS(ret)) {
+        pipe("PROCESS:%d,%d",
+            pid_from_process_handle(ProcessInformation->ProcessHandle),
+            pid_from_thread_handle(ProcessInformation->ThreadHandle));
         disable_sleep_skip();
     }
     return ret;
@@ -119,19 +145,25 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
 ) {
     // although the documentation on msdn is a bit vague, this seems correct
     // for both XP and Vista (the ClientId->UniqueProcess part, that is)
-    if(ClientId != NULL && is_protected_pid((int) ClientId->UniqueProcess)) {
+
+    int pid = 0;
+    if(ClientId != NULL) {
+        pid = (int) ClientId->UniqueProcess;
+    }
+
+    if(is_protected_pid(pid)) {
         NTSTATUS ret = STATUS_ACCESS_DENIED;
         LOQ("ppp", "ProcessHandle", NULL, "DesiredAccess", DesiredAccess,
-            "ProcessIdentifier", ClientId->UniqueProcess);
+            "ProcessIdentifier", &pid);
         return STATUS_ACCESS_DENIED;
     }
 
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
-    LOQ("PpP", "ProcessHandle", ProcessHandle, "DesiredAccess", DesiredAccess,
-        // looks hacky, is indeed hacky.. UniqueProcess is the first value in
-        // CLIENT_ID, so it's correct like this.. (although still hacky)
-        "ProcessIdentifier", &ClientId->UniqueProcess);
+    LOQ2("PpP", "ProcessHandle", ProcessHandle,
+        "DesiredAccess", DesiredAccess,
+        "ProcessIdentifier", &pid);
+    /*
     if(NT_SUCCESS(ret)) {
         // let's do an extra check here, because the msdn documentation is
         // so vague..
@@ -143,6 +175,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
         }
         pipe("PROCESS:%d", pid);
     }
+    */
     return ret;
 }
 
@@ -152,6 +185,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtTerminateProcess,
 ) {
     NTSTATUS ret = Old_NtTerminateProcess(ProcessHandle, ExitStatus);
     LOQ("pl", "ProcessHandle", ProcessHandle, "ExitCode", ExitStatus);
+    log_flush();
     return ret;
 }
 
@@ -170,6 +204,22 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateSection,
     LOQ("PpOp", "SectionHandle", SectionHandle,
         "DesiredAccess", DesiredAccess, "ObjectAttributes", ObjectAttributes,
         "FileHandle", FileHandle);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtMakeTemporaryObject,
+    __in     HANDLE ObjectHandle
+) {
+    NTSTATUS ret = Old_NtMakeTemporaryObject(ObjectHandle);
+    LOQ("p", "ObjectHandle", ObjectHandle);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtMakePermanentObject,
+    __in     HANDLE ObjectHandle
+) {
+    NTSTATUS ret = Old_NtMakePermanentObject(ObjectHandle);
+    LOQ("p", "ObjectHandle", ObjectHandle);
     return ret;
 }
 
@@ -213,23 +263,41 @@ HOOKDEF(BOOL, WINAPI, CreateProcessInternalW,
 }
 
 HOOKDEF(VOID, WINAPI, ExitProcess,
-  __in  UINT uExitCode
+    __in  UINT uExitCode
 ) {
     IS_SUCCESS_VOID();
 
     int ret = 0;
     LOQ("l", "ExitCode", uExitCode);
+    log_free();
     Old_ExitProcess(uExitCode);
 }
 
 HOOKDEF(BOOL, WINAPI, ShellExecuteExW,
-  __inout  SHELLEXECUTEINFOW *pExecInfo
+    __inout  SHELLEXECUTEINFOW *pExecInfo
 ) {
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_ShellExecuteExW(pExecInfo);
     LOQ("2ul", "FilePath", pExecInfo->lpFile,
         "Parameters", pExecInfo->lpParameters, "Show", pExecInfo->nShow);
+    return ret;
+}
+
+HOOKDEF(NTSTATUS, WINAPI, NtUnmapViewOfSection,
+    _In_      HANDLE ProcessHandle,
+    _In_opt_  PVOID BaseAddress
+) {
+    unsigned int map_size = 0; MEMORY_BASIC_INFORMATION mbi;
+    if(VirtualQueryEx(ProcessHandle, BaseAddress, &mbi,
+            sizeof(mbi)) == sizeof(mbi)) {
+        map_size = mbi.RegionSize;
+    }
+    NTSTATUS ret = Old_NtUnmapViewOfSection(ProcessHandle, BaseAddress);
+    if(NT_SUCCESS(ret)) {
+        pipe("UNMAP:%d,%x,%x", pid_from_process_handle(ProcessHandle),
+            BaseAddress, map_size);
+    }
     return ret;
 }
 
@@ -259,6 +327,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtReadVirtualMemory,
 
     BOOL ret = Old_NtReadVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToRead, NumberOfBytesReaded);
+
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesReaded, Buffer);
     return ret;
@@ -272,9 +341,11 @@ HOOKDEF(BOOL, WINAPI, ReadProcessMemory,
     _Out_   SIZE_T *lpNumberOfBytesRead
 ) {
     IS_SUCCESS_BOOL();
+    ENSURE_SIZET(lpNumberOfBytesRead);
 
     BOOL ret = Old_ReadProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesRead);
+
     LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
         "Buffer", lpNumberOfBytesRead, lpBuffer);
     return ret;
@@ -291,6 +362,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtWriteVirtualMemory,
 
     BOOL ret = Old_NtWriteVirtualMemory(ProcessHandle, BaseAddress, Buffer,
         NumberOfBytesToWrite, NumberOfBytesWritten);
+
     LOQ("2pB", "ProcessHandle", ProcessHandle, "BaseAddress", BaseAddress,
         "Buffer", NumberOfBytesWritten, Buffer);
     return ret;
@@ -304,9 +376,11 @@ HOOKDEF(BOOL, WINAPI, WriteProcessMemory,
     _Out_   SIZE_T *lpNumberOfBytesWritten
 ) {
     IS_SUCCESS_BOOL();
+    ENSURE_SIZET(lpNumberOfBytesWritten);
 
     BOOL ret = Old_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer,
         nSize, lpNumberOfBytesWritten);
+
     LOQ("ppB", "ProcessHandle", hProcess, "BaseAddress", lpBaseAddress,
         "Buffer", lpNumberOfBytesWritten, lpBuffer);
     return ret;

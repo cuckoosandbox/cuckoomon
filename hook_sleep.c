@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "ntapi.h"
 #include "log.h"
+#include "pipe.h"
 
 // only skip Sleep()'s the first five seconds
 #define MAX_SLEEP_SKIP_DIFF 5000
 
 static IS_SUCCESS_NTSTATUS();
-static const char *module_name = "sleep";
 
 // skipping sleep calls is done while this variable is set to true
 static int sleep_skip_active = 1;
@@ -61,15 +61,14 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
             sleep_skip_active = 0;
         }
     }
-    LOQ("l", "Milliseconds", -DelayInterval->QuadPart / 10000);
+    unsigned long milli = -DelayInterval->QuadPart / 10000;
+    LOQ2("l", "Milliseconds", milli);
     return Old_NtDelayExecution(Alertable, DelayInterval);
 }
 
 HOOKDEF(void, WINAPI, GetLocalTime,
     __out  LPSYSTEMTIME lpSystemTime
 ) {
-    IS_SUCCESS_VOID();
-
     Old_GetLocalTime(lpSystemTime);
 
     LARGE_INTEGER li; FILETIME ft;
@@ -85,8 +84,6 @@ HOOKDEF(void, WINAPI, GetLocalTime,
 HOOKDEF(void, WINAPI, GetSystemTime,
     __out  LPSYSTEMTIME lpSystemTime
 ) {
-    IS_SUCCESS_VOID();
-
     Old_GetSystemTime(lpSystemTime);
 
     LARGE_INTEGER li; FILETIME ft;
@@ -102,8 +99,6 @@ HOOKDEF(void, WINAPI, GetSystemTime,
 HOOKDEF(DWORD, WINAPI, GetTickCount,
     void
 ) {
-    IS_SUCCESS_VOID();
-
     DWORD ret = Old_GetTickCount();
 
     // add the time we've skipped
@@ -127,10 +122,20 @@ void disable_sleep_skip()
     sleep_skip_active = 0;
 }
 
-void init_sleep_skip()
+void init_sleep_skip(int first_process)
 {
     FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
     time_start.HighPart = ft.dwHighDateTime;
     time_start.LowPart = ft.dwLowDateTime;
+
+    // we don't want to skip sleep calls in child processes
+    if(first_process == 0) {
+        disable_sleep_skip();
+    }
+}
+
+void init_startup_time(unsigned int startup_time)
+{
+    time_skipped.QuadPart += (unsigned __int64) startup_time * 10000;
 }

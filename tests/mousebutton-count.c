@@ -16,23 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//
-// Pipe API
-//
-// The following Format Specifiers are available:
-// z  -> (char *) -> zero-terminated ascii string
-// Z  -> (wchar_t *) -> zero-terminated unicode string
-// s  -> (int, char *) -> ascii string with length
-// S  -> (int, wchar_t *) -> unicode string with length
-// o  -> (UNICODE_STRING *) -> unicode string
-// O  -> (OBJECT_ATTRIBUTES *) -> wrapper around unicode string
-// d  -> (int) -> integer
-// x  -> (int) -> hexadecimal integer
-//
+#include <stdio.h>
+#include <windows.h>
 
-int pipe(const char *fmt, ...);
-int pipe2(void *out, int *outlen, const char *fmt, ...);
-
-#define PIPE_MAX_TIMEOUT 10000
-
-extern const char *g_pipe_name;
+int main()
+{
+    printf("count: %d\n", GetSystemMetrics(SM_CMOUSEBUTTONS));
+}

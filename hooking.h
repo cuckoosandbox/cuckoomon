@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,6 +15,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+typedef struct _hook_info_t {
+    unsigned int depth_count;
+
+    unsigned int hook_count;
+    unsigned int retaddr_esp;
+
+    unsigned int last_error;
+    unsigned int ret_last_error;
+
+    // in case of an exception, this is the state of all registers upon
+    // execution of our hook
+    unsigned int eax;
+    unsigned int ecx;
+    unsigned int edx;
+    unsigned int ebx;
+    unsigned int esp;
+    unsigned int ebp;
+    unsigned int esi;
+    unsigned int edi;
+} hook_info_t;
 
 typedef struct _hook_t {
     const wchar_t *library;
@@ -32,36 +53,54 @@ typedef struct _hook_t {
     void **old_func;
 
     // allow hook recursion on this hook?
-    // (see comments @ hook_create_pre_gate)
+    // (see comments @ hook_create_pre_trampoline)
     int allow_hook_recursion;
 
     // this hook has been performed
     int is_hooked;
 
-    unsigned char gate[128];
-    unsigned char pre_gate[128];
+    unsigned char tramp[128];
+    unsigned char pre_tramp[150];
+    unsigned char store_exc[128];
     unsigned char hook_data[32];
 } hook_t;
 
 int lde(void *addr);
 
-int hook_create_callgate(unsigned char *addr, int len, unsigned char *gate);
-
 int hook_api(hook_t *h, int type);
 
+hook_info_t* hook_info();
 void hook_enable();
 void hook_disable();
+
+int hook_is_inside();
 
 unsigned int hook_get_last_error();
 void hook_set_last_error(unsigned int errcode);
 
-#define HOOK_JMP_DIRECT 0
-#define HOOK_NOP_JMP_DIRECT 1
-#define HOOK_HOTPATCH_JMP_DIRECT 2
-#define HOOK_PUSH_RETN 3
-#define HOOK_JMP_INDIRECT 4
-#define HOOK_PUSH_FPU_RETN 5
-#define HOOK_MAXTYPE 6 // value to be used in modulo statements
+void hook_disable_retaddr_check();
+
+#define HOOK_BACKTRACE_DEPTH 20
+
+#define HOOK_ENABLE_FPU 0
+
+enum {
+    HOOK_JMP_DIRECT,
+    HOOK_NOP_JMP_DIRECT,
+    HOOK_HOTPATCH_JMP_DIRECT,
+    HOOK_PUSH_RETN,
+    HOOK_NOP_PUSH_RETN,
+    HOOK_JMP_INDIRECT,
+    HOOK_MOV_EAX_JMP_EAX,
+    HOOK_MOV_EAX_PUSH_RETN,
+    HOOK_MOV_EAX_INDIRECT_JMP_EAX,
+    HOOK_MOV_EAX_INDIRECT_PUSH_RETN,
+#if HOOK_ENABLE_FPU
+    HOOK_PUSH_FPU_RETN,
+#endif
+    HOOK_SPECIAL_JMP,
+    HOOK_TECHNIQUE_MAXTYPE,
+};
 
 #define HOOKDEF(return_value, calling_convention, apiname, ...) \
     return_value (calling_convention *Old_##apiname)(__VA_ARGS__); \

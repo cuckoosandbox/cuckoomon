@@ -1,6 +1,6 @@
 /*
 Cuckoo Sandbox - Automated Malware Analysis
-Copyright (C) 2010-2012 Cuckoo Sandbox Developers
+Copyright (C) 2010-2013 Cuckoo Sandbox Developers
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,12 +23,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 
 static IS_SUCCESS_SCHANDLE();
-static const char *module_name = "services";
 
 HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerA,
-  __in_opt  LPCTSTR lpMachineName,
-  __in_opt  LPCTSTR lpDatabaseName,
-  __in      DWORD dwDesiredAccess
+    __in_opt  LPCTSTR lpMachineName,
+    __in_opt  LPCTSTR lpDatabaseName,
+    __in      DWORD dwDesiredAccess
 ) {
     SC_HANDLE ret = Old_OpenSCManagerA(lpMachineName, lpDatabaseName,
         dwDesiredAccess);
@@ -38,9 +37,9 @@ HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerA,
 }
 
 HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerW,
-  __in_opt  LPWSTR lpMachineName,
-  __in_opt  LPWSTR lpDatabaseName,
-  __in      DWORD dwDesiredAccess
+    __in_opt  LPWSTR lpMachineName,
+    __in_opt  LPWSTR lpDatabaseName,
+    __in      DWORD dwDesiredAccess
 ) {
     SC_HANDLE ret = Old_OpenSCManagerW(lpMachineName, lpDatabaseName,
         dwDesiredAccess);
@@ -50,19 +49,19 @@ HOOKDEF(SC_HANDLE, WINAPI, OpenSCManagerW,
 }
 
 HOOKDEF(SC_HANDLE, WINAPI, CreateServiceA,
-  __in       SC_HANDLE hSCManager,
-  __in       LPCTSTR lpServiceName,
-  __in_opt   LPCTSTR lpDisplayName,
-  __in       DWORD dwDesiredAccess,
-  __in       DWORD dwServiceType,
-  __in       DWORD dwStartType,
-  __in       DWORD dwErrorControl,
-  __in_opt   LPCTSTR lpBinaryPathName,
-  __in_opt   LPCTSTR lpLoadOrderGroup,
-  __out_opt  LPDWORD lpdwTagId,
-  __in_opt   LPCTSTR lpDependencies,
-  __in_opt   LPCTSTR lpServiceStartName,
-  __in_opt   LPCTSTR lpPassword
+    __in       SC_HANDLE hSCManager,
+    __in       LPCTSTR lpServiceName,
+    __in_opt   LPCTSTR lpDisplayName,
+    __in       DWORD dwDesiredAccess,
+    __in       DWORD dwServiceType,
+    __in       DWORD dwStartType,
+    __in       DWORD dwErrorControl,
+    __in_opt   LPCTSTR lpBinaryPathName,
+    __in_opt   LPCTSTR lpLoadOrderGroup,
+    __out_opt  LPDWORD lpdwTagId,
+    __in_opt   LPCTSTR lpDependencies,
+    __in_opt   LPCTSTR lpServiceStartName,
+    __in_opt   LPCTSTR lpPassword
 ) {
     SC_HANDLE ret = Old_CreateServiceA(hSCManager, lpServiceName,
         lpDisplayName, dwDesiredAccess, dwServiceType, dwStartType,
@@ -79,19 +78,19 @@ HOOKDEF(SC_HANDLE, WINAPI, CreateServiceA,
 }
 
 HOOKDEF(SC_HANDLE, WINAPI, CreateServiceW,
-  __in       SC_HANDLE hSCManager,
-  __in       LPWSTR lpServiceName,
-  __in_opt   LPWSTR lpDisplayName,
-  __in       DWORD dwDesiredAccess,
-  __in       DWORD dwServiceType,
-  __in       DWORD dwStartType,
-  __in       DWORD dwErrorControl,
-  __in_opt   LPWSTR lpBinaryPathName,
-  __in_opt   LPWSTR lpLoadOrderGroup,
-  __out_opt  LPDWORD lpdwTagId,
-  __in_opt   LPWSTR lpDependencies,
-  __in_opt   LPWSTR lpServiceStartName,
-  __in_opt   LPWSTR lpPassword
+    __in       SC_HANDLE hSCManager,
+    __in       LPWSTR lpServiceName,
+    __in_opt   LPWSTR lpDisplayName,
+    __in       DWORD dwDesiredAccess,
+    __in       DWORD dwServiceType,
+    __in       DWORD dwStartType,
+    __in       DWORD dwErrorControl,
+    __in_opt   LPWSTR lpBinaryPathName,
+    __in_opt   LPWSTR lpLoadOrderGroup,
+    __out_opt  LPDWORD lpdwTagId,
+    __in_opt   LPWSTR lpDependencies,
+    __in_opt   LPWSTR lpServiceStartName,
+    __in_opt   LPWSTR lpPassword
 ) {
     SC_HANDLE ret = Old_CreateServiceW(hSCManager, lpServiceName,
         lpDisplayName, dwDesiredAccess, dwServiceType, dwStartType,
@@ -108,9 +107,9 @@ HOOKDEF(SC_HANDLE, WINAPI, CreateServiceW,
 }
 
 HOOKDEF(SC_HANDLE, WINAPI, OpenServiceA,
-  __in  SC_HANDLE hSCManager,
-  __in  LPCTSTR lpServiceName,
-  __in  DWORD dwDesiredAccess
+    __in  SC_HANDLE hSCManager,
+    __in  LPCTSTR lpServiceName,
+    __in  DWORD dwDesiredAccess
 ) {
     SC_HANDLE ret = Old_OpenServiceA(hSCManager, lpServiceName,
         dwDesiredAccess);
@@ -120,9 +119,9 @@ HOOKDEF(SC_HANDLE, WINAPI, OpenServiceA,
 }
 
 HOOKDEF(SC_HANDLE, WINAPI, OpenServiceW,
-  __in  SC_HANDLE hSCManager,
-  __in  LPWSTR lpServiceName,
-  __in  DWORD dwDesiredAccess
+    __in  SC_HANDLE hSCManager,
+    __in  LPWSTR lpServiceName,
+    __in  DWORD dwDesiredAccess
 ) {
     SC_HANDLE ret = Old_OpenServiceW(hSCManager, lpServiceName,
         dwDesiredAccess);
@@ -132,9 +131,9 @@ HOOKDEF(SC_HANDLE, WINAPI, OpenServiceW,
 }
 
 HOOKDEF(BOOL, WINAPI, StartServiceA,
-  __in      SC_HANDLE hService,
-  __in      DWORD dwNumServiceArgs,
-  __in_opt  LPCTSTR *lpServiceArgVectors
+    __in      SC_HANDLE hService,
+    __in      DWORD dwNumServiceArgs,
+    __in_opt  LPCTSTR *lpServiceArgVectors
 ) {
     IS_SUCCESS_BOOL();
 
@@ -146,9 +145,9 @@ HOOKDEF(BOOL, WINAPI, StartServiceA,
 }
 
 HOOKDEF(BOOL, WINAPI, StartServiceW,
-  __in      SC_HANDLE hService,
-  __in      DWORD dwNumServiceArgs,
-  __in_opt  LPWSTR *lpServiceArgVectors
+    __in      SC_HANDLE hService,
+    __in      DWORD dwNumServiceArgs,
+    __in_opt  LPWSTR *lpServiceArgVectors
 ) {
     IS_SUCCESS_BOOL();
 
@@ -160,9 +159,9 @@ HOOKDEF(BOOL, WINAPI, StartServiceW,
 }
 
 HOOKDEF(BOOL, WINAPI, ControlService,
-  __in   SC_HANDLE hService,
-  __in   DWORD dwControl,
-  __out  LPSERVICE_STATUS lpServiceStatus
+    __in   SC_HANDLE hService,
+    __in   DWORD dwControl,
+    __out  LPSERVICE_STATUS lpServiceStatus
 ) {
     IS_SUCCESS_BOOL();
 
@@ -172,7 +171,7 @@ HOOKDEF(BOOL, WINAPI, ControlService,
 }
 
 HOOKDEF(BOOL, WINAPI, DeleteService,
-  __in  SC_HANDLE hService
+    __in  SC_HANDLE hService
 ) {
     IS_SUCCESS_BOOL();
 
