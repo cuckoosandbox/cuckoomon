@@ -24,10 +24,13 @@ DWORD randint(DWORD min, DWORD max);
 BOOL is_directory_objattr(const OBJECT_ATTRIBUTES *obj);
 void hide_module_from_peb(HMODULE module_handle);
 
-int path_from_handle(HANDLE handle, wchar_t *path);
-int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path);
+int path_from_handle(HANDLE handle, wchar_t *path, unsigned int path_buffer_len);
+int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path, unsigned int buffer_len);
 int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length);
 
 // imported but for some doesn't show up when #including string.h etc
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);
 int wcsicmp(const wchar_t *a, const wchar_t *b);
+
+// Define MAX_PATH plus tolerance for windows "tolerance"
+#define MAX_PATH_PLUS_TOLERANCE MAX_PATH + 64

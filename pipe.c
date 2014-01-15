@@ -99,8 +99,8 @@ static int _pipe_sprintf(char *out, const char *fmt, va_list args)
             OBJECT_ATTRIBUTES *obj = va_arg(args, OBJECT_ATTRIBUTES *);
             if(obj == NULL || obj->ObjectName == NULL) return -1;
 
-            wchar_t path[MAX_PATH]; int length;
-            length = path_from_object_attributes(obj, path);
+            wchar_t path[MAX_PATH_PLUS_TOLERANCE]; int length;
+            length = path_from_object_attributes(obj, path, (unsigned int) MAX_PATH_PLUS_TOLERANCE);
 
             length = ensure_absolute_path(path, path, length);
 
