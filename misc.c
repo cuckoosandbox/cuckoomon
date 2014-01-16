@@ -207,10 +207,12 @@ int path_from_handle(HANDLE handle, wchar_t *path, unsigned int path_buffer_len)
 
             // NtQueryInformationFile omits the "C:" part in a
             // filename, apparently
-            if (length <= path_buffer_len - 2){
-				wcsncpy(path + 2, name_information->FileName, length);
-				path[2 + length] = 0;
+            wcsncpy(path + 2, name_information->FileName, path_buffer_len-2);
+            if (length + 2 < path_buffer_len){
 				return 2 + length;
+            }
+            else{
+            	return path_buffer_len-1;
             }
         }
     }
