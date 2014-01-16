@@ -41,7 +41,7 @@ static IS_SUCCESS_NTSTATUS();
 
 typedef struct _file_record_t {
     unsigned int attributes;
-    unsigned int length;
+    size_t length;
     wchar_t filename[0];
 } file_record_t;
 
@@ -83,11 +83,10 @@ static void cache_file(HANDLE file_handle, const wchar_t *path,
 
     *r = (file_record_t) {
         .attributes = attributes,
-        .length     = length * sizeof(wchar_t),
+        .length     = length,
     };
 
-    memcpy(r->filename, path, r->length);
-    r->filename[r->length / sizeof(wchar_t)] = 0;
+    wcsncpy(r->filename, path, r->length);
 }
 
 static void file_write(HANDLE file_handle)
@@ -95,8 +94,8 @@ static void file_write(HANDLE file_handle)
     file_record_t *r = lookup_get(&g_files, (unsigned int) file_handle, NULL);
     if(r != NULL) {
         UNICODE_STRING str = {
-            .Length         = r->length,
-            .MaximumLength  = r->length + sizeof(wchar_t),
+            .Length         = r->length * sizeof(wchar_t), // microsoft actually meant "size"
+            .MaximumLength  = (r->length+1) * sizeof(wchar_t) ,
             .Buffer         = r->filename,
         };
 
@@ -112,8 +111,8 @@ static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
     if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
 
-        wchar_t fname[MAX_PATH]; int length;
-        length = path_from_object_attributes(obj, fname);
+        wchar_t fname[MAX_PATH_PLUS_TOLERANCE]; int length;
+        length = path_from_object_attributes(obj, fname, (unsigned int) MAX_PATH_PLUS_TOLERANCE);
 
         length = ensure_absolute_path(fname, fname, length);
 
@@ -289,8 +288,8 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetInformationFile,
             FileInformationClass == FileDispositionInformation &&
             *(BOOLEAN *) FileInformation != FALSE) {
 
-        wchar_t path[MAX_PATH];
-        path_from_handle(FileHandle, path);
+        wchar_t path[MAX_PATH_PLUS_TOLERANCE];
+        path_from_handle(FileHandle, path, (unsigned int) MAX_PATH_PLUS_TOLERANCE);
         pipe("FILE_DEL:%Z", path);
     }
 

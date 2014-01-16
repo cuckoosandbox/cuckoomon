@@ -123,8 +123,8 @@ static int hook_create_trampoline(unsigned char *addr, int len,
 
         // cmp dword [eax+hook_info_t.hook_count], 0
         0x83, 0x78, offsetof(hook_info_t, hook_count), 0x00,
-        // jg $+11
-        0x7f, 0x11,
+        // jg $+12
+        0x7f, 0x12,
             // inc dword [eax+hook_info_t.hook_count]
             0xff, 0x40, offsetof(hook_info_t, hook_count),
             // push dword [esp+4]
