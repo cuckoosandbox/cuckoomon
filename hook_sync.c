@@ -24,11 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static IS_SUCCESS_NTSTATUS();
 
-static UNICODE_STRING *unistr_from_objattr(OBJECT_ATTRIBUTES *obj)
-{
-    return obj != NULL ? obj->ObjectName : NULL;
-}
-
 HOOKDEF(NTSTATUS, WINAPI, NtCreateMutant,
     __out       PHANDLE MutantHandle,
     __in        ACCESS_MASK DesiredAccess,

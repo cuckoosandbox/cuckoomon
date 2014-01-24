@@ -467,4 +467,9 @@ typedef struct _FILE_FS_VOLUME_INFORMATION {
     WCHAR         VolumeLabel[1];
 } FILE_FS_VOLUME_INFORMATION, *PFILE_FS_VOLUME_INFORMATION;
 
+static inline UNICODE_STRING *unistr_from_objattr(OBJECT_ATTRIBUTES *obj)
+{
+    return obj != NULL ? obj->ObjectName : NULL;
+}
+
 #endif
