@@ -28,15 +28,15 @@ HOOKDEF(HWND, WINAPI, FindWindowA,
     __in_opt  LPCTSTR lpClassName,
     __in_opt  LPCTSTR lpWindowName
 ) {
-	/*  The atom must be in the low-order word of lpClassName; the high-order word must be zero. */
+    // The atom must be in the low-order word of lpClassName;
+    // the high-order word must be zero (from MSDN documentation.)
     HWND ret = Old_FindWindowA(lpClassName, lpWindowName);
     if(((DWORD_PTR) lpClassName & 0xffff) == (DWORD_PTR) lpClassName) {
-		LOQ("ls", "ClassName", lpClassName, "WindowName", lpWindowName);
-	}
-	else {
-		LOQ("ss", "ClassName", lpClassName, "WindowName", lpWindowName);
-	}
-
+        LOQ("ls", "ClassName", lpClassName, "WindowName", lpWindowName);
+    }
+    else {
+        LOQ("ss", "ClassName", lpClassName, "WindowName", lpWindowName);
+    }
     return ret;
 }
 
@@ -46,11 +46,11 @@ HOOKDEF(HWND, WINAPI, FindWindowW,
 ) {
     HWND ret = Old_FindWindowW(lpClassName, lpWindowName);
     if(((DWORD_PTR) lpClassName & 0xffff) == (DWORD_PTR) lpClassName) {
-		LOQ("lu", "ClassName", lpClassName, "WindowName", lpWindowName);
-	}
-	else {
-	    LOQ("uu", "ClassName", lpClassName, "WindowName", lpWindowName);
-	}
+        LOQ("lu", "ClassName", lpClassName, "WindowName", lpWindowName);
+    }
+    else {
+        LOQ("uu", "ClassName", lpClassName, "WindowName", lpWindowName);
+    }
     return ret;
 }
 

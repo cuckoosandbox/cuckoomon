@@ -145,7 +145,8 @@ void hide_module_from_peb(HMODULE module_handle)
     }
 }
 
-int path_from_handle(HANDLE handle, wchar_t *path, unsigned int path_buffer_len)
+uint32_t path_from_handle(HANDLE handle,
+    wchar_t *path, uint32_t path_buffer_len)
 {
     static NTSTATUS (WINAPI *pNtQueryVolumeInformationFile)(
         _In_   HANDLE FileHandle,
@@ -203,38 +204,44 @@ int path_from_handle(HANDLE handle, wchar_t *path, unsigned int path_buffer_len)
                 name_information, FILE_NAME_INFORMATION_REQUIRED_SIZE,
                 FileNameInformation))) {
 
-            int length = name_information->FileNameLength / sizeof(wchar_t);
+            uint32_t length =
+                name_information->FileNameLength / sizeof(wchar_t);
 
             // NtQueryInformationFile omits the "C:" part in a
             // filename, apparently
-            wcsncpy(path + 2, name_information->FileName, path_buffer_len-2);
-            if (length + 2 < path_buffer_len){
-				return 2 + length;
-            }
-            else{
-            	return path_buffer_len-1;
-            }
+            wcsncpy(path + 2, name_information->FileName,
+                path_buffer_len - 2);
+
+            return length + 2 < path_buffer_len ?
+                length + 2 : path_buffer_len - 1;
         }
     }
     return 0;
 }
-/* ObjectName->Length is actually the SIZE IN BYTES! */
-int path_from_object_attributes(const OBJECT_ATTRIBUTES *obj, wchar_t *path, unsigned int buffer_len)
+
+uint32_t path_from_object_attributes(const OBJECT_ATTRIBUTES *obj,
+    wchar_t *path, uint32_t buffer_length)
 {
-	if (obj->ObjectName == NULL || obj->ObjectName->Buffer == NULL){
-		return 0;
-	}
-    if(obj->RootDirectory == NULL) {
-        wcsncpy(path, obj->ObjectName->Buffer, buffer_len);
-        return ( (obj->ObjectName->Length / sizeof(wchar_t)) > buffer_len ) ? (buffer_len) : (obj->ObjectName->Length / sizeof(wchar_t));
+    if(obj->ObjectName == NULL || obj->ObjectName->Buffer == NULL) {
+        return 0;
     }
 
-    int len = path_from_handle(obj->RootDirectory, path, buffer_len);
-    path[len++] = L'\\';
-    wcsncpy(&path[len], obj->ObjectName->Buffer,
-    		buffer_len - len);
+    // ObjectName->Length is actually the size in bytes.
+    uint32_t obj_length = obj->ObjectName->Length / sizeof(wchar_t);
 
-    return  ((obj->ObjectName->Length / sizeof(wchar_t)) > buffer_len ) ? (buffer_len) : ( len + (obj->ObjectName->Length / sizeof(wchar_t)));
+    if(obj->RootDirectory == NULL) {
+        wcsncpy(path, obj->ObjectName->Buffer, buffer_length);
+        return obj_length > buffer_length ? buffer_length : obj_length;
+    }
+
+    uint32_t length = path_from_handle(obj->RootDirectory,
+        path, buffer_length);
+
+    path[length++] = L'\\';
+    wcsncpy(&path[length], obj->ObjectName->Buffer, buffer_length - length);
+
+    length += obj_length;
+    return length > buffer_length ? buffer_length : length;
 }
 
 int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length)

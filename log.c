@@ -400,7 +400,9 @@ void loq(int index, const char *name,
             }
             else {
                 wchar_t path[MAX_PATH_PLUS_TOLERANCE]; int length;
-                length = path_from_object_attributes(obj, path, (unsigned int) MAX_PATH_PLUS_TOLERANCE);
+
+                length = path_from_object_attributes(
+                        obj, path, MAX_PATH_PLUS_TOLERANCE);
 
                 length = ensure_absolute_path(path, path, length);
 

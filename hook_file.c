@@ -94,8 +94,9 @@ static void file_write(HANDLE file_handle)
     file_record_t *r = lookup_get(&g_files, (unsigned int) file_handle, NULL);
     if(r != NULL) {
         UNICODE_STRING str = {
-            .Length         = r->length * sizeof(wchar_t), // microsoft actually meant "size"
-            .MaximumLength  = (r->length+1) * sizeof(wchar_t) ,
+            // microsoft actually meant "size"
+            .Length         = r->length * sizeof(wchar_t),
+            .MaximumLength  = (r->length + 1) * sizeof(wchar_t) ,
             .Buffer         = r->filename,
         };
 
@@ -111,8 +112,10 @@ static void handle_new_file(HANDLE file_handle, const OBJECT_ATTRIBUTES *obj)
 {
     if(is_directory_objattr(obj) == 0 && is_ignored_file_objattr(obj) == 0) {
 
-        wchar_t fname[MAX_PATH_PLUS_TOLERANCE]; int length;
-        length = path_from_object_attributes(obj, fname, (unsigned int) MAX_PATH_PLUS_TOLERANCE);
+        wchar_t fname[MAX_PATH_PLUS_TOLERANCE]; uint32_t length;
+
+        length = path_from_object_attributes(obj,
+            fname, MAX_PATH_PLUS_TOLERANCE);
 
         length = ensure_absolute_path(fname, fname, length);
 
