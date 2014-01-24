@@ -86,7 +86,7 @@ static void cache_file(HANDLE file_handle, const wchar_t *path,
         .length     = length,
     };
 
-    wcsncpy(r->filename, path, r->length);
+    wcsncpy(r->filename, path, r->length + 1);
 }
 
 static void file_write(HANDLE file_handle)
