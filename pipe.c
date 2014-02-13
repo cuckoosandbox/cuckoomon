@@ -131,8 +131,11 @@ int pipe(const char *fmt, ...)
         _pipe_sprintf(buf, fmt, args);
         va_end(args);
 
-        return CallNamedPipe(g_pipe_name, buf, len, buf, len,
-            (unsigned long *) &len, NMPWAIT_WAIT_FOREVER);
+        if(CallNamedPipe(g_pipe_name, buf, len, buf, len,
+                (unsigned long *) &len, NMPWAIT_WAIT_FOREVER) == 0) {
+            return -1;
+        }
+        return 0;
     }
     return -1;
 }
@@ -147,8 +150,11 @@ int pipe2(void *out, int *outlen, const char *fmt, ...)
         _pipe_sprintf(buf, fmt, args);
         va_end(args);
 
-        return CallNamedPipe(g_pipe_name, buf, len, out, *outlen,
-            (DWORD *) outlen, NMPWAIT_WAIT_FOREVER);
+        if(CallNamedPipe(g_pipe_name, buf, len, out, *outlen,
+                (DWORD *) outlen, NMPWAIT_WAIT_FOREVER) == 0) {
+            return -1;
+        }
+        return 0;
     }
     return -1;
 }
