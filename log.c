@@ -87,6 +87,8 @@ static void log_raw(const char *buf, size_t length) {
 */
 
 static void log_raw_direct(const char *buf, size_t length) {
+    if(g_sock == INVALID_SOCKET) return;
+
     int sent = 0;
     int r;
     while (sent < length) {

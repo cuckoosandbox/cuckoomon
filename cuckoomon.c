@@ -29,6 +29,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hook_sleep.h"
 #include "config.h"
 
+// Allow debug mode to be turned on at compilation time.
+#ifdef CUCKOODBG
+#undef CUCKOODBG
+#define CUCKOODBG 1
+#else
+#define CUCKOODBG 0
+#endif
+
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
 
@@ -393,7 +401,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         g_pipe_name = g_config.pipe_name;
 
         // initialize the log file
-        log_init(g_config.host_ip, g_config.host_port, 0);
+        log_init(g_config.host_ip, g_config.host_port, CUCKOODBG);
 
         // initialize the Sleep() skipping stuff
         init_sleep_skip(g_config.first_process);
