@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hook_file.h"
 #include "hook_sleep.h"
 #include "config.h"
+#include "unhook.h"
 
 // Allow debug mode to be turned on at compilation time.
 #ifdef CUCKOODBG
@@ -417,6 +418,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 
         // initialize all hooks
         set_hooks();
+
+        // initialize our unhook detection
+        unhook_init_detection();
 
         // notify analyzer.py that we've loaded
         char name[64];
