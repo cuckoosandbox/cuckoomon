@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-void unhook_detect_add_region(const uint8_t *addr,
+void unhook_detect_add_region(const char *funcname, const uint8_t *addr,
     const uint8_t *orig, uint32_t length);
 
 int unhook_init_detection();

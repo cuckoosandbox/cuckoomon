@@ -56,7 +56,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void loq(int index, const char *name, int is_success, int return_value, const char *fmt, ...);
 void log_new_process();
 void log_new_thread();
-void log_anomaly(const char *subcategory, int success, const char *msg);
+void log_anomaly(const char *subcategory, int success,
+    const char *funcname, const char *msg);
 
 void log_init(unsigned int ip, unsigned short port, int debug);
 void log_flush();

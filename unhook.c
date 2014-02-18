@@ -31,9 +31,11 @@ static HANDLE g_unhook_thread_handle, g_watcher_thread_handle;
 static uint32_t g_index = 0;
 static uint32_t g_length[UNHOOK_MAXCOUNT];
 static const uint8_t *g_addr[UNHOOK_MAXCOUNT];
+static char g_funcname[UNHOOK_MAXCOUNT][64];
 static uint8_t g_orig[UNHOOK_MAXCOUNT][UNHOOK_BUFSIZE];
+static uint8_t g_hook_reported[UNHOOK_MAXCOUNT];
 
-void unhook_detect_add_region(const uint8_t *addr,
+void unhook_detect_add_region(const char *funcname, const uint8_t *addr,
     const uint8_t *orig, uint32_t length)
 {
     if(g_index == UNHOOK_MAXCOUNT) {
@@ -43,13 +45,18 @@ void unhook_detect_add_region(const uint8_t *addr,
 
     g_length[g_index] = length;
     g_addr[g_index] = addr;
+
+    if(funcname != NULL) {
+        strcpy(g_funcname[g_index], funcname);
+    }
+
     memcpy(g_orig[g_index], orig, MIN(length, UNHOOK_BUFSIZE));
     g_index++;
 }
 
 static DWORD WINAPI _unhook_detect_thread(LPVOID param)
 {
-    static int watcher_first = 1, hook_first = 1;
+    static int watcher_first = 1;
 
     hook_disable();
 
@@ -57,7 +64,7 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
         if(WaitForSingleObject(g_watcher_thread_handle,
                 500) != WAIT_TIMEOUT) {
             if(watcher_first != 0) {
-                log_anomaly("unhook", 1,
+                log_anomaly("unhook", 1, NULL,
                     "Unhook watcher thread has been corrupted!");
                 watcher_first = 0;
             }
@@ -69,9 +76,10 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
                 continue;
             }
 
-            if(hook_first != 0) {
-                log_anomaly("unhook", 1, "Hook modification detected!");
-                hook_first = 0;
+            if(g_hook_reported[idx] == 0) {
+                log_anomaly("unhook", 1, g_funcname[idx],
+                    "Hook modification detected!");
+                g_hook_reported[idx] = 1;
             }
         }
     }
@@ -85,7 +93,8 @@ static DWORD WINAPI _unhook_watch_thread(LPVOID param)
 
     while (WaitForSingleObject(g_unhook_thread_handle, 1000) == WAIT_TIMEOUT);
 
-    log_anomaly("unhook", 1, "Unhook detection threat has been corrupted!");
+    log_anomaly("unhook", 1, NULL,
+        "Unhook detection threat has been corrupted!");
     return 0;
 }
 

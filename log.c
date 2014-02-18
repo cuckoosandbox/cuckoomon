@@ -511,11 +511,13 @@ void log_new_thread()
     loq(1, "__thread__", 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
 }
 
-void log_anomaly(const char *subcategory, int success, const char *msg)
+void log_anomaly(const char *subcategory, int success,
+    const char *funcname, const char *msg)
 {
-    loq(2, "__anomaly__", success, 0, "lss",
+    loq(2, "__anomaly__", success, 0, "lsss",
         "ThreadIdentifier", GetCurrentThreadId(),
         "Subcategory", subcategory,
+        "FunctionName", funcname,
         "Message", msg);
 }
 
