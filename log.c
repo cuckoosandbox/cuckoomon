@@ -511,6 +511,14 @@ void log_new_thread()
     loq(1, "__thread__", 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
 }
 
+void log_anomaly(const char *subcategory, int success, const char *msg)
+{
+    loq(2, "__anomaly__", success, 0, "lss",
+        "ProcessIdentifier", GetCurrentProcessId(),
+        "Subcategory", subcategory,
+        "Message", msg);
+}
+
 void log_init(unsigned int ip, unsigned short port, int debug)
 {
     InitializeCriticalSection(&g_mutex);

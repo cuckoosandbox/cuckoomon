@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include "ntapi.h"
 #include "pipe.h"
+#include "log.h"
 
 #define UNHOOK_MAXCOUNT 2048
 #define UNHOOK_BUFSIZE 256
@@ -53,7 +54,8 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
         if(WaitForSingleObject(g_watcher_thread_handle,
                 500) != WAIT_TIMEOUT) {
             if(watcher_first != 0) {
-                pipe("CRITICAL:Unhook watcher thread has been corrupted!");
+                log_anomaly("unhook", 1,
+                    "Unhook watcher thread has been corrupted!");
                 watcher_first = 0;
             }
             Sleep(100);
@@ -65,7 +67,7 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
             }
 
             if(hook_first != 0) {
-                pipe("CRITICAL:Hook modification detected!");
+                log_anomaly("unhook", 1, "Hook modification detected!");
                 hook_first = 0;
             }
         }
@@ -78,7 +80,7 @@ static DWORD WINAPI _unhook_watch_thread(LPVOID param)
 {
     while (WaitForSingleObject(g_unhook_thread_handle, 1000) == WAIT_TIMEOUT);
 
-    pipe("CRITICAL:Unhook detection thread has been corrupted!");
+    log_anomaly("unhook", 1, "Unhook detection threat has been corrupted!");
     return 0;
 }
 
@@ -94,5 +96,6 @@ int unhook_init_detection()
         return 0;
     }
 
+    pipe("CRITICAL:Error initializing unhook detection threads!");
     return -1;
 }
