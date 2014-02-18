@@ -416,11 +416,11 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
             hook_disable_retaddr_check();
         }
 
-        // initialize all hooks
-        set_hooks();
-
         // initialize our unhook detection
         unhook_init_detection();
+
+        // initialize all hooks
+        set_hooks();
 
         // notify analyzer.py that we've loaded
         char name[64];
