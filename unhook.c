@@ -28,15 +28,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static HANDLE g_unhook_thread_handle, g_watcher_thread_handle;
 
+// Index for adding new hooks and iterating all existing hooks.
 static uint32_t g_index = 0;
+
+// Length of this region.
 static uint32_t g_length[UNHOOK_MAXCOUNT];
+
+// Address of the region.
 static const uint8_t *g_addr[UNHOOK_MAXCOUNT];
+
+// Function name of the region.
 static char g_funcname[UNHOOK_MAXCOUNT][64];
+
+// The original contents of this region, before we modified it.
 static uint8_t g_orig[UNHOOK_MAXCOUNT][UNHOOK_BUFSIZE];
+
+// The contents of this region after we modified it.
+static uint8_t g_our[UNHOOK_BUFSIZE][UNHOOK_BUFSIZE];
+
+// If the region has been modified, did we report this already?
 static uint8_t g_hook_reported[UNHOOK_MAXCOUNT];
 
 void unhook_detect_add_region(const char *funcname, const uint8_t *addr,
-    const uint8_t *orig, uint32_t length)
+    const uint8_t *orig, const uint8_t *our, uint32_t length)
 {
     if(g_index == UNHOOK_MAXCOUNT) {
         pipe("CRITICAL:Reached maximum number of unhook detection entries!");
@@ -51,6 +65,7 @@ void unhook_detect_add_region(const char *funcname, const uint8_t *addr,
     }
 
     memcpy(g_orig[g_index], orig, MIN(length, UNHOOK_BUFSIZE));
+    memcpy(g_our[g_index], our, MIN(length, UNHOOK_BUFSIZE));
     g_index++;
 }
 
@@ -72,13 +87,22 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
         }
 
         for (uint32_t idx = 0; idx < g_index; idx++) {
-            if(!memcmp(g_addr[idx], g_orig[idx], g_length[idx])) {
+            // Check whether this memory region still equals what we made it.
+            if(!memcmp(g_addr[idx], g_our[idx], g_length[idx])) {
                 continue;
             }
 
+            // By default we assume the hook has been modified.
+            const char *msg = "Function hook was modified!";
+
+            // If the memory region matches the original contents, then it
+            // has been restored to its original state.
+            if(!memcmp(g_orig[idx], g_addr[idx], g_length[idx])) {
+                msg = "Function was unhooked/restored!";
+            }
+
             if(g_hook_reported[idx] == 0) {
-                log_anomaly("unhook", 1, g_funcname[idx],
-                    "Hook modification detected!");
+                log_anomaly("unhook", 1, g_funcname[idx], msg);
                 g_hook_reported[idx] = 1;
             }
         }

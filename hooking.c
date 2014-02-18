@@ -704,7 +704,8 @@ int hook_api(hook_t *h, int type)
                     !memcmp(addr + 7, "\xff\x25", 2)) {
 
                 // Add unhook detection for this region.
-                unhook_detect_add_region(h->funcname, addr, addr, 7 + 6);
+                unhook_detect_add_region(h->funcname,
+                    addr, addr, addr, 7 + 6);
 
                 addr = **(unsigned char ***)(addr + 9);
             }
@@ -719,7 +720,7 @@ int hook_api(hook_t *h, int type)
 
                 // Add unhook detection for this region.
                 unhook_detect_add_region(h->funcname,
-                    addr - 5, addr - 5, 5 + 2);
+                    addr - 5, addr - 5, addr - 5, 5 + 2);
 
                 // step over the short jump and the relative offset
                 addr += 4;
@@ -742,6 +743,9 @@ int hook_api(hook_t *h, int type)
                     special = 1;
                 }
 
+                uint8_t orig[16];
+                memcpy(orig, addr, 16);
+
                 hook_create_pre_tramp(h, special);
 
                 // insert the hook (jump from the api to the
@@ -751,7 +755,7 @@ int hook_api(hook_t *h, int type)
                 // Add unhook detection for our newly created hook.
                 // Ensure any changes behind our hook are also catched by
                 // making the buffersize 16.
-                unhook_detect_add_region(h->funcname, addr, addr, 16);
+                unhook_detect_add_region(h->funcname, addr, orig, addr, 16);
 
                 // if successful, assign the trampoline address to *old_func
                 if(ret == 0) {

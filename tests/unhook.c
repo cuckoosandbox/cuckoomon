@@ -27,8 +27,15 @@ int main(int argc, char *argv[])
     unsigned long old_protect;
     VirtualProtect(fp, 0x1000, PAGE_EXECUTE_READWRITE, &old_protect);
 
-    // Let's see.
+    // Corrupt the hook.
     memset(fp, 0xcc, 32);
+
+    fp = GetProcAddress(GetModuleHandle("kernel32"), "CopyFileA");
+
+    VirtualProtect(fp, 0x1000, PAGE_EXECUTE_READWRITE, &old_protect);
+
+    // Restore the hook.
+    memcpy(fp, "\x8b\xff\x55\x8b\xec", 5);
 
     Sleep(10000);
 }
