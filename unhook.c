@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <windows.h>
 #include "ntapi.h"
+#include "hooking.h"
 #include "pipe.h"
 #include "log.h"
 
@@ -50,6 +51,8 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
 {
     static int watcher_first = 1, hook_first = 1;
 
+    hook_disable();
+
     while (1) {
         if(WaitForSingleObject(g_watcher_thread_handle,
                 500) != WAIT_TIMEOUT) {
@@ -78,6 +81,8 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
 
 static DWORD WINAPI _unhook_watch_thread(LPVOID param)
 {
+    hook_disable();
+
     while (WaitForSingleObject(g_unhook_thread_handle, 1000) == WAIT_TIMEOUT);
 
     log_anomaly("unhook", 1, "Unhook detection threat has been corrupted!");
