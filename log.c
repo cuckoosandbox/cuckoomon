@@ -514,7 +514,7 @@ void log_new_thread()
 void log_anomaly(const char *subcategory, int success, const char *msg)
 {
     loq(2, "__anomaly__", success, 0, "lss",
-        "ProcessIdentifier", GetCurrentProcessId(),
+        "ThreadIdentifier", GetCurrentThreadId(),
         "Subcategory", subcategory,
         "Message", msg);
 }
