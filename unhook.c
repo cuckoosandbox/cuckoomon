@@ -118,7 +118,7 @@ static DWORD WINAPI _unhook_watch_thread(LPVOID param)
     while (WaitForSingleObject(g_unhook_thread_handle, 1000) == WAIT_TIMEOUT);
 
     log_anomaly("unhook", 1, NULL,
-        "Unhook detection threat has been corrupted!");
+        "Unhook detection thread has been corrupted!");
     return 0;
 }
 
