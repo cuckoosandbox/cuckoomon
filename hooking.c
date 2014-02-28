@@ -704,6 +704,15 @@ int hook_api(hook_t *h, int type)
                 addr = **(unsigned char ***)(addr + 9);
             }
 
+            // Some functions don't just have the short jump and indirect
+            // jump, but also an empty function prolog
+            // ("mov edi, edi ; push ebp ; mov ebp, esp ; pop ebp"). Other
+            // than that, this edge case is equivalent to the case above.
+            else if(!memcmp(addr, "\x8b\xff\x55\x8b\xec\x5d\xeb\x05", 8) &&
+                    !memcmp(addr + 13, "\xff\x25", 2)) {
+                addr = **(unsigned char ***)(addr + 15);
+            }
+
             // the following applies for "inlined" functions on windows 7,
             // some functions are inlined into kernelbase.dll, rather than
             // kernelbase.dll jumping to e.g. kernel32.dll. for these
