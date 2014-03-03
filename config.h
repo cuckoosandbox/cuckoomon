@@ -26,6 +26,9 @@ struct {
     // analyzer directory, has to be hidden
     char analyzer[MAX_PATH];
 
+    // if this mutex exists then we're shutting down
+    char shutdown_mutex[MAX_PATH];
+
     // is this the first process or not?
     int first_process;
 

@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hooking.h"
 #include "pipe.h"
 #include "log.h"
+#include "misc.h"
 
 #define UNHOOK_MAXCOUNT 2048
 #define UNHOOK_BUFSIZE 256
@@ -79,8 +80,10 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
         if(WaitForSingleObject(g_watcher_thread_handle,
                 500) != WAIT_TIMEOUT) {
             if(watcher_first != 0) {
-                log_anomaly("unhook", 1, NULL,
-                    "Unhook watcher thread has been corrupted!");
+                if(is_shutting_down() == 0) {
+                    log_anomaly("unhook", 1, NULL,
+                        "Unhook watcher thread has been corrupted!");
+                }
                 watcher_first = 0;
             }
             Sleep(100);
@@ -102,7 +105,9 @@ static DWORD WINAPI _unhook_detect_thread(LPVOID param)
             }
 
             if(g_hook_reported[idx] == 0) {
-                log_anomaly("unhook", 1, g_funcname[idx], msg);
+                if(is_shutting_down() == 0) {
+                    log_anomaly("unhook", 1, g_funcname[idx], msg);
+                }
                 g_hook_reported[idx] = 1;
             }
         }
@@ -117,8 +122,10 @@ static DWORD WINAPI _unhook_watch_thread(LPVOID param)
 
     while (WaitForSingleObject(g_unhook_thread_handle, 1000) == WAIT_TIMEOUT);
 
-    log_anomaly("unhook", 1, NULL,
-        "Unhook detection thread has been corrupted!");
+    if(is_shutting_down() == 0) {
+        log_anomaly("unhook", 1, NULL,
+            "Unhook detection thread has been corrupted!");
+    }
     return 0;
 }
 

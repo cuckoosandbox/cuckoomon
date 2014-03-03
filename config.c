@@ -56,6 +56,10 @@ void read_config()
                     strncpy(g_config.analyzer, value,
                         ARRAYSIZE(g_config.analyzer));
                 }
+                else if(!strcmp(key, "shutdown-mutex")) {
+                    strncpy(g_config.shutdown_mutex, value,
+                        ARRAYSIZE(g_config.shutdown_mutex));
+                }
                 else if(!strcmp(key, "first-process")) {
                     g_config.first_process = value[0] == '1';
                 }
