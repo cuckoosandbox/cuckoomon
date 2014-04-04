@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <windns.h>
 #include <wininet.h>
+#include <mswsock.h>
 #include "ntapi.h"
 
 //
