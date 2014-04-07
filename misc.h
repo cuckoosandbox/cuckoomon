@@ -33,7 +33,6 @@ uint32_t path_from_object_attributes(const OBJECT_ATTRIBUTES *obj,
 int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length);
 
 // imported but for some doesn't show up when #including string.h etc
-int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);
 int wcsicmp(const wchar_t *a, const wchar_t *b);
 
 // Define MAX_PATH plus tolerance for windows "tolerance"
