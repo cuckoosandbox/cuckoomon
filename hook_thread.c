@@ -136,8 +136,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtTerminateThread,
     __in  HANDLE ThreadHandle,
     __in  NTSTATUS ExitStatus
 ) {
-    NTSTATUS ret = Old_NtTerminateThread(ThreadHandle, ExitStatus);
+    // Thread will terminate. Default logging will not work. Be aware: return value not valid
+    NTSTATUS ret = 0;
     LOQ("pl", "ThreadHandle", ThreadHandle, "ExitStatus", ExitStatus);
+    ret = Old_NtTerminateThread(ThreadHandle, ExitStatus);    
     return ret;
 }
 
