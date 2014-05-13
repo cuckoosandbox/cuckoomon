@@ -196,9 +196,9 @@ static int hook_create_trampoline(unsigned char *addr, int len,
 
             // copy the jmp or call instruction (conditional jumps are two
             // bytes, the rest is one byte)
-            *tramp++ += *addr++;
+            *tramp++ = *addr++;
             if(addr[-1] != 0xe9 && addr[-1] != 0xe8) {
-                *tramp++ += *addr++;
+                *tramp++ = *addr++;
             }
 
             // when a jmp/call is performed, then the relative offset +
