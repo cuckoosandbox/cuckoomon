@@ -36,5 +36,7 @@ int ensure_absolute_path(wchar_t *out, const wchar_t *in, int length);
 int wcsnicmp(const wchar_t *a, const wchar_t *b, int len);
 int wcsicmp(const wchar_t *a, const wchar_t *b);
 
+int is_shutting_down();
+
 // Define MAX_PATH plus tolerance for windows "tolerance"
 #define MAX_PATH_PLUS_TOLERANCE MAX_PATH + 64

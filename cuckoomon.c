@@ -28,6 +28,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hook_file.h"
 #include "hook_sleep.h"
 #include "config.h"
+#include "unhook.h"
+
+// Allow debug mode to be turned on at compilation time.
+#ifdef CUCKOODBG
+#undef CUCKOODBG
+#define CUCKOODBG 1
+#else
+#define CUCKOODBG 0
+#endif
 
 #define HOOK(library, funcname) {L###library, #funcname, NULL, \
     &New_##funcname, (void **) &Old_##funcname}
@@ -380,9 +389,10 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 
         // obtain all protected pids
         int pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
-        pipe2(pids, &length, "GETPIDS");
-        for (int i = 0; i < length / sizeof(pids[0]); i++) {
-            add_protected_pid(pids[i]);
+        if(pipe2(pids, &length, "GETPIDS") == 0) {
+            for (int i = 0; i < length / sizeof(pids[0]); i++) {
+                add_protected_pid(pids[i]);
+            }
         }
 
         // initialize file stuff
@@ -393,7 +403,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         g_pipe_name = g_config.pipe_name;
 
         // initialize the log file
-        log_init(g_config.host_ip, g_config.host_port, 0);
+        log_init(g_config.host_ip, g_config.host_port, CUCKOODBG);
 
         // initialize the Sleep() skipping stuff
         init_sleep_skip(g_config.first_process);
@@ -405,6 +415,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         if(g_config.retaddr_check == 0) {
             hook_disable_retaddr_check();
         }
+
+        // initialize our unhook detection
+        unhook_init_detection();
 
         // initialize all hooks
         set_hooks();

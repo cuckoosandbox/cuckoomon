@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mnemonics.h"
 #include "ntapi.h"
 #include "ignore.h"
+#include "unhook.h"
 
 // this number can be changed if required to do so
 #define TLS_HOOK_INFO 0x44
@@ -701,6 +702,11 @@ int hook_api(hook_t *h, int type)
             // two jumps.
             if(!memcmp(addr, "\xeb\x05", 2) &&
                     !memcmp(addr + 7, "\xff\x25", 2)) {
+
+                // Add unhook detection for this region.
+                unhook_detect_add_region(h->funcname,
+                    addr, addr, addr, 7 + 6);
+
                 addr = **(unsigned char ***)(addr + 9);
             }
 
@@ -720,6 +726,11 @@ int hook_api(hook_t *h, int type)
             // inlined function.
             if(!memcmp(addr, "\xeb\x02", 2) &&
                     !memcmp(addr - 5, "\xcc\xcc\xcc\xcc\xcc", 5)) {
+
+                // Add unhook detection for this region.
+                unhook_detect_add_region(h->funcname,
+                    addr - 5, addr - 5, addr - 5, 5 + 2);
+
                 // step over the short jump and the relative offset
                 addr += 4;
             }
@@ -741,11 +752,19 @@ int hook_api(hook_t *h, int type)
                     special = 1;
                 }
 
+                uint8_t orig[16];
+                memcpy(orig, addr, 16);
+
                 hook_create_pre_tramp(h, special);
 
                 // insert the hook (jump from the api to the
                 // pre-trampoline)
                 ret = hook_types[type].hook(h, addr, h->pre_tramp);
+
+                // Add unhook detection for our newly created hook.
+                // Ensure any changes behind our hook are also catched by
+                // making the buffersize 16.
+                unhook_detect_add_region(h->funcname, addr, orig, addr, 16);
 
                 // if successful, assign the trampoline address to *old_func
                 if(ret == 0) {

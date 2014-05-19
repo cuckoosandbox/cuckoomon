@@ -26,6 +26,8 @@ typedef LONG NTSTATUS;
 
 #define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 #define __out
 #define __in
 #define __in_opt

@@ -11,6 +11,7 @@ by hand.
 table = [
     ("__process__", "__init__", ("",)),
     ("__thread__", "__init__", ("",)),
+    ("__anomaly__", "anomaly", ("",)),
     ("NtDeleteFile", "filesystem", ("O", "FileName")),
     ("CreateDirectoryW", "filesystem", ("u", "DirectoryName")),
     ("CreateDirectoryExW", "filesystem", ("u", "DirectoryName")),

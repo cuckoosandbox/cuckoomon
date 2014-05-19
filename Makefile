@@ -5,6 +5,11 @@ DIRS = -Idistorm3.2-package/include -Ibson
 LIBS = -lws2_32 -lshlwapi
 OBJDIR = objects
 
+# Passes DBG=1 on as -DCUCKOODBG=1
+ifdef DBG
+	CFLAGS += -DCUCKOODBG=$(DBG)
+endif
+
 ifneq ($(OS),Windows_NT)
 	CC = i586-mingw32msvc-cc
 else

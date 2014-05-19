@@ -87,6 +87,8 @@ static void log_raw(const char *buf, size_t length) {
 */
 
 static void log_raw_direct(const char *buf, size_t length) {
+    if(g_sock == INVALID_SOCKET) return;
+
     int sent = 0;
     int r;
     while (sent < length) {
@@ -507,6 +509,16 @@ void log_new_process()
 void log_new_thread()
 {
     loq(1, "__thread__", 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
+}
+
+void log_anomaly(const char *subcategory, int success,
+    const char *funcname, const char *msg)
+{
+    loq(2, "__anomaly__", success, 0, "lsss",
+        "ThreadIdentifier", GetCurrentThreadId(),
+        "Subcategory", subcategory,
+        "FunctionName", funcname,
+        "Message", msg);
 }
 
 void log_init(unsigned int ip, unsigned short port, int debug)
