@@ -58,7 +58,7 @@ typedef struct _IO_STATUS_BLOCK {
     union {
         NTSTATUS Status;
         PVOID    Pointer;
-    };
+    } _;
     ULONG_PTR Information;
 } IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
 
@@ -380,14 +380,14 @@ typedef struct _PEB {
     ULONG   SessionId;
 } PEB, *PPEB;
 
-static inline unsigned int __readfsdword(unsigned int index)
+static inline unsigned int readfsdword(unsigned int index)
 {
     unsigned int ret;
     __asm__("movl %%fs:(%1), %0" : "=r" (ret) : "r" (index));
     return ret;
 }
 
-static inline void __writefsdword(unsigned int index, unsigned int value)
+static inline void writefsdword(unsigned int index, unsigned int value)
 {
     __asm__("movl %0, %%fs:(%1)" :: "r" (value), "r" (index));
 }
@@ -403,9 +403,9 @@ typedef struct _SECTION_IMAGE_INFORMATION {
         struct {
             uint16_t    SubSystemMinorVersion;
             uint16_t    SubSystemMajorVersion;
-        };
+        } _;
         uint32_t        SubSystemVersion;
-    };
+    } _;
     uint32_t            GpValue;
     uint16_t            ImageCharacteristics;
     uint16_t            DllCharacteristics;
@@ -419,8 +419,8 @@ typedef struct _SECTION_IMAGE_INFORMATION {
             uint8_t     ImageDynamicallyRelocated : 1;
             uint8_t     ImageMappedFlat : 1;
             uint8_t     Reserved : 4;
-        };
-    };
+        } _;
+    } __;
     uint32_t            LoaderFlags;
     uint32_t            ImageFileSize;
     uint32_t            CheckSum;

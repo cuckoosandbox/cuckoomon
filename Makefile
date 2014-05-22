@@ -1,5 +1,5 @@
 MAKEFLAGS = -j8
-CFLAGS = -Wall -std=c99 -s -O2
+CFLAGS = -Wall -std=c99 -s -O2 -Wno-strict-aliasing
 DLL = -shared
 DIRS = -Idistorm3.2-package/include -Ibson
 LIBS = -lws2_32 -lshlwapi
@@ -12,6 +12,7 @@ endif
 
 ifneq ($(OS),Windows_NT)
 	CC = i586-mingw32msvc-cc
+	# CC = i686-w64-mingw32-gcc
 else
 	CC = gcc
 endif

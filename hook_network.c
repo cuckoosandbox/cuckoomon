@@ -301,7 +301,7 @@ HOOKDEF(DNS_STATUS, WINAPI, DnsQuery_W,
     return ret;
 }
 
-HOOKDEF(int, WSAAPI, getaddrinfo,
+HOOKDEF(int, WINAPI, getaddrinfo,
     _In_opt_  PCSTR pNodeName,
     _In_opt_  PCSTR pServiceName,
     _In_opt_  const ADDRINFOA *pHints,
@@ -314,7 +314,7 @@ HOOKDEF(int, WSAAPI, getaddrinfo,
     return ret;
 }
 
-HOOKDEF(int, WSAAPI, GetAddrInfoW,
+HOOKDEF(int, WINAPI, GetAddrInfoW,
     _In_opt_  PCWSTR pNodeName,
     _In_opt_  PCWSTR pServiceName,
     _In_opt_  const ADDRINFOW *pHints,

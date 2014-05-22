@@ -64,8 +64,8 @@ static int is_interesting_backtrace(unsigned int ebp)
     }
 
     // http://en.wikipedia.org/wiki/Win32_Thread_Information_Block
-    unsigned int top = __readfsdword(0x04);
-    unsigned int bottom = __readfsdword(0x08);
+    unsigned int top = readfsdword(0x04);
+    unsigned int bottom = readfsdword(0x08);
 
     unsigned int count = HOOK_BACKTRACE_DEPTH;
     while (ebp >= bottom && ebp < top && count-- != 0) {
@@ -786,7 +786,7 @@ int hook_api(hook_t *h, int type)
 
 hook_info_t *hook_info()
 {
-    return (hook_info_t *) __readfsdword(TLS_HOOK_INFO);
+    return (hook_info_t *) readfsdword(TLS_HOOK_INFO);
 }
 
 static void ensure_valid_hook_info()
@@ -794,7 +794,7 @@ static void ensure_valid_hook_info()
     if(hook_info() == NULL) {
         hook_info_t *info = (hook_info_t *) calloc(1, sizeof(hook_info_t)+TLS_HOOK_INFO_RETADDR_SPACE);
         info->retaddr_esp = (unsigned int) info + sizeof(hook_info_t) + TLS_HOOK_INFO_RETADDR_SPACE;
-        __writefsdword(TLS_HOOK_INFO, (unsigned int) info);
+        writefsdword(TLS_HOOK_INFO, (unsigned int) info);
     }
 }
 

@@ -25,7 +25,7 @@ void read_config()
 {
     // TODO unicode support
     char buf[512], config_fname[MAX_PATH];
-    sprintf(config_fname, "%s\\%d.ini",
+    sprintf(config_fname, "%s\\%ld.ini",
         getenv("TEMP"), GetCurrentProcessId());
 
     FILE *fp = fopen(config_fname, "r");

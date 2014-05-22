@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
+#include <winsock2.h>
 #include <windows.h>
 #include "ntapi.h"
 #include "misc.h"
@@ -424,7 +425,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 
         // notify analyzer.py that we've loaded
         char name[64];
-        sprintf(name, "CuckooEvent%d", GetCurrentProcessId());
+        sprintf(name, "CuckooEvent%ld", GetCurrentProcessId());
         HANDLE event_handle = OpenEvent(EVENT_ALL_ACCESS, FALSE, name);
         if(event_handle != NULL) {
             SetEvent(event_handle);
