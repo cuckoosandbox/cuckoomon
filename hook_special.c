@@ -34,6 +34,8 @@ HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 ) {
+    static const char *category = "system";
+
     //
     // In the event that loading this dll results in loading another dll as
     // well, then the unicode string (which is located in the TEB) will be
@@ -76,6 +78,7 @@ HOOKDEF2(BOOL, WINAPI, CreateProcessInternalW,
     __out       LPPROCESS_INFORMATION lpProcessInformation,
     __in_opt    LPVOID lpUnknown2
 ) {
+    static const char *category = "process";
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old2_CreateProcessInternalW(lpUnknown1, lpApplicationName,

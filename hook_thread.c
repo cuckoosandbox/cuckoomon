@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "misc.h"
 #include "hook_sleep.h"
 
+static const char *category = "threading";
 static IS_SUCCESS_NTSTATUS();
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateThread,

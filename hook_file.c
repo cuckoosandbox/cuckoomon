@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "lookup.h"
 
 static IS_SUCCESS_NTSTATUS();
+static const char *category = "filesystem";
 
 #define DUMP_FILE_MASK (GENERIC_WRITE | FILE_GENERIC_WRITE | \
     FILE_WRITE_DATA | FILE_APPEND_DATA | STANDARD_RIGHTS_WRITE | \

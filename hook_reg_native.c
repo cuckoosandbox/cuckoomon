@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "pipe.h"
 
+static const char *category = "registry";
 static IS_SUCCESS_LONGREG();
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,

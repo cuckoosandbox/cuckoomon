@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static const char *category = "windows";
 static IS_SUCCESS_HWND();
 
 HOOKDEF(HWND, WINAPI, FindWindowA,

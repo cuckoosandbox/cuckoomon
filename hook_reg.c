@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static const char *category = "registry";
 static IS_SUCCESS_LONGREG();
 
 HOOKDEF(LONG, WINAPI, RegOpenKeyExA,

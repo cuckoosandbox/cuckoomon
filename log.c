@@ -196,7 +196,7 @@ static void log_buffer(const char *buf, size_t length) {
     bson_append_binary( g_bson, g_istr, BSON_BIN_BINARY, buf, trunclength );
 }
 
-void loq(int index, const char *name,
+void loq(int index, const char *category, const char *name,
     int is_success, int return_value, const char *fmt, ...)
 {
     va_list args;
@@ -216,7 +216,7 @@ void loq(int index, const char *name,
         bson_append_int( b, "I", index );
         bson_append_string( b, "name", name );
         bson_append_string( b, "type", "info" );
-        bson_append_string( b, "category", logtbl[index][1] );
+        bson_append_string( b, "category", category );
 
         bson_append_start_array( b, "args" );
         bson_append_string( b, "0", "is_success" );
@@ -499,7 +499,8 @@ void log_new_process()
     FILETIME st;
     GetSystemTimeAsFileTime(&st);
 
-    loq(0, "__process__", 1, 0, "llllu", "TimeLow", st.dwLowDateTime,
+    loq(0, "__notification__", "__process__", 1, 0, "llllu",
+        "TimeLow", st.dwLowDateTime,
         "TimeHigh", st.dwHighDateTime,
         "ProcessIdentifier", GetCurrentProcessId(),
         "ParentProcessIdentifier", parent_process_id(),
@@ -508,13 +509,14 @@ void log_new_process()
 
 void log_new_thread()
 {
-    loq(1, "__thread__", 1, 0, "l", "ProcessIdentifier", GetCurrentProcessId());
+    loq(1, "__notification__", "__thread__", 1, 0, "l",
+        "ProcessIdentifier", GetCurrentProcessId());
 }
 
 void log_anomaly(const char *subcategory, int success,
     const char *funcname, const char *msg)
 {
-    loq(2, "__anomaly__", success, 0, "lsss",
+    loq(2, "__notification__", "__anomaly__", success, 0, "lsss",
         "ThreadIdentifier", GetCurrentThreadId(),
         "Subcategory", subcategory,
         "FunctionName", funcname,

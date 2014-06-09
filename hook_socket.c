@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 
+static const char *category = "socket";
 static IS_SUCCESS_INTM1();
 
 HOOKDEF(int, WINAPI, WSAStartup,

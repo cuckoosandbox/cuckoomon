@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ignore.h"
 #include "hook_sleep.h"
 
+static const char *category = "process";
 static IS_SUCCESS_NTSTATUS();
 
 HOOKDEF(NTSTATUS, WINAPI, NtCreateProcess,

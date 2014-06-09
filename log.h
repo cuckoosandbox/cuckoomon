@@ -53,7 +53,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // loq("3s", "key1", "value", "key2", "value2", "key3", "value3");
 //
 
-void loq(int index, const char *name, int is_success, int return_value, const char *fmt, ...);
+void loq(int index, const char *category, const char *name,
+    int is_success, int return_value, const char *fmt, ...);
 void log_new_process();
 void log_new_thread();
 void log_anomaly(const char *subcategory, int success,
@@ -67,19 +68,19 @@ int log_resolve_index(const char *funcname, int index);
 extern const char *logtbl[][2];
 
 #define LOQ(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[4], 0); loq(_index, \
+    _index = log_resolve_index(&__FUNCTION__[4], 0); loq(_index, category, \
     &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define LOQ2(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[4], 1); loq(_index, \
+    _index = log_resolve_index(&__FUNCTION__[4], 1); loq(_index, category, \
     &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define LOQ3(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[4], 2); loq(_index, \
+    _index = log_resolve_index(&__FUNCTION__[4], 2); loq(_index, category, \
     &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define LOQspecial(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[5], 0); loq(_index, \
+    _index = log_resolve_index(&__FUNCTION__[5], 0); loq(_index, category, \
     &__FUNCTION__[5], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define IS_SUCCESS_NTSTATUS() int is_success(NTSTATUS ret) { \

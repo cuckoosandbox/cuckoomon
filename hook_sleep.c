@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // only skip Sleep()'s the first five seconds
 #define MAX_SLEEP_SKIP_DIFF 5000
 
+static const char *category = "system";
 static IS_SUCCESS_NTSTATUS();
 
 // skipping sleep calls is done while this variable is set to true

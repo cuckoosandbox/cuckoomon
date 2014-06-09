@@ -34,6 +34,7 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExA,
     __in  HINSTANCE hMod,
     __in  DWORD dwThreadId
 ) {
+    static const char *category = "system";
     IS_SUCCESS_HHOOK();
 
     HHOOK ret = Old_SetWindowsHookExA(idHook, lpfn, hMod, dwThreadId);
@@ -48,6 +49,7 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
     __in  HINSTANCE hMod,
     __in  DWORD dwThreadId
 ) {
+    static const char *category = "system";
     IS_SUCCESS_HHOOK();
 
     HHOOK ret = Old_SetWindowsHookExW(idHook, lpfn, hMod, dwThreadId);
@@ -59,6 +61,7 @@ HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
 HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
     __in  HHOOK hhk
 ) {
+    static const char *category = "hooking";
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_UnhookWindowsHookEx(hhk);
@@ -72,6 +75,7 @@ HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE ModuleHandle
 ) {
+    static const char *category = "system";
     COPY_UNICODE_STRING(library, ModuleFileName);
 
     NTSTATUS ret = Old_LdrLoadDll(PathToFile, Flags, ModuleFileName,
@@ -87,6 +91,7 @@ HOOKDEF(NTSTATUS, WINAPI, LdrGetDllHandle,
     __in        PUNICODE_STRING ModuleFileName,
     __out       PHANDLE pHModule
 ) {
+    static const char *category = "system";
     NTSTATUS ret = Old_LdrGetDllHandle(pwPath, Unused, ModuleFileName,
         pHModule);
     LOQ("oP", "FileName", ModuleFileName, "ModuleHandle", pHModule);
@@ -99,6 +104,7 @@ HOOKDEF(NTSTATUS, WINAPI, LdrGetProcedureAddress,
     __in_opt    WORD Ordinal,
     __out       PVOID *FunctionAddress
 ) {
+    static const char *category = "system";
     NTSTATUS ret = Old_LdrGetProcedureAddress(ModuleHandle, FunctionName,
         Ordinal, FunctionAddress);
     LOQ("pSlP", "ModuleHandle", ModuleHandle,
@@ -118,6 +124,7 @@ HOOKDEF(BOOL, WINAPI, DeviceIoControl,
     __out_opt    LPDWORD lpBytesReturned,
     __inout_opt  LPOVERLAPPED lpOverlapped
 ) {
+    static const char *category = "device";
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_DeviceIoControl(hDevice, dwIoControlCode, lpInBuffer,
@@ -134,6 +141,7 @@ HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
     __in  UINT uFlags,
     __in  DWORD dwReason
 ) {
+    static const char *category = "system";
     IS_SUCCESS_BOOL();
 
     int ret = 0;
@@ -144,6 +152,7 @@ HOOKDEF(BOOL, WINAPI, ExitWindowsEx,
 HOOKDEF(BOOL, WINAPI, IsDebuggerPresent,
     void
 ) {
+    static const char *category = "system";
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_IsDebuggerPresent();
@@ -156,6 +165,7 @@ HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
     __in      LPWSTR lpName,
     __out     PLUID lpLuid
 ) {
+    static const char *category = "system";
     IS_SUCCESS_BOOL();
 
     BOOL ret = Old_LookupPrivilegeValueW(lpSystemName, lpName, lpLuid);
@@ -166,6 +176,7 @@ HOOKDEF(BOOL, WINAPI, LookupPrivilegeValueW,
 HOOKDEF(NTSTATUS, WINAPI, NtClose,
     __in    HANDLE Handle
 ) {
+    static const char *category = "system";
     NTSTATUS ret = Old_NtClose(Handle);
     LOQ("p", "Handle", Handle);
     if(NT_SUCCESS(ret)) {
@@ -181,6 +192,7 @@ HOOKDEF(BOOL, WINAPI, WriteConsoleA,
     _Out_       LPDWORD lpNumberOfCharsWritten,
     _Reserved_  LPVOID lpReseverd
 ) {
+    static const char *category = "system";
     BOOL ret = Old_WriteConsoleA(hConsoleOutput, lpBuffer,
         nNumberOfCharsToWrite, lpNumberOfCharsWritten, lpReseverd);
     LOQ("pS", "ConsoleHandle", hConsoleOutput,
@@ -195,6 +207,7 @@ HOOKDEF(BOOL, WINAPI, WriteConsoleW,
     _Out_       LPDWORD lpNumberOfCharsWritten,
     _Reserved_  LPVOID lpReseverd
 ) {
+    static const char *category = "system";
     BOOL ret = Old_WriteConsoleW(hConsoleOutput, lpBuffer,
         nNumberOfCharsToWrite, lpNumberOfCharsWritten, lpReseverd);
     LOQ("pU", "ConsoleHandle", hConsoleOutput,
@@ -214,6 +227,7 @@ HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
     __in     ULONG AllocationType,
     __in     ULONG Win32Protect
 ) {
+    static const char *category = "process";
     NTSTATUS ret = Old_ZwMapViewOfSection(SectionHandle, ProcessHandle,
         BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize,
         InheritDisposition, AllocationType, Win32Protect);
@@ -231,6 +245,7 @@ HOOKDEF(NTSTATUS, WINAPI, ZwMapViewOfSection,
 HOOKDEF(int, WINAPI, GetSystemMetrics,
     _In_  int nIndex
 ) {
+    static const char *category = "misc";
     int ret = Old_GetSystemMetrics(nIndex);
     LOQ("l", "SystemMetricIndex", nIndex);
     return ret;
@@ -239,6 +254,7 @@ HOOKDEF(int, WINAPI, GetSystemMetrics,
 HOOKDEF(BOOL, WINAPI, GetCursorPos,
     _Out_ LPPOINT lpPoint
 ) {
+    static const char *category = "misc";
     BOOL ret = Old_GetCursorPos(lpPoint);
     LOQ("ll", "x", lpPoint != NULL ? lpPoint->x : 0,
         "y", lpPoint != NULL ? lpPoint->y : 0);
