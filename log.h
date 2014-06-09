@@ -125,3 +125,6 @@ extern const char *logtbl[][2];
 
 #define ENSURE_CLIENT_ID(param) \
     CLIENT_ID _##param = {}; if(param == NULL) param = &_##param
+
+#define ENSURE_STRUCT(param, type) \
+    type _##param = {}; if(param == NULL) param = &_##param

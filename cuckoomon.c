@@ -336,6 +336,22 @@ static hook_t g_hooks[] = {
 
     HOOK(mswsock, ConnectEx),
     HOOK(mswsock, TransmitFile),
+
+    //
+    // Crypto Functions
+    //
+
+    HOOK(advapi32, CryptProtectData),
+    HOOK(advapi32, CryptUnprotectData),
+    HOOK(advapi32, CryptProtectMemory),
+    HOOK(advapi32, CryptUnprotectMemory),
+    HOOK(advapi32, CryptDecrypt),
+    HOOK(advapi32, CryptEncrypt),
+    HOOK(advapi32, CryptHashData),
+    HOOK(advapi32, CryptDecodeMessage),
+    HOOK(advapi32, CryptDecryptMessage),
+    HOOK(advapi32, CryptEncryptMessage),
+    HOOK(advapi32, CryptHashMessage),
 };
 
 // get a random hooking method, except for hook_jmp_direct
