@@ -11,8 +11,7 @@ ifdef DBG
 endif
 
 ifneq ($(OS),Windows_NT)
-	CC = i586-mingw32msvc-cc
-	# CC = i686-w64-mingw32-gcc
+	CC = i686-w64-mingw32-gcc
 else
 	CC = gcc
 endif

@@ -466,44 +466,6 @@ typedef struct _FILE_FS_VOLUME_INFORMATION {
     WCHAR         VolumeLabel[1];
 } FILE_FS_VOLUME_INFORMATION, *PFILE_FS_VOLUME_INFORMATION;
 
-typedef void *HCERTSTORE, *HCRYPTPROV_LEGACY;
-typedef void *PFN_CRYPT_GET_SIGNER_CERTIFICATE, *PCCERT_STRONG_SIGN_PARA;
-
-typedef struct _CRYPT_DECRYPT_MESSAGE_PARA {
-    DWORD      cbSize;
-    DWORD      dwMsgAndCertEncodingType;
-    DWORD      cCertStore;
-    HCERTSTORE *rghCertStore;
-    DWORD      dwFlags;
-} CRYPT_DECRYPT_MESSAGE_PARA, *PCRYPT_DECRYPT_MESSAGE_PARA;
-
-typedef struct _CRYPT_VERIFY_MESSAGE_PARA {
-  DWORD                            cbSize;
-  DWORD                            dwMsgAndCertEncodingType;
-  HCRYPTPROV_LEGACY                hCryptProv;
-  PFN_CRYPT_GET_SIGNER_CERTIFICATE pfnGetSignerCertificate;
-  void                             *pvGetArg;
-  PCCERT_STRONG_SIGN_PARA          pStrongSignPara;
-} CRYPT_VERIFY_MESSAGE_PARA, *PCRYPT_VERIFY_MESSAGE_PARA;
-
-typedef struct _CRYPT_ENCRYPT_MESSAGE_PARA {
-    DWORD                      cbSize;
-    DWORD                      dwMsgEncodingType;
-    HCRYPTPROV_LEGACY          hCryptProv;
-    CRYPT_ALGORITHM_IDENTIFIER ContentEncryptionAlgorithm;
-    void                       *pvEncryptionAuxInfo;
-    DWORD                      dwFlags;
-    DWORD                      dwInnerContentType;
-} CRYPT_ENCRYPT_MESSAGE_PARA, *PCRYPT_ENCRYPT_MESSAGE_PARA;
-
-typedef struct _CRYPT_HASH_MESSAGE_PARA {
-    DWORD                      cbSize;
-    DWORD                      dwMsgEncodingType;
-    HCRYPTPROV_LEGACY          hCryptProv;
-    CRYPT_ALGORITHM_IDENTIFIER HashAlgorithm;
-    void                       *pvHashAuxInfo;
-} CRYPT_HASH_MESSAGE_PARA, *PCRYPT_HASH_MESSAGE_PARA;
-
 static inline UNICODE_STRING *unistr_from_objattr(OBJECT_ATTRIBUTES *obj)
 {
     return obj != NULL ? obj->ObjectName : NULL;
