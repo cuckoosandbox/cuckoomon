@@ -1,5 +1,5 @@
 MAKEFLAGS = -j8
-CFLAGS = -Wall -std=c99 -s -O2 -Wno-strict-aliasing
+CFLAGS = -Wall -std=c99 -s -O2 -Wno-strict-aliasing -static
 DLL = -shared
 DIRS = -Ibson -Icapstone
 LIBS = -lws2_32 -lshlwapi
