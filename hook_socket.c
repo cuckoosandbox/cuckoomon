@@ -88,7 +88,7 @@ HOOKDEF(int, WSAAPI, send,
     __in  int flags
 ) {
     int ret = Old_send(s, buf, len, flags);
-    LOQ("pb", "socket", s, "buffer", ret < 1 ? 0 : ret, buf);
+    LOQ("ib", "socket", s, "buffer", ret < 1 ? 0 : ret, buf);
     return ret;
 }
 
@@ -105,7 +105,7 @@ HOOKDEF(int, WSAAPI, sendto,
     if(ret > 0) {
         get_ip_port(to, &ip, &port);
     }
-    LOQ("pbsi", "socket", s, "buffer", ret < 1 ? 0 : ret, buf,
+    LOQ("ibsi", "socket", s, "buffer", ret < 1 ? 0 : ret, buf,
         "ip", ip, "port", port);
     return ret;
 }
@@ -117,7 +117,7 @@ HOOKDEF(int, WSAAPI, recv,
     __in   int flags
 ) {
     int ret = Old_recv(s, buf, len, flags);
-    LOQ("pb", "socket", s, "buffer", ret < 1 ? 0 : len, buf);
+    LOQ("ib", "socket", s, "buffer", ret < 1 ? 0 : len, buf);
     return ret;
 }
 
@@ -134,7 +134,7 @@ HOOKDEF(int, WSAAPI, recvfrom,
     if(ret > 0) {
         get_ip_port(from, &ip, &port);
     }
-    LOQ("pbsi", "socket", s, "buffer", ret < 1 ? 0 : ret, buf,
+    LOQ("ibsi", "socket", s, "buffer", ret < 1 ? 0 : ret, buf,
         "ip", ip, "port", port);
     return ret;
 }
@@ -303,7 +303,7 @@ HOOKDEF(int, WSAAPI, WSASendTo,
     BOOL ret = Old_WSASendTo(s, lpBuffers, dwBufferCount, lpNumberOfBytesSent,
         dwFlags, lpTo, iToLen, lpOverlapped, lpCompletionRoutine);
     // TODO dump buffers
-    LOQ("isi", "Socket", s, "ip", ip, "port", port);
+    LOQ("isi", "socket", s, "ip", ip, "port", port);
     return ret;
 }
 
@@ -350,7 +350,7 @@ HOOKDEF(BOOL, PASCAL, ConnectEx,
         lpdwBytesSent, lpOverlapped);
     const char *ip = NULL; int port = 0;
     get_ip_port(name, &ip, &port);
-    LOQ("pBsi", "socket", s, "SendBuffer", lpdwBytesSent, lpSendBuffer,
+    LOQ("iBsi", "socket", s, "SendBuffer", lpdwBytesSent, lpSendBuffer,
         "ip", ip, "port", port);
     return ret;
 }
@@ -368,7 +368,7 @@ HOOKDEF(BOOL, PASCAL, TransmitFile,
 
     BOOL ret = Old_TransmitFile(hSocket, hFile, nNumberOfBytesToWrite,
         nNumberOfBytesPerSend, lpOverlapped, lpTransmitBuffers, dwFlags);
-    LOQ("ppll", "socket", hSocket, "FileHandle", hFile,
+    LOQ("ipll", "socket", hSocket, "FileHandle", hFile,
         "NumberOfBytesToWrite", nNumberOfBytesToWrite,
         "NumberOfBytesPerSend", nNumberOfBytesPerSend);
     return ret;
