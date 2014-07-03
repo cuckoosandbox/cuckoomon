@@ -215,6 +215,12 @@ static hook_t g_hooks[] = {
 
     HOOK(msvcrt, system),
 
+    HOOK(kernel32, CreateToolhelp32Snapshot),
+    HOOK(kernel32, Process32First),
+    HOOK(kernel32, Process32Next),
+    HOOK(kernel32, Module32First),
+    HOOK(kernel32, Module32Next),
+
     //
     // Thread Hooks
     //

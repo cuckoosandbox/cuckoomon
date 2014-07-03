@@ -797,6 +797,31 @@ extern HOOKDEF(int, CDECL, system,
     const char *command
 );
 
+extern HOOKDEF(HANDLE, WINAPI, CreateToolhelp32Snapshot,
+    __in  DWORD dwFlags,
+    __in  DWORD th32ProcessID
+);
+
+extern HOOKDEF(BOOL, WINAPI, Process32First,
+    __in  HANDLE hSnapshot,
+    __inout  LPVOID lppe
+);
+
+extern HOOKDEF(BOOL, WINAPI, Process32Next,
+    __in  HANDLE hSnapshot,
+    __inout  LPVOID lppe
+);
+
+extern HOOKDEF(BOOL, WINAPI, Module32First,
+    __in  HANDLE hSnapshot,
+    __inout  LPVOID lpme
+);
+
+extern HOOKDEF(BOOL, WINAPI, Module32Next,
+    __in  HANDLE hSnapshot,
+    __inout  LPVOID lpme
+);
+
 //
 // Thread Hooks
 //
