@@ -372,7 +372,7 @@ void loq(int index, const char *category, const char *name,
         else if(key == 'B') {
             size_t *len = va_arg(args, size_t *);
             const char *s = va_arg(args, const char *);
-            log_buffer(s, *len);
+            log_buffer(s, len == NULL ? 0 : *len);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
