@@ -30,8 +30,10 @@ static IS_SUCCESS_INTM1();
 static void get_ip_port(const struct sockaddr *addr,
     const char **ip, int *port)
 {
+    if(addr == NULL) return;
+
     // TODO IPv6 support.
-    if(addr != NULL) {
+    if(addr->sa_family == AF_INET) {
         const struct sockaddr_in *addr4 = (const struct sockaddr_in *) addr;
         *ip = inet_ntoa(addr4->sin_addr);
         *port = htons(addr4->sin_port);
