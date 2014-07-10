@@ -235,6 +235,29 @@ HOOKDEF(int, WSAAPI, shutdown,
     return ret;
 }
 
+HOOKDEF(SOCKET, WSAAPI, WSAAccept,
+    __in    SOCKET s,
+    __out   struct sockaddr *addr,
+    __inout LPINT addrlen,
+    __in    LPCONDITIONPROC lpfnCondition,
+    __in    DWORD_PTR dwCallbackData
+) {
+    SOCKET ret = Old_WSAAccept(s, addr, addrlen, lpfnCondition,
+        dwCallbackData);
+    const char *ip_s = NULL, *ip_c = NULL; int port_s = 0, port_c = 0;
+    struct sockaddr addr_c; int addr_c_len = sizeof(addr_c);
+
+    get_ip_port(addr, &ip_s, &port_s);
+    if(getpeername(ret, &addr_c, &addr_c_len) == 0) {
+        get_ip_port(&addr_c, &ip_c, &port_c);
+    }
+
+    LOQ("iisisi", "socket", s, "ClientSocket", ret,
+        "ip_accept", ip_s, "port_accept", port_s,
+        "ip_client", ip_c, "port_client", port_c);
+    return ret;
+}
+
 HOOKDEF(int, WSAAPI, WSARecv,
     __in     SOCKET s,
     __inout  LPWSABUF lpBuffers,
