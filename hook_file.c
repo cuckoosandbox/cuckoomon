@@ -504,3 +504,47 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
     LOQ("u", "FileName", lpFileName);
     return ret;
 }
+
+HOOKDEF(DWORD, WINAPI, GetFileType,
+    _In_  HANDLE hFile
+) {
+    DWORD ret = Old_GetFileType(hFile);
+    LOQ("p", "FileHandle", hFile);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetFileSizeEx,
+    _In_   HANDLE hFile,
+    _Out_  PLARGE_INTEGER lpFileSize
+) {
+    DWORD ret = Old_GetFileSizeEx(hFile, lpFileSize);
+    LOQ("p", "FileHandle", hFile);
+    return ret;
+}
+
+HOOKDEF(DWORD, WINAPI, GetFileSize,
+    _In_   HANDLE hFile,
+    _Out_opt_  LPDWORD lpFileSizeHigh
+) {
+    DWORD ret = Old_GetFileSize(hFile, lpFileSizeHigh);
+    LOQ("ps", "FileHandle", hFile, "FileSize", lpFileSizeHigh);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetFileInformationsByHandle,
+    _In_   HANDLE hFile,
+    _Out_  LPBY_HANDLE_FILE_INFORMATION lpFileInformation
+) {
+    DWORD ret = Old_GetFileInformationsByHandle(hFile, lpFileInformation);
+    LOQ("p", "FileHandle", hFile);
+    return ret;
+}
+
+/* // Needs Windows Vista
+
+HOOKDEF(BOOL, WINAPI, GetFileInformationsByHandleEx,
+    _In_   HANDLE hFile,
+    _In_   FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _Out_  LPVOID lpFileInformation,
+    _In_   DWORD dwBufferSize
+){}*/
