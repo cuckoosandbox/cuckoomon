@@ -93,3 +93,14 @@ HOOKDEF(HWND, WINAPI, FindWindowExW,
     }
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, EnumWindows,
+    _In_  WNDENUMPROC lpEnumFunc,
+    _In_  LPARAM lParam
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_EnumWindows(lpEnumFunc, lParam);
+    LOQ("");
+    return ret;
+}

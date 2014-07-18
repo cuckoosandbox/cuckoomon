@@ -555,6 +555,11 @@ extern HOOKDEF(HWND, WINAPI, FindWindowExW,
     __in_opt  LPWSTR lpszWindow
 );
 
+extern HOOKDEF(BOOL, WINAPI, EnumWindows,
+    _In_  WNDENUMPROC lpEnumFunc,
+    _In_  LPARAM lParam
+);
+
 //
 // Sync Hooks
 //
