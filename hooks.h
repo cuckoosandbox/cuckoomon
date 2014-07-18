@@ -227,6 +227,21 @@ extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExW,
     _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
 );
 
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceA,
+    _In_   PCTSTR lpRootPathName,
+    _Out_  LPDWORD lpSectorsPerCluster,
+    _Out_  LPDWORD lpBytesPerSector,
+    _Out_  LPDWORD lpNumberOfFreeClusters,
+    _Out_  LPDWORD lpTotalNumberOfClusters
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceW,
+    _In_   PCWSTR lpRootPathName,
+    _Out_  LPDWORD lpSectorsPerCluster,
+    _Out_  LPDWORD lpBytesPerSector,
+    _Out_  LPDWORD lpNumberOfFreeClusters,
+    _Out_  LPDWORD lpTotalNumberOfClusters
+);
 
 //
 // Registry Hooks

@@ -530,3 +530,31 @@ HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExW,
     LOQ("u", "DirectoryName", lpDirectoryName);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceA,
+    _In_   PCTSTR lpRootPathName,
+    _Out_  LPDWORD lpSectorsPerCluster,
+    _Out_  LPDWORD lpBytesPerSector,
+    _Out_  LPDWORD lpNumberOfFreeClusters,
+    _Out_  LPDWORD lpTotalNumberOfClusters
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_GetDiskFreeSpaceA(lpRootPathName, lpSectorsPerCluster, lpBytesPerSector, lpNumberOfFreeClusters, lpTotalNumberOfClusters);
+    LOQ("s", "RootPathName", lpRootPathName);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceW,
+    _In_   PCWSTR lpRootPathName,
+    _Out_  LPDWORD lpSectorsPerCluster,
+    _Out_  LPDWORD lpBytesPerSector,
+    _Out_  LPDWORD lpNumberOfFreeClusters,
+    _Out_  LPDWORD lpTotalNumberOfClusters
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_GetDiskFreeSpaceW(lpRootPathName, lpSectorsPerCluster, lpBytesPerSector, lpNumberOfFreeClusters, lpTotalNumberOfClusters);
+    LOQ("u", "RootPathName", lpRootPathName);
+    return ret;
+}
