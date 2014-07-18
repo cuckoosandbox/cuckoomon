@@ -63,7 +63,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtDelayExecution,
         }
     }
     unsigned long milli = -DelayInterval->QuadPart / 10000;
-    LOQ2("l", "Milliseconds", milli);
+    LOQ("l", "Milliseconds", milli);
     return Old_NtDelayExecution(Alertable, DelayInterval);
 }
 

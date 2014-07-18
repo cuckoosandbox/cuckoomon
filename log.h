@@ -67,20 +67,14 @@ void log_free();
 int log_resolve_index(const char *funcname, int index);
 extern const char *logtbl[][2];
 
+extern int g_log_index;
+
 #define LOQ(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[4], 0); loq(_index, category, \
-    &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
-
-#define LOQ2(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[4], 1); loq(_index, category, \
-    &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
-
-#define LOQ3(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[4], 2); loq(_index, category, \
+    _index = ++g_log_index; loq(_index, category, \
     &__FUNCTION__[4], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define LOQspecial(fmt, ...) { static int _index; if(_index == 0) \
-    _index = log_resolve_index(&__FUNCTION__[5], 0); loq(_index, category, \
+    _index = ++g_log_index; loq(_index, category, \
     &__FUNCTION__[5], is_success(ret), (int) ret, fmt, ##__VA_ARGS__); }
 
 #define IS_SUCCESS_NTSTATUS() int is_success(NTSTATUS ret) { \

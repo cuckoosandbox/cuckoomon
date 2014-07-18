@@ -44,6 +44,7 @@ static bson g_bson[1];
 static char g_istr[4];
 
 static char logtbl_explained[256] = {0};
+int g_log_index;
 
 //
 // Log API
@@ -559,19 +560,4 @@ void log_free()
     if(g_sock != INVALID_SOCKET) {
         closesocket(g_sock);
     }
-}
-
-int log_resolve_index(const char *funcname, int index)
-{
-    for (int i = 0; logtbl[i][0] != NULL; i++) {
-        if(!strcmp(funcname, logtbl[i][0])) {
-            if(index != 0) {
-                index--;
-            }
-            else {
-                return i;
-            }
-        }
-    }
-    return -1;
 }

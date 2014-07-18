@@ -161,7 +161,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenProcess,
 
     NTSTATUS ret = Old_NtOpenProcess(ProcessHandle, DesiredAccess,
         ObjectAttributes, ClientId);
-    LOQ2("PpP", "ProcessHandle", ProcessHandle,
+    LOQ("PpP", "ProcessHandle", ProcessHandle,
         "DesiredAccess", DesiredAccess,
         "ProcessIdentifier", &pid);
     /*

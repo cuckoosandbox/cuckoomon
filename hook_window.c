@@ -70,7 +70,7 @@ HOOKDEF(HWND, WINAPI, FindWindowExA,
         LOQ("ls", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     else {
-        LOQ2("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
+        LOQ("ss", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     return ret;
 }
@@ -89,7 +89,7 @@ HOOKDEF(HWND, WINAPI, FindWindowExW,
         LOQ("lu", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     else {
-        LOQ2("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
+        LOQ("uu", "ClassName", lpszClass, "WindowName", lpszWindow);
     }
     return ret;
 }
