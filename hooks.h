@@ -1002,22 +1002,22 @@ extern HOOKDEF(BOOL, WINAPI, GetCursorPos,
 );
 
 extern HOOKDEF(BOOL, WINAPI, GetComputerNameA,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCTSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 );
 
 extern HOOKDEF(BOOL, WINAPI, GetComputerNameW,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCWSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 );
 
 extern HOOKDEF(BOOL, WINAPI, GetUserNameA,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCTSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 );
 
 extern HOOKDEF(BOOL, WINAPI, GetUserNameW,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCWSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 );
 

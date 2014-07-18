@@ -262,7 +262,7 @@ HOOKDEF(BOOL, WINAPI, GetCursorPos,
 }
 
 HOOKDEF(BOOL, WINAPI, GetComputerNameA,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCTSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 ) {
     IS_SUCCESS_BOOL();
@@ -274,7 +274,7 @@ HOOKDEF(BOOL, WINAPI, GetComputerNameA,
 }
 
 HOOKDEF(BOOL, WINAPI, GetComputerNameW,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCWSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 ) {
     IS_SUCCESS_BOOL();
@@ -286,7 +286,7 @@ HOOKDEF(BOOL, WINAPI, GetComputerNameW,
 }
 
 HOOKDEF(BOOL, WINAPI, GetUserNameA,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCTSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 ) {
     IS_SUCCESS_BOOL();
@@ -298,7 +298,7 @@ HOOKDEF(BOOL, WINAPI, GetUserNameA,
 }
 
 HOOKDEF(BOOL, WINAPI, GetUserNameW,
-    _Out_    LPTSTR lpBuffer,
+    _Out_    PCWSTR lpBuffer,
     _Inout_  LPDWORD lpnSize
 ) {
     IS_SUCCESS_BOOL();
