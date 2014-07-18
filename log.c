@@ -44,7 +44,11 @@ static bson g_bson[1];
 static char g_istr[4];
 
 static char logtbl_explained[256] = {0};
-int g_log_index;
+
+#define LOG_ID_PROCESS 0
+#define LOG_ID_THREAD 1
+#define LOG_ID_ANOMALY 2
+int g_log_index = 10;  // index must start after the special IDs (see defines)
 
 //
 // Log API
@@ -500,7 +504,7 @@ void log_new_process()
     FILETIME st;
     GetSystemTimeAsFileTime(&st);
 
-    loq(0, "__notification__", "__process__", 1, 0, "llllu",
+    loq(LOG_ID_PROCESS, "__notification__", "__process__", 1, 0, "llllu",
         "TimeLow", st.dwLowDateTime,
         "TimeHigh", st.dwHighDateTime,
         "ProcessIdentifier", GetCurrentProcessId(),
@@ -510,14 +514,14 @@ void log_new_process()
 
 void log_new_thread()
 {
-    loq(1, "__notification__", "__thread__", 1, 0, "l",
+    loq(LOG_ID_THREAD, "__notification__", "__thread__", 1, 0, "l",
         "ProcessIdentifier", GetCurrentProcessId());
 }
 
 void log_anomaly(const char *subcategory, int success,
     const char *funcname, const char *msg)
 {
-    loq(2, "__notification__", "__anomaly__", success, 0, "lsss",
+    loq(LOG_ID_ANOMALY, "__notification__", "__anomaly__", success, 0, "lsss",
         "ThreadIdentifier", GetCurrentThreadId(),
         "Subcategory", subcategory,
         "FunctionName", funcname,
