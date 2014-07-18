@@ -69,6 +69,19 @@ HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
     return ret;
 }
 
+HOOKDEF(LPTOP_LEVEL_EXCEPTION_FILTER, WINAPI, SetUnhandledExceptionFilter,
+    _In_  LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
+) {
+    static const char *category = "hooking";
+
+    BOOL ret = 1;
+    LPTOP_LEVEL_EXCEPTION_FILTER res;
+
+    res = Old_SetUnhandledExceptionFilter(lpTopLevelExceptionFilter);
+    LOQ("");
+    return res;
+}
+
 HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,
     __in_opt    ULONG Flags,

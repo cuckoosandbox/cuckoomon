@@ -921,6 +921,10 @@ extern HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
     __in  HHOOK hhk
 );
 
+extern HOOKDEF(LPTOP_LEVEL_EXCEPTION_FILTER, WINAPI, SetUnhandledExceptionFilter,
+    _In_  LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
+);
+
 extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,
     __in_opt    PWCHAR PathToFile,
     __in_opt    ULONG Flags,
