@@ -101,6 +101,9 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, DeleteFileA),
     HOOK(kernel32, DeleteFileW),
 
+    HOOK(kernel32, GetDiskFreeSpaceExA),
+    HOOK(kernel32, GetDiskFreeSpaceExW),
+
     //
     // Registry Hooks
     //

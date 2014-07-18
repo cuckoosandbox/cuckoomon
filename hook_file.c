@@ -504,3 +504,29 @@ HOOKDEF(BOOL, WINAPI, DeleteFileW,
     LOQ("u", "FileName", lpFileName);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExA,
+    _In_opt_   PCTSTR lpDirectoryName,
+    _Out_opt_  PULARGE_INTEGER lpFreeBytesAvailable,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_GetDiskFreeSpaceExA(lpDirectoryName, lpFreeBytesAvailable, lpTotalNumberOfBytes, lpTotalNumberOfFreeBytes);
+    LOQ("s", "DirectoryName", lpDirectoryName);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExW,
+    _In_opt_   PCWSTR lpDirectoryName,
+    _Out_opt_  PULARGE_INTEGER lpFreeBytesAvailable,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_GetDiskFreeSpaceExW(lpDirectoryName, lpFreeBytesAvailable, lpTotalNumberOfBytes, lpTotalNumberOfFreeBytes);
+    LOQ("u", "DirectoryName", lpDirectoryName);
+    return ret;
+}

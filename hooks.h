@@ -213,6 +213,21 @@ extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
     __in  LPWSTR lpFileName
 );
 
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExA,
+    _In_opt_   PCTSTR lpDirectoryName,
+    _Out_opt_  PULARGE_INTEGER lpFreeBytesAvailable,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExW,
+    _In_opt_   PCWSTR lpDirectoryName,
+    _Out_opt_  PULARGE_INTEGER lpFreeBytesAvailable,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
+);
+
+
 //
 // Registry Hooks
 //
