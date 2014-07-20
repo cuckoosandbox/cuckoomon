@@ -404,6 +404,13 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
         // hide our module from peb
         hide_module_from_peb(hModule);
 
+        // initialize file stuff
+        file_init();
+
+        // read the config settings
+        read_config();
+        g_pipe_name = g_config.pipe_name;
+
         // obtain all protected pids
         int pids[MAX_PROTECTED_PIDS], length = sizeof(pids);
         if(pipe2(pids, &length, "GETPIDS") == 0) {
@@ -411,13 +418,6 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
                 add_protected_pid(pids[i]);
             }
         }
-
-        // initialize file stuff
-        file_init();
-
-        // read the config settings
-        read_config();
-        g_pipe_name = g_config.pipe_name;
 
         // initialize the log file
         log_init(g_config.host_ip, g_config.host_port, CUCKOODBG);
