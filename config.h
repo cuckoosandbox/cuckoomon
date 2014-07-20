@@ -38,6 +38,9 @@ struct {
     // do we want to enable the retaddr check?
     int retaddr_check;
 
+    // do we force sleep-skipping despite threads?
+    int force_sleepskip;
+
     // server ip and port
     unsigned int host_ip;
     unsigned short host_port;

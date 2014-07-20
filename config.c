@@ -75,6 +75,9 @@ void read_config()
                 else if(!strcmp(key, "host-port")) {
                     g_config.host_port = atoi(value);
                 }
+                else if(!strcmp(key, "force-sleepskip")) {
+                    g_config.force_sleepskip = value[0] == '1';
+                }
             }
         }
         fclose(fp);

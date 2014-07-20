@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ntapi.h"
 #include "log.h"
 #include "pipe.h"
+#include "config.h"
 
 // only skip Sleep()'s the first five seconds
 #define MAX_SLEEP_SKIP_DIFF 5000
@@ -120,7 +121,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtQuerySystemTime,
 
 void disable_sleep_skip()
 {
-    sleep_skip_active = 0;
+    if (sleep_skip_active && !g_config.force_sleepskip) {
+        pipe("INFO:Disabling sleep skipping.");
+        sleep_skip_active = 0;
+    }
 }
 
 void init_sleep_skip(int first_process)
