@@ -45,6 +45,11 @@ static char g_istr[4];
 
 static char logtbl_explained[256] = {0};
 
+#define LOG_ID_PROCESS 0
+#define LOG_ID_THREAD 1
+#define LOG_ID_ANOMALY 2
+int g_log_index = 10;  // index must start after the special IDs (see defines)
+
 //
 // Log API
 //
@@ -372,7 +377,7 @@ void loq(int index, const char *category, const char *name,
         else if(key == 'B') {
             size_t *len = va_arg(args, size_t *);
             const char *s = va_arg(args, const char *);
-            log_buffer(s, *len);
+            log_buffer(s, len == NULL ? 0 : *len);
         }
         else if(key == 'i') {
             int value = va_arg(args, int);
@@ -499,7 +504,7 @@ void log_new_process()
     FILETIME st;
     GetSystemTimeAsFileTime(&st);
 
-    loq(0, "__notification__", "__process__", 1, 0, "llllu",
+    loq(LOG_ID_PROCESS, "__notification__", "__process__", 1, 0, "llllu",
         "TimeLow", st.dwLowDateTime,
         "TimeHigh", st.dwHighDateTime,
         "ProcessIdentifier", GetCurrentProcessId(),
@@ -509,14 +514,14 @@ void log_new_process()
 
 void log_new_thread()
 {
-    loq(1, "__notification__", "__thread__", 1, 0, "l",
+    loq(LOG_ID_THREAD, "__notification__", "__thread__", 1, 0, "l",
         "ProcessIdentifier", GetCurrentProcessId());
 }
 
 void log_anomaly(const char *subcategory, int success,
     const char *funcname, const char *msg)
 {
-    loq(2, "__notification__", "__anomaly__", success, 0, "lsss",
+    loq(LOG_ID_ANOMALY, "__notification__", "__anomaly__", success, 0, "lsss",
         "ThreadIdentifier", GetCurrentThreadId(),
         "Subcategory", subcategory,
         "FunctionName", funcname,
@@ -559,19 +564,4 @@ void log_free()
     if(g_sock != INVALID_SOCKET) {
         closesocket(g_sock);
     }
-}
-
-int log_resolve_index(const char *funcname, int index)
-{
-    for (int i = 0; logtbl[i][0] != NULL; i++) {
-        if(!strcmp(funcname, logtbl[i][0])) {
-            if(index != 0) {
-                index--;
-            }
-            else {
-                return i;
-            }
-        }
-    }
-    return -1;
 }

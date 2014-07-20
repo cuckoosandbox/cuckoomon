@@ -133,7 +133,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtSetValueKey,
             "Type", Type, "Buffer", Type, DataSize, Data);
     }
     else {
-        LOQ2("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
+        LOQ("pol", "KeyHandle", KeyHandle, "ValueName", ValueName,
             "Type", Type);
     }
     return ret;
@@ -175,7 +175,7 @@ HOOKDEF(NTSTATUS, WINAPI, NtQueryValueKey,
             "Type", Type, "Information", Type, DataLength, Data);
     }
     else {
-        LOQ2("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
+        LOQ("po", "KeyHandle", KeyHandle, "ValueName", ValueName);
     }
 
     return ret;

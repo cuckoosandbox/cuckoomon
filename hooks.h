@@ -1378,6 +1378,14 @@ extern HOOKDEF(int, WSAAPI, shutdown,
     __in  int how
 );
 
+extern HOOKDEF(SOCKET, WSAAPI, WSAAccept,
+    __in    SOCKET s,
+    __out   struct sockaddr *addr,
+    __inout LPINT addrlen,
+    __in    LPCONDITIONPROC lpfnCondition,
+    __in    DWORD_PTR dwCallbackData
+);
+
 extern HOOKDEF(int, WSAAPI, WSARecv,
     __in     SOCKET s,
     __inout  LPWSABUF lpBuffers,

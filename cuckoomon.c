@@ -323,6 +323,7 @@ static hook_t g_hooks[] = {
     HOOK(ws2_32, closesocket),
     HOOK(ws2_32, shutdown),
 
+    HOOK(ws2_32, WSAAccept),
     HOOK(ws2_32, WSARecv),
     HOOK(ws2_32, WSARecvFrom),
     HOOK(ws2_32, WSASend),
