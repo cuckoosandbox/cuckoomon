@@ -251,6 +251,13 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, WriteConsoleW),
     HOOK(user32, GetSystemMetrics),
     HOOK(user32, GetCursorPos),
+    HOOK(kernel32, FindResourceA),
+    HOOK(kernel32, FindResourceW),
+    HOOK(kernel32, FindResourceExA),
+    HOOK(kernel32, FindResourceExW),
+    HOOK(kernel32, LoadResource),
+    HOOK(kernel32, SizeofResource),
+
 
     //
     // Network Hooks

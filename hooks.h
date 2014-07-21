@@ -1001,6 +1001,42 @@ extern HOOKDEF(BOOL, WINAPI, GetCursorPos,
     _Out_ LPPOINT lpPoint
 );
 
+extern HOOKDEF(HRSRC, WINAPI, FindResourceA,
+    _In_opt_  HMODULE hModule,
+    _In_      PCTSTR lpName,
+    _In_      PCTSTR lpType
+);
+
+extern HOOKDEF(HRSRC, WINAPI, FindResourceW,
+    _In_opt_  HMODULE hModule,
+    _In_      PCWSTR lpName,
+    _In_      PCWSTR lpType
+);
+
+extern HOOKDEF(HRSRC, WINAPI, FindResourceExA,
+    _In_opt_  HMODULE hModule,
+    _In_      PCTSTR lpType,
+    _In_      PCTSTR lpName,
+    _In_      WORD wLanguage
+);
+
+extern HOOKDEF(HRSRC, WINAPI, FindResourceExW,
+    _In_opt_  HMODULE hModule,
+    _In_      PCWSTR lpType,
+    _In_      PCWSTR lpName,
+    _In_      WORD wLanguage
+);
+
+extern HOOKDEF(HGLOBAL, WINAPI, LoadResource,
+    _In_opt_  HMODULE hModule,
+    _In_      HRSRC hResInfo
+);
+
+extern HOOKDEF(DWORD, WINAPI, SizeofResource,
+    _In_opt_  HMODULE hModule,
+    _In_      HRSRC hResInfo
+);
+
 //
 // Network Hooks
 //

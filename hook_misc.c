@@ -260,3 +260,164 @@ HOOKDEF(BOOL, WINAPI, GetCursorPos,
         "y", lpPoint != NULL ? lpPoint->y : 0);
     return ret;
 }
+
+/* MAKEINTRESOURCE makro un-doing. Will return -1 if it is pointer */
+DWORD unmake_intresource(DWORD respointer)
+{
+    DWORD val = respointer;
+    // High order word: it is an INT Resource
+    if ((DWORD)val >> 16 == 0){
+        // return Low order word
+        return (DWORD)val & 0x0000FFFF;
+    }
+
+    return -1;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceA,
+    _In_opt_  HMODULE hModule,
+    _In_      PCTSTR lpName,
+    _In_      PCTSTR lpType
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceA(hModule, lpName, lpType);
+
+    DWORD intname = unmake_intresource((DWORD)lpName);
+    DWORD inttype = unmake_intresource((DWORD)lpType);
+    if ((intname == -1) && (inttype == -1))
+    {
+        LOQ("pss", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+    }
+    else if (inttype > -1)
+    {
+        LOQ("pls", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+    }
+    else if (intname > -1)
+    {
+        LOQ("psl", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
+    }
+    else
+    {
+        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
+    }
+    return ret;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceW,
+    _In_opt_  HMODULE hModule,
+    _In_      PCWSTR lpName,
+    _In_      PCWSTR lpType
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceW(hModule, lpName, lpType);
+
+    DWORD intname = unmake_intresource((DWORD)lpName);
+    DWORD inttype = unmake_intresource((DWORD)lpType);
+    if ((intname == -1) && (inttype == -1))
+    {
+        LOQ("puu", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+    }
+    else if (inttype > -1)
+    {
+        LOQ("plu", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+    }
+    else if (intname > -1)
+    {
+        LOQ("pul", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
+    }
+    else
+    {
+        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
+    }
+    return ret;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceExA,
+    _In_opt_  HMODULE hModule,
+    _In_      PCTSTR lpType,
+    _In_      PCTSTR lpName,
+    _In_      WORD wLanguage
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceExA(hModule, lpType, lpName, wLanguage);
+
+    DWORD intname = unmake_intresource((DWORD)lpName);
+    DWORD inttype = unmake_intresource((DWORD)lpType);
+    if ((intname == -1) && (inttype == -1))
+    {
+        LOQ("pss", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+    }
+    else if (inttype > -1)
+    {
+        LOQ("pls", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+    }
+    else if (intname > -1)
+    {
+        LOQ("psl", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
+    }
+    else
+    {
+        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
+    }
+    return ret;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceExW,
+    _In_opt_  HMODULE hModule,
+    _In_      PCWSTR lpType,
+    _In_      PCWSTR lpName,
+    _In_      WORD wLanguage
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceExW(hModule, lpType, lpName, wLanguage);
+
+    DWORD intname = unmake_intresource((DWORD)lpName);
+    DWORD inttype = unmake_intresource((DWORD)lpType);
+    if ((intname == -1) && (inttype == -1))
+    {
+        LOQ("puu", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+    }
+    else if (inttype > -1)
+    {
+        LOQ("plu", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+    }
+    else if (intname > -1)
+    {
+        LOQ("pul", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
+    }
+    else
+    {
+        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
+    }
+    return ret;
+}
+
+HOOKDEF(HGLOBAL, WINAPI, LoadResource,
+    _In_opt_  HMODULE hModule,
+    _In_      HRSRC hResInfo
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HGLOBAL ret = Old_LoadResource(hModule, hResInfo);
+    LOQ("pp", "ModuleHandle", hModule, "ResourceHandle", hResInfo);
+    return ret;
+}
+
+HOOKDEF(DWORD, WINAPI, SizeofResource,
+    _In_opt_  HMODULE hModule,
+    _In_      HRSRC hResInfo
+) {
+    static const char *category = "misc";
+    DWORD ret = Old_SizeofResource(hModule, hResInfo);
+    LOQ("pp", "ModuleHandle", hModule, "ResourceHandle", hResInfo);
+    return ret;
+}
