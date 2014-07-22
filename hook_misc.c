@@ -260,3 +260,143 @@ HOOKDEF(BOOL, WINAPI, GetCursorPos,
         "y", lpPoint != NULL ? lpPoint->y : 0);
     return ret;
 }
+
+HOOKDEF(HRSRC, WINAPI, FindResourceA,
+    _In_opt_  HMODULE hModule,
+    _In_      PCTSTR lpName,
+    _In_      PCTSTR lpType
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceA(hModule, lpName, lpType);
+
+    char name_value[10];
+    const char * name_for_print = lpName;
+    char type_value[10];
+    const char * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
+    {
+        snprintf(name_value, 10, "#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
+    }
+    if (IS_INTRESOURCE(lpType))
+    {
+        snprintf(type_value, 10, "#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
+    }
+
+    LOQ("pss", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
+    return ret;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceW,
+    _In_opt_  HMODULE hModule,
+    _In_      PCWSTR lpName,
+    _In_      PCWSTR lpType
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceW(hModule, lpName, lpType);
+
+    wchar_t name_value[10];
+    const wchar_t * name_for_print = lpName;
+    wchar_t type_value[10];
+    const wchar_t * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
+    {
+        swprintf(name_value, 10, L"#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
+    }
+    if (IS_INTRESOURCE(lpType))
+    {
+        swprintf(type_value, 10, L"#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
+    }
+
+    LOQ("puu", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
+    return ret;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceExA,
+    _In_opt_  HMODULE hModule,
+    _In_      PCTSTR lpType,
+    _In_      PCTSTR lpName,
+    _In_      WORD wLanguage
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceExA(hModule, lpType, lpName, wLanguage);
+
+    char name_value[10];
+    const char * name_for_print = lpName;
+    char type_value[10];
+    const char * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
+    {
+        snprintf(name_value, 10, "#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
+    }
+    if (IS_INTRESOURCE(lpType))
+    {
+        snprintf(type_value, 10, "#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
+    }
+
+    LOQ("pss", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
+    return ret;
+}
+
+HOOKDEF(HRSRC, WINAPI, FindResourceExW,
+    _In_opt_  HMODULE hModule,
+    _In_      PCWSTR lpType,
+    _In_      PCWSTR lpName,
+    _In_      WORD wLanguage
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HRSRC ret = Old_FindResourceExW(hModule, lpType, lpName, wLanguage);
+
+    wchar_t name_value[10];
+    const wchar_t * name_for_print = lpName;
+    wchar_t type_value[10];
+    const wchar_t * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
+    {
+        swprintf(name_value, 10, L"#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
+    }
+    if (IS_INTRESOURCE(lpType))
+    {
+        swprintf(type_value, 10, L"#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
+    }
+
+    LOQ("puu", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
+    return ret;
+}
+
+HOOKDEF(HGLOBAL, WINAPI, LoadResource,
+    _In_opt_  HMODULE hModule,
+    _In_      HRSRC hResInfo
+) {
+    IS_SUCCESS_HANDLE();
+
+    static const char *category = "misc";
+    HGLOBAL ret = Old_LoadResource(hModule, hResInfo);
+    LOQ("pp", "ModuleHandle", hModule, "ResourceHandle", hResInfo);
+    return ret;
+}
+
+HOOKDEF(DWORD, WINAPI, SizeofResource,
+    _In_opt_  HMODULE hModule,
+    _In_      HRSRC hResInfo
+) {
+    static const char *category = "misc";
+    DWORD ret = Old_SizeofResource(hModule, hResInfo);
+    LOQ("pp", "ModuleHandle", hModule, "ResourceHandle", hResInfo);
+    return ret;
+}
