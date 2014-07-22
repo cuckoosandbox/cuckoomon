@@ -261,19 +261,6 @@ HOOKDEF(BOOL, WINAPI, GetCursorPos,
     return ret;
 }
 
-/* MAKEINTRESOURCE makro un-doing. Will return -1 if it is pointer */
-DWORD unmake_intresource(DWORD respointer)
-{
-    DWORD val = respointer;
-    // High order word: it is an INT Resource
-    if ((DWORD)val >> 16 == 0){
-        // return Low order word
-        return (DWORD)val & 0x0000FFFF;
-    }
-
-    return -1;
-}
-
 HOOKDEF(HRSRC, WINAPI, FindResourceA,
     _In_opt_  HMODULE hModule,
     _In_      PCTSTR lpName,
@@ -284,24 +271,22 @@ HOOKDEF(HRSRC, WINAPI, FindResourceA,
     static const char *category = "misc";
     HRSRC ret = Old_FindResourceA(hModule, lpName, lpType);
 
-    DWORD intname = unmake_intresource((DWORD)lpName);
-    DWORD inttype = unmake_intresource((DWORD)lpType);
-    if ((intname == -1) && (inttype == -1))
+    char name_value[10];
+    const char * name_for_print = lpName;
+    char type_value[10];
+    const char * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
     {
-        LOQ("pss", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+        snprintf(name_value, 10, "#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
     }
-    else if (inttype > -1)
+    if (IS_INTRESOURCE(lpType))
     {
-        LOQ("pls", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+        snprintf(type_value, 10, "#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
     }
-    else if (intname > -1)
-    {
-        LOQ("psl", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
-    }
-    else
-    {
-        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
-    }
+
+    LOQ("pss", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
     return ret;
 }
 
@@ -315,24 +300,22 @@ HOOKDEF(HRSRC, WINAPI, FindResourceW,
     static const char *category = "misc";
     HRSRC ret = Old_FindResourceW(hModule, lpName, lpType);
 
-    DWORD intname = unmake_intresource((DWORD)lpName);
-    DWORD inttype = unmake_intresource((DWORD)lpType);
-    if ((intname == -1) && (inttype == -1))
+    wchar_t name_value[10];
+    const wchar_t * name_for_print = lpName;
+    wchar_t type_value[10];
+    const wchar_t * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
     {
-        LOQ("puu", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+        swprintf(name_value, 10, L"#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
     }
-    else if (inttype > -1)
+    if (IS_INTRESOURCE(lpType))
     {
-        LOQ("plu", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+        swprintf(type_value, 10, L"#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
     }
-    else if (intname > -1)
-    {
-        LOQ("pul", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
-    }
-    else
-    {
-        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
-    }
+
+    LOQ("puu", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
     return ret;
 }
 
@@ -347,24 +330,22 @@ HOOKDEF(HRSRC, WINAPI, FindResourceExA,
     static const char *category = "misc";
     HRSRC ret = Old_FindResourceExA(hModule, lpType, lpName, wLanguage);
 
-    DWORD intname = unmake_intresource((DWORD)lpName);
-    DWORD inttype = unmake_intresource((DWORD)lpType);
-    if ((intname == -1) && (inttype == -1))
+    char name_value[10];
+    const char * name_for_print = lpName;
+    char type_value[10];
+    const char * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
     {
-        LOQ("pss", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+        snprintf(name_value, 10, "#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
     }
-    else if (inttype > -1)
+    if (IS_INTRESOURCE(lpType))
     {
-        LOQ("pls", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+        snprintf(type_value, 10, "#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
     }
-    else if (intname > -1)
-    {
-        LOQ("psl", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
-    }
-    else
-    {
-        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
-    }
+
+    LOQ("pss", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
     return ret;
 }
 
@@ -379,24 +360,22 @@ HOOKDEF(HRSRC, WINAPI, FindResourceExW,
     static const char *category = "misc";
     HRSRC ret = Old_FindResourceExW(hModule, lpType, lpName, wLanguage);
 
-    DWORD intname = unmake_intresource((DWORD)lpName);
-    DWORD inttype = unmake_intresource((DWORD)lpType);
-    if ((intname == -1) && (inttype == -1))
+    wchar_t name_value[10];
+    const wchar_t * name_for_print = lpName;
+    wchar_t type_value[10];
+    const wchar_t * type_for_print = lpType;
+    if (IS_INTRESOURCE(lpName))
     {
-        LOQ("puu", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceType", lpType);
+        swprintf(name_value, 10, L"#%d", (uintptr_t) lpName);
+        name_for_print = name_value;
     }
-    else if (inttype > -1)
+    if (IS_INTRESOURCE(lpType))
     {
-        LOQ("plu", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceType", lpType);
+        swprintf(type_value, 10, L"#%d", (uintptr_t) lpType);
+        type_for_print = type_value;
     }
-    else if (intname > -1)
-    {
-        LOQ("pul", "ModuleHandle", hModule, "ResourceName", lpName, "ResourceTypeInt", inttype);
-    }
-    else
-    {
-        LOQ("pll", "ModuleHandle", hModule, "ResourceNameInt", intname, "ResourceTypeInt", inttype);
-    }
+
+    LOQ("puu", "ModuleHandle", hModule, "ResourceName", name_for_print, "ResourceType", type_for_print);
     return ret;
 }
 
