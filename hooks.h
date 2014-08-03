@@ -1001,6 +1001,26 @@ extern HOOKDEF(BOOL, WINAPI, GetCursorPos,
     _Out_ LPPOINT lpPoint
 );
 
+extern HOOKDEF(BOOL, WINAPI, GetComputerNameA,
+    _Out_    PCTSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetComputerNameW,
+    _Out_    PCWSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetUserNameA,
+    _Out_    PCTSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetUserNameW,
+    _Out_    PCWSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+);
+
 //
 // Network Hooks
 //

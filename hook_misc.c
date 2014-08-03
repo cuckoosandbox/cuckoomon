@@ -260,3 +260,51 @@ HOOKDEF(BOOL, WINAPI, GetCursorPos,
         "y", lpPoint != NULL ? lpPoint->y : 0);
     return ret;
 }
+
+HOOKDEF(BOOL, WINAPI, GetComputerNameA,
+    _Out_    PCTSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+) {
+    IS_SUCCESS_BOOL();
+
+    static const char *category = "misc";
+    BOOL ret = Old_GetComputerNameA(lpBuffer, lpnSize);
+    LOQ("s", "ComputerName", lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetComputerNameW,
+    _Out_    PCWSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+) {
+    IS_SUCCESS_BOOL();
+
+    static const char *category = "misc";
+    BOOL ret = Old_GetComputerNameW(lpBuffer, lpnSize);
+    LOQ("u", "ComputerName", lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetUserNameA,
+    _Out_    PCTSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+) {
+    IS_SUCCESS_BOOL();
+
+    static const char *category = "misc";
+    BOOL ret = Old_GetUserNameA(lpBuffer, lpnSize);
+    LOQ("s", "Name", lpBuffer);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, GetUserNameW,
+    _Out_    PCWSTR lpBuffer,
+    _Inout_  LPDWORD lpnSize
+) {
+    IS_SUCCESS_BOOL();
+    
+    static const char *category = "misc";
+    BOOL ret = Old_GetUserNameW(lpBuffer, lpnSize);
+    LOQ("u", "Name", lpBuffer);
+    return ret;
+}

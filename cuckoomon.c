@@ -251,6 +251,10 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, WriteConsoleW),
     HOOK(user32, GetSystemMetrics),
     HOOK(user32, GetCursorPos),
+    HOOK(kernel32, GetComputerNameA),
+    HOOK(kernel32, GetComputerNameW),
+    HOOK(advapi32, GetUserNameA),
+    HOOK(advapi32, GetUserNameW),
 
     //
     // Network Hooks
