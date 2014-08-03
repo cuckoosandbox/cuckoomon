@@ -37,9 +37,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtCreateKey,
 ) {
     NTSTATUS ret = Old_NtCreateKey(KeyHandle, DesiredAccess, ObjectAttributes,
         TitleIndex, Class, CreateOptions, Disposition);
-    LOQ("Ploo", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
+    LOQ("Ploop", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
         "ObjectAttributes", unistr_from_objattr(ObjectAttributes),
-        "Class", Class);
+        "Class", Class, 
+        "RootObjectHandle", root_object_from_objattr(ObjectAttributes));
     return ret;
 }
 
@@ -49,8 +50,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenKey,
     __in   POBJECT_ATTRIBUTES ObjectAttributes
 ) {
     NTSTATUS ret = Old_NtOpenKey(KeyHandle, DesiredAccess, ObjectAttributes);
-    LOQ("Plo", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
-        "ObjectAttributes", unistr_from_objattr(ObjectAttributes));
+    LOQ("Plop", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
+        "ObjectAttributes", unistr_from_objattr(ObjectAttributes), 
+        "RootObjectHandle", root_object_from_objattr(ObjectAttributes));
     return ret;
 }
 
@@ -62,8 +64,9 @@ HOOKDEF(NTSTATUS, WINAPI, NtOpenKeyEx,
 ) {
     NTSTATUS ret = Old_NtOpenKeyEx(KeyHandle, DesiredAccess, ObjectAttributes,
         OpenOptions);
-    LOQ("Plo", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
-        "ObjectAttributes", unistr_from_objattr(ObjectAttributes));
+    LOQ("Plop", "KeyHandle", KeyHandle, "DesiredAccess", DesiredAccess,
+        "ObjectAttributes", unistr_from_objattr(ObjectAttributes), 
+        "RootObjectHandle", root_object_from_objattr(ObjectAttributes));
     return ret;
 }
 
@@ -83,9 +86,11 @@ HOOKDEF(NTSTATUS, WINAPI, NtReplaceKey,
 ) {
     NTSTATUS ret = Old_NtReplaceKey(NewHiveFileName, KeyHandle,
         BackupHiveFileName);
-    LOQ("poo", "KeyHandle", KeyHandle,
-        "NewHiveFileName", unistr_from_objattr(NewHiveFileName),
-        "BackupHiveFileName", unistr_from_objattr(BackupHiveFileName));
+    LOQ("popop", "KeyHandle", KeyHandle,
+        "NewHiveFileName", unistr_from_objattr(NewHiveFileName), 
+        "NewHiveRootObjectHandle", root_object_from_objattr(NewHiveFileName),
+        "BackupHiveFileName", unistr_from_objattr(BackupHiveFileName), 
+        "BackupHiveRootObjectHandle", root_object_from_objattr(BackupHiveFileName));
     return ret;
 }
 
@@ -218,8 +223,10 @@ HOOKDEF(NTSTATUS, WINAPI, NtLoadKey,
     __in  POBJECT_ATTRIBUTES SourceFile
 ) {
     NTSTATUS ret = Old_NtLoadKey(TargetKey, SourceFile);
-    LOQ("oo", "TargetKey", unistr_from_objattr(TargetKey),
-        "SourceFile", unistr_from_objattr(SourceFile));
+    LOQ("opop", "TargetKey", unistr_from_objattr(TargetKey),
+        "TargetKeyRootObjectHandle", root_object_from_objattr(TargetKey),
+        "SourceFile", unistr_from_objattr(SourceFile),
+        "SourceFileRootObjectHandle", root_object_from_objattr(SourceFile));
     return ret;
 }
 
@@ -229,8 +236,11 @@ HOOKDEF(NTSTATUS, WINAPI, NtLoadKey2,
     __in  ULONG Flags
 ) {
     NTSTATUS ret = Old_NtLoadKey2(TargetKey, SourceFile, Flags);
-    LOQ("ool", "TargetKey", unistr_from_objattr(TargetKey),
-        "SourceFile", unistr_from_objattr(SourceFile), "Flags", Flags);
+    LOQ("opopl", "TargetKey", unistr_from_objattr(TargetKey),
+        "TargetKeyRootObjectHandle", root_object_from_objattr(TargetKey),
+        "SourceFile", unistr_from_objattr(SourceFile),
+        "SourceFileRootObjectHandle", root_object_from_objattr(SourceFile),
+        "Flags", Flags);
     return ret;
 }
 
@@ -242,9 +252,12 @@ HOOKDEF(NTSTATUS, WINAPI, NtLoadKeyEx,
 ) {
     NTSTATUS ret = Old_NtLoadKeyEx(TargetKey, SourceFile, Flags,
         TrustClassKey);
-    LOQ("pool", "TrustClassKey", TrustClassKey,
+    LOQ("popopl", "TrustClassKey", TrustClassKey,        
         "TargetKey", unistr_from_objattr(TargetKey),
-        "SourceFile", unistr_from_objattr(SourceFile), "Flags", Flags);
+        "TargetKeyRootObjectHandle", root_object_from_objattr(TargetKey),
+        "SourceFile", unistr_from_objattr(SourceFile),
+        "SourceFileRootObjectHandle", root_object_from_objattr(SourceFile),
+        "Flags", Flags);
     return ret;
 }
 
