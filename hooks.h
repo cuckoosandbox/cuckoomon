@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <windns.h>
 #include <wininet.h>
 #include <mswsock.h>
+#include <winbase.h>
 #include "ntapi.h"
 
 //
@@ -212,6 +213,35 @@ extern HOOKDEF(BOOL, WINAPI, DeleteFileA,
 extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
     __in  LPWSTR lpFileName
 );
+
+extern HOOKDEF(DWORD, WINAPI, GetFileType,
+    _In_  HANDLE hFile
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetFileSizeEx,
+    _In_   HANDLE hFile,
+    _Out_  PLARGE_INTEGER lpFileSize
+);
+
+extern HOOKDEF(DWORD, WINAPI, GetFileSize,
+    _In_   HANDLE hFile,
+    _Out_opt_  LPDWORD lpFileSizeHigh
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetFileInformationsByHandle,
+    _In_   HANDLE hFile,
+    _Out_  LPBY_HANDLE_FILE_INFORMATION lpFileInformation
+);
+
+/* // Needs Windows Vista
+
+extern HOOKDEF(BOOL, WINAPI, GetFileInformationsByHandleEx,
+    _In_   HANDLE hFile,
+    _In_   FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+    _Out_  LPVOID lpFileInformation,
+    _In_   DWORD dwBufferSize
+);
+*/
 
 //
 // Registry Hooks

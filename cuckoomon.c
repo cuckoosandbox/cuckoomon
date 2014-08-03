@@ -101,6 +101,14 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, DeleteFileA),
     HOOK(kernel32, DeleteFileW),
 
+    HOOK(kernel32, GetFileType),
+    HOOK(kernel32, GetFileSize),
+    HOOK(kernel32, GetFileSizeEx),    
+    HOOK(kernel32, GetFileInformationsByHandle),
+    // Needs Windows Vista
+    // HOOK(kernel32, GetFileInformationsByHandleEx),
+
+
     //
     // Registry Hooks
     //
