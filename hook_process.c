@@ -455,3 +455,58 @@ HOOKDEF(int, CDECL, system,
     LOQ("s", "Command", command);
     return ret;
 }
+
+HOOKDEF(HANDLE, WINAPI, CreateToolhelp32Snapshot,
+    __in  DWORD dwFlags,
+    __in  DWORD th32ProcessID
+) {
+    IS_SUCCESS_HANDLE();
+
+    HANDLE ret = Old_CreateToolhelp32Snapshot(dwFlags, th32ProcessID);
+    LOQ("ll", "Flags", dwFlags, "ProcessId", th32ProcessID);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, Process32First,
+   __in  HANDLE hSnapshot,
+   __inout  LPVOID lppe
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_Process32First(hSnapshot, lppe);
+    LOQ("pp", "SnapshotHandle", hSnapshot, "ProcessEntry", lppe);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, Process32Next,
+   __in  HANDLE hSnapshot,
+   __inout  LPVOID lppe
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_Process32Next(hSnapshot, lppe);
+    LOQ("pp", "SnapshotHandle", hSnapshot, "ProcessEntry", lppe);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, Module32First,
+   __in  HANDLE hSnapshot,
+   __inout  LPVOID lpme
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_Module32First(hSnapshot, lpme);
+    LOQ("pp", "SnapshotHandle", hSnapshot, "ModuleEntry", lpme);
+    return ret;
+}
+
+HOOKDEF(BOOL, WINAPI, Module32Next,
+   __in  HANDLE hSnapshot,
+   __inout  LPVOID lpme
+) {
+    IS_SUCCESS_BOOL();
+
+    BOOL ret = Old_Module32Next(hSnapshot, lpme);
+    LOQ("pp", "SnapshotHandle", hSnapshot, "ModuleEntry", lpme);
+    return ret;
+}
