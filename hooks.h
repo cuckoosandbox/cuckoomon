@@ -213,6 +213,36 @@ extern HOOKDEF(BOOL, WINAPI, DeleteFileW,
     __in  LPWSTR lpFileName
 );
 
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExA,
+    _In_opt_   PCTSTR lpDirectoryName,
+    _Out_opt_  PULARGE_INTEGER lpFreeBytesAvailable,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceExW,
+    _In_opt_   PCWSTR lpDirectoryName,
+    _Out_opt_  PULARGE_INTEGER lpFreeBytesAvailable,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfBytes,
+    _Out_opt_  PULARGE_INTEGER lpTotalNumberOfFreeBytes
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceA,
+    _In_   PCTSTR lpRootPathName,
+    _Out_  LPDWORD lpSectorsPerCluster,
+    _Out_  LPDWORD lpBytesPerSector,
+    _Out_  LPDWORD lpNumberOfFreeClusters,
+    _Out_  LPDWORD lpTotalNumberOfClusters
+);
+
+extern HOOKDEF(BOOL, WINAPI, GetDiskFreeSpaceW,
+    _In_   PCWSTR lpRootPathName,
+    _Out_  LPDWORD lpSectorsPerCluster,
+    _Out_  LPDWORD lpBytesPerSector,
+    _Out_  LPDWORD lpNumberOfFreeClusters,
+    _Out_  LPDWORD lpTotalNumberOfClusters
+);
+
 //
 // Registry Hooks
 //
@@ -553,6 +583,11 @@ extern HOOKDEF(HWND, WINAPI, FindWindowExW,
     __in_opt  HWND hwndChildAfter,
     __in_opt  LPWSTR lpszClass,
     __in_opt  LPWSTR lpszWindow
+);
+
+extern HOOKDEF(BOOL, WINAPI, EnumWindows,
+    _In_  WNDENUMPROC lpEnumFunc,
+    _In_  LPARAM lParam
 );
 
 //
@@ -919,6 +954,10 @@ extern HOOKDEF(HHOOK, WINAPI, SetWindowsHookExW,
 
 extern HOOKDEF(BOOL, WINAPI, UnhookWindowsHookEx,
     __in  HHOOK hhk
+);
+
+extern HOOKDEF(LPTOP_LEVEL_EXCEPTION_FILTER, WINAPI, SetUnhandledExceptionFilter,
+    _In_  LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
 );
 
 extern HOOKDEF(NTSTATUS, WINAPI, LdrLoadDll,

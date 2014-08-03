@@ -101,6 +101,11 @@ static hook_t g_hooks[] = {
     HOOK(kernel32, DeleteFileA),
     HOOK(kernel32, DeleteFileW),
 
+    HOOK(kernel32, GetDiskFreeSpaceExA),
+    HOOK(kernel32, GetDiskFreeSpaceExW),
+    HOOK(kernel32, GetDiskFreeSpaceA),
+    HOOK(kernel32, GetDiskFreeSpaceW),
+
     //
     // Registry Hooks
     //
@@ -173,6 +178,7 @@ static hook_t g_hooks[] = {
     HOOK(user32, FindWindowW),
     HOOK(user32, FindWindowExA),
     HOOK(user32, FindWindowExW),
+    HOOK(user32, EnumWindows),
 
     //
     // Sync Hooks
@@ -239,6 +245,7 @@ static hook_t g_hooks[] = {
     HOOK(user32, SetWindowsHookExA),
     HOOK(user32, SetWindowsHookExW),
     HOOK(user32, UnhookWindowsHookEx),
+    HOOK(kernel32, SetUnhandledExceptionFilter),
     //HOOK(ntdll, LdrLoadDll),
     HOOK(ntdll, LdrGetDllHandle),
     HOOK(ntdll, LdrGetProcedureAddress),
