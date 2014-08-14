@@ -44,8 +44,19 @@ HOOKDEF2(NTSTATUS, WINAPI, LdrLoadDll,
 
     COPY_UNICODE_STRING(library, ModuleFileName);
 
+    int modify_hook_count = 0;
+    if(!wcsicmp(library.Buffer, L"vaultcli")) {
+        modify_hook_count = 1;
+
+        hook_enable();
+    }
+
     NTSTATUS ret = Old2_LdrLoadDll(PathToFile, Flags, ModuleFileName,
         ModuleHandle);
+
+    if(modify_hook_count != 0) {
+        hook_disable();
+    }
 
     if (hook_info()->depth_count == 1) {
         LOQspecial("loP", "Flags", Flags, "FileName", &library,
