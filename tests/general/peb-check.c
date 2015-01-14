@@ -18,8 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <windows.h>
+#include <tchar.h>
 
-int main()
+int main(void)
 {
-    printf("count: %d\n", GetSystemMetrics(SM_CMOUSEBUTTONS));
+    LoadLibrary(_T("../../cuckoomon.dll"));
+
+    HMODULE cuckoomon_handle = GetModuleHandle(_T("cuckoomon.dll"));
+    printf("cuckoomon -> 0x%08x\n", cuckoomon_handle);
+
+    return 0;
 }

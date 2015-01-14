@@ -21,21 +21,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 int main(int argc, char *argv[])
 {
-    FARPROC fp = GetProcAddress(
-        GetModuleHandle("kernel32"), "IsDebuggerPresent");
-
-    unsigned long old_protect;
-    VirtualProtect(fp, 0x1000, PAGE_EXECUTE_READWRITE, &old_protect);
-
-    // Corrupt the hook.
-    memset(fp, 0xcc, 32);
-
-    fp = GetProcAddress(GetModuleHandle("kernel32"), "CopyFileA");
-
-    VirtualProtect(fp, 0x1000, PAGE_EXECUTE_READWRITE, &old_protect);
-
-    // Restore the hook.
-    memcpy(fp, "\x8b\xff\x55\x8b\xec", 5);
+    if(argc == 4) {
+        Sleep(5000);
+        return 0;
+    }
 
     Sleep(10000);
+
+    char buf[256];
+    sprintf(buf, "%s a b c", argv[0]);
+    if ( system(buf) == -1 )
+	{
+		fprintf( stderr, "Error system buf %s\n", buf );
+
+		return 1;
+	}
+
+	return 0;
 }
