@@ -16,24 +16,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define _WIN32_WINNT 0x0500
+
 #include <stdio.h>
-#include <stdint.h>
 #include <windows.h>
+#include <tchar.h>
 
-int main()
+int main(void)
 {
-    LoadLibrary("../cuckoomon.dll");
+    LoadLibrary( _T("../../cuckoomon.dll"));
 
-    FARPROC sleep = GetProcAddress(GetModuleHandle("kernel32"), "Sleep");
+    unsigned int start = GetTickCount();
+    printf("%d\n", start);
 
-    for (uint32_t tid = 2000; ; tid += 4) {
-        HANDLE thread_handle = OpenThread(THREAD_ALL_ACCESS, FALSE, tid);
-        if(thread_handle != NULL) {
-            printf("tid %d .. :)\n", tid);
-            QueueUserAPC((PAPCFUNC) sleep, thread_handle, 1337);
-            CloseHandle(thread_handle);
-            break;
-        }
+    Sleep(1000);
+
+    printf("%d -> %d\n", GetTickCount(), GetTickCount() - start);
+
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 0xfffffff; j++);
     }
+
+    printf("%d -> %d\n", GetTickCount(), GetTickCount() - start);
+
+    Sleep(1000);
+
+    printf("%d -> %d\n", GetTickCount(), GetTickCount() - start);
+
+	return 0;
 }

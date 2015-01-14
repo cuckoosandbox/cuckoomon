@@ -19,11 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <windows.h>
 
-int main()
+int main(void)
 {
-    LoadLibrary("../cuckoomon.dll");
+    // this is the process identifier of agent.py on my VM
+    HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, 1576);
+    printf("process-handle: %p -> %d\n", process_handle, GetLastError());
 
-    HMODULE cuckoomon_handle = GetModuleHandle("cuckoomon.dll");
-    printf("cuckoomon -> 0x%08x\n", cuckoomon_handle);
     return 0;
 }

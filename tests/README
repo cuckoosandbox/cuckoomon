@@ -1,0 +1,30 @@
+Directories:
+======
+* cuckooenvironment: The tests must be executed in a cuckoo virtual machine (Like a malware analysis). For example some checks about agent.py or checks about the human interaction.
+
+* functionality: The tests for a funcionality, for example: testing the hook engine.
+
+* others: Other kind of test, for example tests without a possible automation using the return.
+
+Rules for tests:
+======
+* Add in the source header a description with: 
+
+** The purpose of the test.
+** Why this test is necessary? 
+
+* Return value: A successful tests completion must be return 0. Otherwise return 1.  
+
+* The test must be return ALWAYS (exception for the "others category") to automate the testing process. This is useful using software like jenkins. 
+
+** For example one test make a big Sleep to test the "cuckoom sleep bypass": 
+*** Make a thread in the process. This thread checks if the Sleep is skipped or not. 
+*** If the Sleep is not skipped in 1 minute the thread can be terminate the process with return value 1.
+
+* The test must be compile with Mingw.
+
+* Use the Makefile If possible. If you need a special Makefile for a test: add a "mingw-make compatible" Makefile.
+
+* Dont repeat an existent test. Maybe you can improve one.
+
+* Use stderr to print errors.

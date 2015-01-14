@@ -17,13 +17,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
-#include <windows.h>
+#include <winsock.h>
 
-int main()
+int main(void)
 {
-    for (int i = 0; i < 10; i++) {
-        POINT p = {}; GetCursorPos(&p);
-        printf("{x: %ld, y: %ld}\n", p.x, p.y);
-        Sleep(100);
-    }
+    WSADATA wsa;
+    if ( WSAStartup(MAKEWORD(2, 2), &wsa) != 0 )
+	{
+		fprintf( stderr, "Error WSAStartup" );
+		return 1;
+	}
+
+    SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
+
+	if ( s == INVALID_SOCKET )
+	{
+		fprintf( stderr, "Error socket" );
+		return 1;
+	}
+
+    struct sockaddr_in addr = {};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = 0;
+    addr.sin_port = htons(0x29a);
+
+    if ( bind(s, (struct sockaddr *) &addr, sizeof(addr)) != 0 )
+	{
+		fprintf( stderr, "Error bind" );
+		return 1;
+	}
+
+	return 0;
 }
