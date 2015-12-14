@@ -1,17 +1,7 @@
 CuckooMon
 =========
 
-This is the Cuckoo Sandbox Monitor, one of the core elements of Cuckoo
-Sandbox. CuckooMon provides Cuckoo Sandbox the ability to intercept the
-execution flow of a potential malicious sample.
+This repository is old and has been deprecated in favor of the new
+[mon][Cuckoo Monitor].
 
-Through Cuckoo Sandbox it is able to monitor all kinds of samples, such as
-executables, office files (Microsoft Word, Microsoft Excel), PDF files, and
-much more; virtually anything that can be ran on windows (in usermode.)
-
-Authors
-=======
-
-- Jurriaan Bremer
-- Mark Schloesser
-- Claudio Guarnieri
+[mon]: https://github.com/cuckoobox/monitor
